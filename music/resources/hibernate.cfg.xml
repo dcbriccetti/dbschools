@@ -1,0 +1,40 @@
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+        
+<hibernate-configuration>
+
+    <session-factory>
+
+        <!-- JDBC connection pool (use the built-in) -->
+        <property name="connection.pool_size">1</property>
+
+        <!-- SQL dialect -->
+        <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property>
+
+        <!-- Enable Hibernate's automatic session context management -->
+        <property name="current_session_context_class">thread</property>
+
+        <!-- Disable the second-level cache  -->
+        <property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
+
+        <!--  <property name="hbm2ddl.auto">update/create</property>  -->
+		<property name="hbm2ddl.auto">update</property>
+		
+		<mapping class="com.dbschools.music.orm.Assessment"/>
+		<mapping class="com.dbschools.music.orm.Group"/>
+		<mapping class="com.dbschools.music.orm.Instrument"/>
+		<mapping class="com.dbschools.music.orm.Log"/>
+		<mapping class="com.dbschools.music.orm.Musician"/>
+		<mapping class="com.dbschools.music.orm.MusicianGroup"/>
+		<mapping class="com.dbschools.music.orm.Piece"/>
+		<mapping class="com.dbschools.music.orm.PredefinedComment"/>
+		<mapping class="com.dbschools.music.orm.Rejection"/>
+		<mapping class="com.dbschools.music.orm.RejectionReason"/>
+		<mapping class="com.dbschools.music.orm.Subinstrument"/>
+		<mapping class="com.dbschools.music.orm.Tempo"/>
+		<mapping class="com.dbschools.music.orm.User"/>
+        
+    </session-factory>
+
+</hibernate-configuration>

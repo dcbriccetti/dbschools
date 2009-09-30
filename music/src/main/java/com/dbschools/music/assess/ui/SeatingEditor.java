@@ -1,0 +1,272 @@
+package com.dbschools.music.assess.ui;
+
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.LayoutManager;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeModel;
+
+import org.apache.log4j.Logger;
+
+public class SeatingEditor extends javax.swing.JPanel {
+    private final static Logger log = Logger.getLogger(SeatingEditor.class);
+    private Font smallFont = new Font("Sans Serif", Font.PLAIN, 8);
+    
+    /** Creates new form SeatingEditor */
+    public SeatingEditor() {
+        initComponents();
+        for (int row = 1; row <= 5; ++row) {
+            for (int seat = 1; seat < 10; ++seat) {
+                seatingPanel.add(new Player(row, seat, "R" + row + "S" + seat));
+            }
+        }
+        MutableTreeNode root = new DefaultMutableTreeNode("Groups");
+        MutableTreeNode symph = new DefaultMutableTreeNode("Symphonic Band");
+        MutableTreeNode flutes = new DefaultMutableTreeNode("Flutes");
+        flutes.insert(new DefaultMutableTreeNode("Jones"), 0);
+        flutes.insert(new DefaultMutableTreeNode("Simms"), 0);
+        flutes.insert(new DefaultMutableTreeNode("Thames"), 0);
+        flutes.insert(new DefaultMutableTreeNode("Abbas"), 0);
+        flutes.insert(new DefaultMutableTreeNode("Petral"), 0);
+        flutes.insert(new DefaultMutableTreeNode("Jeffries"), 0);
+        symph.insert(flutes, 0);
+        root.insert(symph, 0);
+        TreeModel treeModel = new DefaultTreeModel(root);
+        tree.setModel(treeModel);
+        rowTf.setValue(1);
+        seatTf.setValue(1);
+        
+        class RowInfo {
+            int numSeats;
+        }
+        seatingPanel.setLayout(new LayoutManager() {
+            private int seatWidth = 50;
+            private int maxRows = 7;
+            
+            public void addLayoutComponent(String string, Component component) {
+                // Do nothing
+            }
+
+            public void removeLayoutComponent(Component component) {
+            }
+
+            public Dimension preferredLayoutSize(Container container) {
+                return new Dimension(600, 400);
+            }
+
+            public Dimension minimumLayoutSize(Container container) {
+                return new Dimension(200, 200);
+            }
+
+            public void layoutContainer(Container container) {
+                Component[] comps = container.getComponents();
+                final Map<Integer, RowInfo> rowInfoMap = getRowInfo(comps);
+                
+                final double seatWidthDeg = 5.0;
+                final double radius = 200;
+                final double rowDiff = 30;
+                
+                for (Component comp : comps) {
+                    if (comp instanceof RowAndSeat) {
+                        RowAndSeat rs = (RowAndSeat) comp;
+                        RowInfo rowInfo = rowInfoMap.get(rs.getRow());
+                        double seat1Angle = (rowInfo.numSeats - 1) * -seatWidthDeg / 2;
+                        double seatAngle = seat1Angle + (rs.getSeat() - 1) * seatWidthDeg;
+                        final double seatAngleTurned = seatAngle + 90.0;
+                        final double seatAngleRadians = seatAngleTurned * Math.PI / 180.0;
+                        double thisRowRadius = radius + rowDiff * rs.getRow();
+                        int seatX = seatingPanel.getWidth() / 2 + (int) (thisRowRadius * Math.cos(seatAngleRadians));
+                        int seatY = seatingPanel.getHeight() + (int) radius / 2 - 
+                                (int) (thisRowRadius * Math.sin(seatAngleRadians));
+                        log.info(seatX + ", " + seatY);
+                        comp.setLocation(seatX, seatY);
+                        comp.setSize(comp.getPreferredSize());
+                    }
+                }
+            }
+
+            private Map<Integer, RowInfo> getRowInfo(Component[] comps) {
+                Map<Integer, RowInfo> rowInfoMap = new HashMap<Integer, RowInfo>();
+                for (Component comp : comps) {
+                    if (comp instanceof RowAndSeat) {
+                        RowAndSeat rs = (RowAndSeat) comp;
+                        RowInfo rowInfo = rowInfoMap.get(rs.getRow());
+                        if (rowInfo == null) {
+                            rowInfo = new RowInfo();
+                            rowInfoMap.put(rs.getRow(), rowInfo);
+                        }
+                        rowInfo.numSeats++;
+                    }
+                }
+                return rowInfoMap;
+            }});
+    }
+    
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tree = new javax.swing.JTree();
+        seatingPanel = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        insertButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        rowTf = new javax.swing.JFormattedTextField();
+        jLabel2 = new javax.swing.JLabel();
+        seatTf = new javax.swing.JFormattedTextField();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        jScrollPane1.setViewportView(tree);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        add(jScrollPane1, gridBagConstraints);
+
+        org.jdesktop.layout.GroupLayout seatingPanelLayout = new org.jdesktop.layout.GroupLayout(seatingPanel);
+        seatingPanel.setLayout(seatingPanelLayout);
+        seatingPanelLayout.setHorizontalGroup(
+            seatingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 272, Short.MAX_VALUE)
+        );
+        seatingPanelLayout.setVerticalGroup(
+            seatingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 234, Short.MAX_VALUE)
+        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 3.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        add(seatingPanel, gridBagConstraints);
+
+        insertButton.setText("Insert At");
+        insertButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                insertButtonActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("Row:");
+
+        rowTf.setText("1");
+
+        jLabel2.setText("Seat:");
+
+        seatTf.setColumns(2);
+        seatTf.setText("1");
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(insertButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(rowTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(seatTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(170, 170, 170))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(14, Short.MAX_VALUE)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(insertButton)
+                    .add(jLabel1)
+                    .add(rowTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2)
+                    .add(seatTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        add(jPanel2, gridBagConstraints);
+
+    }// </editor-fold>//GEN-END:initComponents
+
+    interface RowAndSeat {
+        Integer getRow();
+        Integer getSeat();
+    }
+    
+    class Player extends JLabel implements RowAndSeat {
+        Player(Integer row, Integer seat, String name) {
+            super(name);
+            this.row = row;
+            this.seat = seat;
+            setFont(smallFont);
+        }
+        private Integer row;
+        private Integer seat;
+        
+        public Integer getRow() {
+            return row;
+        }
+
+        public Integer getSeat() {
+            return seat;
+        }
+        
+    }
+    
+    private void insertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertButtonActionPerformed
+        Integer row = (Integer) rowTf.getValue();
+        Integer seat = (Integer) seatTf.getValue();
+        String s = tree.getSelectionPath().getLastPathComponent().toString();
+        int nextSel = tree.getSelectionRows()[0] + 1;
+        tree.setSelectionInterval(nextSel, nextSel);
+        seatingPanel.add(new Player(row, seat, s));
+        seatTf.setValue(++seat);
+        seatingPanel.validate();
+    }//GEN-LAST:event_insertButtonActionPerformed
+    
+    public static void main(String[] args) {
+        JFrame f = new JFrame("Seating Editor");
+        f.setContentPane(new SeatingEditor());
+        f.pack();
+        f.setLocationRelativeTo(null);
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.setVisible(true);
+    }
+    
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton insertButton;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JFormattedTextField rowTf;
+    private javax.swing.JFormattedTextField seatTf;
+    private javax.swing.JPanel seatingPanel;
+    private javax.swing.JTree tree;
+    // End of variables declaration//GEN-END:variables
+    
+}

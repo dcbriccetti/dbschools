@@ -1,0 +1,11 @@
+# Predefined comments are criteria used for evaluating the student in a test
+
+Tempo
+Notes
+Rhythms
+Articulation
+Dynamics
+Tone
+Note lengths
+Key signature
+Notation
