@@ -106,8 +106,8 @@ public final class MusicianEditor extends javax.swing.JPanel {
 
     public Musician getMusician() {
         musician.setStudentId((Long) idTf.getValue());
-        musician.setFirstName(firstNameTf.getText());
-        musician.setLastName(lastNameTf.getText());
+        musician.setFirstName(lastNameTf.getText());
+        musician.setLastName(firstNameTf.getText());
         musician.setGraduationYear(TermUtils.gradeAsGraduationYear(((Integer) gradeTf.getValue()), schoolYear));
         musician.setSex(maleRb.isSelected() ? "M" : "F");
         return musician;
@@ -117,8 +117,8 @@ public final class MusicianEditor extends javax.swing.JPanel {
         assert schoolYear != null;
         this.musician = musician;
         idTf.setValue(musician.getStudentId());
-        firstNameTf.setText(musician.getFirstName());
-        lastNameTf.setText(musician.getLastName());
+        lastNameTf.setText(musician.getFirstName());
+        firstNameTf.setText(musician.getLastName());
         final Integer graduationYear = musician.getGraduationYear();
         gradeTf.setValue(graduationYear == null ? 0 : 
                 TermUtils.graduationYearAsGrade(
@@ -176,7 +176,7 @@ public final class MusicianEditor extends javax.swing.JPanel {
         buttonGroup1 = new ButtonGroup();
         jLabel1 = new JLabel();
         jLabel2 = new JLabel();
-        lastNameTf = new JTextField();
+        firstNameTf = new JTextField();
         jLabel3 = new JLabel();
         jLabel4 = new JLabel();
         maleRb = new JRadioButton();
@@ -191,19 +191,19 @@ public final class MusicianEditor extends javax.swing.JPanel {
         jLabel6 = new JLabel();
         idTf = new JFormattedTextField();
         gradeTf = new JFormattedTextField();
-        firstNameTf = new JTextField();
+        lastNameTf = new JTextField();
         jLabel7 = new JLabel();
 
         jLabel1.setFont(new Font("Lucida Grande", 1, 13));
         jLabel1.setText("Student ID:");
 
         jLabel2.setFont(new Font("Lucida Grande", 1, 13)); // NOI18N
-        jLabel2.setText("First Name:");
+        jLabel2.setText("Last Name:");
 
-        lastNameTf.setColumns(40);
-        lastNameTf.setText(" ");
+        firstNameTf.setColumns(40);
+        firstNameTf.setText(" ");
 
-        jLabel3.setFont(new Font("Lucida Grande", 1, 13)); // NOI18N
+        jLabel3.setFont(new Font("Lucida Grande", 1, 13));
         jLabel3.setText("Grade:");
 
         jLabel4.setFont(new Font("Lucida Grande", 1, 13));
@@ -244,7 +244,7 @@ public final class MusicianEditor extends javax.swing.JPanel {
         gradeTf.setText("6");
 
         jLabel7.setFont(new Font("Lucida Grande", 1, 13)); // NOI18N
-        jLabel7.setText("Last Name:");
+        jLabel7.setText("First Name:");
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -261,8 +261,8 @@ public final class MusicianEditor extends javax.swing.JPanel {
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING, false)
                             .addComponent(idTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lastNameTf, GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
-                            .addComponent(firstNameTf)))
+                            .addComponent(firstNameTf, GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
+                            .addComponent(lastNameTf)))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(jLabel3)
@@ -301,10 +301,10 @@ public final class MusicianEditor extends javax.swing.JPanel {
                 .addGap(8, 8, 8)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(lastNameTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(firstNameTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(firstNameTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lastNameTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
