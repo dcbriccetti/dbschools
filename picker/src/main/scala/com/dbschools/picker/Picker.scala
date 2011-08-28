@@ -1,10 +1,8 @@
 package com.dbschools.picker
 
 import java.awt.event.{ActionEvent, ActionListener}
-import javax.swing.{SwingUtilities, Timer}
+import javax.swing.Timer
 import scala.util.Random
-import scala.collection.jcl.TreeSet
-import java.util.Collections
 
 /**
  * Contains the logic for doing the picking.
