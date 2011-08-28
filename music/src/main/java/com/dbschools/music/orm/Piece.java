@@ -36,6 +36,7 @@ public class Piece extends AbstractPersistentObject
     /**
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
+    @Override
     public int compareTo(final Piece other) {
         final int orderCmp = testOrder.compareTo(other.testOrder);
         if (orderCmp != 0) {
