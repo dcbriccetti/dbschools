@@ -1,15 +1,26 @@
 package com.dbschools.music;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Synthesizer;
 import javax.sound.midi.MidiChannel;
 import javax.sound.midi.MidiUnavailableException;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JToggleButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.apache.log4j.Logger;
 
 /**
@@ -194,37 +205,37 @@ public class Metronome extends JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
+        GridBagConstraints gridBagConstraints;
 
-        metronomeButton = new javax.swing.JToggleButton();
-        soundChooser = new javax.swing.JComboBox();
-        tempoChooser = new javax.swing.JSlider();
+        metronomeButton = new JToggleButton();
+        soundChooser = new JComboBox();
+        tempoChooser = new JSlider();
 
-        setBorder(javax.swing.BorderFactory.createTitledBorder("Metronome"));
-        setLayout(new java.awt.GridBagLayout());
+        setBorder(BorderFactory.createTitledBorder("Metronome"));
+        setLayout(new GridBagLayout());
 
-        metronomeButton.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        metronomeButton.setFont(new Font("Tahoma", 1, 14));
         metronomeButton.setText("Beat");
         metronomeButton.setToolTipText("Start and stop the metronome");
-        metronomeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        metronomeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 metronomeButtonActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(metronomeButton, gridBagConstraints);
 
-        soundChooser.setModel(new javax.swing.DefaultComboBoxModel(getSounds()));
+        soundChooser.setModel(new DefaultComboBoxModel(getSounds()));
         soundChooser.setToolTipText("Select the sound to use");
-        soundChooser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        soundChooser.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 soundChooserActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         add(soundChooser, gridBagConstraints);
@@ -232,17 +243,17 @@ public class Metronome extends JPanel {
         tempoChooser.setMaximum(208);
         tempoChooser.setMinimum(40);
         tempoChooser.setValue(108);
-        tempoChooser.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+        tempoChooser.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent evt) {
                 tempoChooserStateChanged(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new Insets(4, 0, 0, 0);
         add(tempoChooser, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -270,8 +281,8 @@ private void tempoChooserStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-
 }//GEN-LAST:event_tempoChooserStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JToggleButton metronomeButton;
-    private javax.swing.JComboBox soundChooser;
-    private javax.swing.JSlider tempoChooser;
+    JToggleButton metronomeButton;
+    JComboBox soundChooser;
+    JSlider tempoChooser;
     // End of variables declaration//GEN-END:variables
 }

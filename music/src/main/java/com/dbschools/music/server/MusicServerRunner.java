@@ -24,7 +24,7 @@ public class MusicServerRunner {
     }
 
     private static void launchFromSpring() throws BeansException {
-        BeanFactory context = new ClassPathXmlApplicationContext(new String[]{"spring-setprops.xml", "spring-config.xml"});
+        BeanFactory context = new ClassPathXmlApplicationContext("spring-setprops.xml", "spring-config.xml");
         context.getBean("musicServer");
     }
     

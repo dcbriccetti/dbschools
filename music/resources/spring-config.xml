@@ -17,7 +17,7 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 	<bean id="productionSessionFactory"
 		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
 		<property name="configurationClass" value="org.hibernate.cfg.AnnotationConfiguration" />
-		<property name="dataSource" ref="productionDataSource"></property>
+		<property name="dataSource" ref="productionDataSource"/>
 		<property name="useTransactionAwareDataSource" value="true" />
 		<property name="configLocation" value="hibernate.cfg.xml" />
 	</bean>
@@ -34,24 +34,7 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 	<bean id="demoSessionFactory"
 		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
 		<property name="configurationClass" value="org.hibernate.cfg.AnnotationConfiguration" />
-		<property name="dataSource" ref="demoDataSource"></property>
-		<property name="useTransactionAwareDataSource" value="true" />
-		<property name="configLocation" value="hibernate.cfg.xml" />
-	</bean>
-	
-	<bean id="srvusdDataSource"
-		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-		<property name="driverClassName" value="org.postgresql.Driver" />
-		<property name="url"
-			value="jdbc:postgresql://127.0.0.1/${jdbc.srvusd.database}" />
-		<property name="username" value="${jdbc.srvusd.username}" />
-		<property name="password" value="${jdbc.srvusd.password}" />
-	</bean>
-	
-	<bean id="srvusdSessionFactory"
-		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
-		<property name="configurationClass" value="org.hibernate.cfg.AnnotationConfiguration" />
-		<property name="dataSource" ref="srvusdDataSource"></property>
+		<property name="dataSource" ref="demoDataSource"/>
 		<property name="useTransactionAwareDataSource" value="true" />
 		<property name="configLocation" value="hibernate.cfg.xml" />
 	</bean>
@@ -59,18 +42,8 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 	<bean id="musicServer" class="com.dbschools.music.server.MusicServerImpl">
 		<constructor-arg>
 		<map>
-	        <entry>
-	            <key><value>dbsmusic</value></key>
-	            <ref bean="productionSessionFactory" />
-	        </entry>
-	        <entry>
-	            <key><value>dbsmusic-demo</value></key>
-	            <ref bean="demoSessionFactory" />
-	        </entry>
-	        <entry>
-	            <key><value>dbsmusic-srvusd</value></key>
-	            <ref bean="srvusdSessionFactory" />
-	        </entry>
+	        <entry key="dbsmusic" value-ref="productionSessionFactory"/>
+	        <entry key="dbsmusic-demo" value-ref="demoSessionFactory"/>
 	    </map>
 		</constructor-arg>
 	</bean>

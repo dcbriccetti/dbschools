@@ -20,16 +20,40 @@
 
 package com.dbschools.music.assess.ui;
 
+import com.dbschools.music.Metronome;
 import com.dbschools.music.ui.NamedItemDisplayAdapter;
 import com.dbschools.music.dao.RemoteDao;
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.WindowConstants;
+import javax.swing.border.BevelBorder;
 import javax.swing.text.DateFormatter;
 
 import org.apache.log4j.Logger;
@@ -181,52 +205,52 @@ public final class AssessmentRecordDialog extends CustomDialog {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
+        GridBagConstraints gridBagConstraints;
 
-        buttonPanel = new javax.swing.JPanel();
-        passCheckBox = new javax.swing.JCheckBox();
-        saveButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
-        controllsPanel = new javax.swing.JPanel();
-        filler1 = new javax.swing.JLabel();
-        metronome = new com.dbschools.music.Metronome();
-        selectors = new javax.swing.JPanel();
-        instrumentComboBox = new javax.swing.JComboBox();
-        subInstrumentComboBox = new javax.swing.JComboBox();
-        pieceComboBox = new javax.swing.JComboBox();
-        datePanel = new javax.swing.JPanel();
-        dateCheckBox = new javax.swing.JCheckBox();
-        dateFormattedTextField = new javax.swing.JFormattedTextField();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        commentsTextArea = new javax.swing.JTextArea();
-        statusLabel = new javax.swing.JLabel();
-        commentsCheckPanel = new javax.swing.JPanel();
-        commentsScrollPane = new javax.swing.JScrollPane();
-        scrollableCommentsPanel = new javax.swing.JPanel();
+        buttonPanel = new JPanel();
+        passCheckBox = new JCheckBox();
+        saveButton = new JButton();
+        cancelButton = new JButton();
+        jLabel2 = new JLabel();
+        controllsPanel = new JPanel();
+        filler1 = new JLabel();
+        metronome = new Metronome();
+        selectors = new JPanel();
+        instrumentComboBox = new JComboBox();
+        subInstrumentComboBox = new JComboBox();
+        pieceComboBox = new JComboBox();
+        datePanel = new JPanel();
+        dateCheckBox = new JCheckBox();
+        dateFormattedTextField = new JFormattedTextField();
+        jScrollPane2 = new JScrollPane();
+        commentsTextArea = new JTextArea();
+        statusLabel = new JLabel();
+        commentsCheckPanel = new JPanel();
+        commentsScrollPane = new JScrollPane();
+        scrollableCommentsPanel = new JPanel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("");
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosed(java.awt.event.WindowEvent evt) {
+        addWindowListener(new WindowAdapter() {
+            public void windowClosed(WindowEvent evt) {
                 formWindowClosed(evt);
             }
         });
-        getContentPane().setLayout(new java.awt.GridBagLayout());
+        getContentPane().setLayout(new GridBagLayout());
 
-        buttonPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
         passCheckBox.setMnemonic('P');
         passCheckBox.setText("Pass");
         passCheckBox.setToolTipText("Indicate whether the student passed the test");
-        passCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        passCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        passCheckBox.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        passCheckBox.setMargin(new Insets(0, 0, 0, 0));
         buttonPanel.add(passCheckBox);
 
         saveButton.setMnemonic('S');
         saveButton.setText("Save");
-        saveButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 saveButtonActionPerformed(evt);
             }
         });
@@ -235,178 +259,176 @@ public final class AssessmentRecordDialog extends CustomDialog {
         cancelButton.setMnemonic('C');
         cancelButton.setText("Close");
         cancelButton.setToolTipText("Close this dialog when you are finished with this student");
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        cancelButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
         buttonPanel.add(cancelButton);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new Insets(4, 4, 0, 4);
         getContentPane().add(buttonPanel, gridBagConstraints);
 
         jLabel2.setText("Comments");
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(4, 4, 0, 4);
         getContentPane().add(jLabel2, gridBagConstraints);
 
         controllsPanel.setAlignmentX(0.0F);
         controllsPanel.setAlignmentY(0.0F);
-        controllsPanel.setMinimumSize(null);
-        controllsPanel.setPreferredSize(null);
-        controllsPanel.setLayout(new java.awt.GridBagLayout());
+        controllsPanel.setLayout(new GridBagLayout());
 
         filler1.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         controllsPanel.add(filler1, gridBagConstraints);
 
         metronome.setToolTipText("Press to toggle the metronome");
         metronome.setMinimumSize(null);
         metronome.setPreferredSize(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 3;
         controllsPanel.add(metronome, gridBagConstraints);
 
-        selectors.setLayout(new java.awt.GridBagLayout());
+        selectors.setLayout(new GridBagLayout());
 
-        instrumentComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        instrumentComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 instrumentComboBoxActionPerformed(evt);
             }
         });
-        selectors.add(instrumentComboBox, new java.awt.GridBagConstraints());
+        selectors.add(instrumentComboBox, new GridBagConstraints());
 
-        subInstrumentComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        subInstrumentComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 subInstrumentComboBoxActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         selectors.add(subInstrumentComboBox, gridBagConstraints);
 
-        pieceComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        pieceComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 pieceComboBoxActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         selectors.add(pieceComboBox, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(4, 0, 0, 0);
         controllsPanel.add(selectors, gridBagConstraints);
 
-        datePanel.setLayout(new java.awt.GridBagLayout());
+        datePanel.setLayout(new GridBagLayout());
 
         dateCheckBox.setText("Set Date");
         dateCheckBox.setToolTipText("Set a date/time other than the present for this record");
         dateCheckBox.setPreferredSize(null);
-        dateCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        dateCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 dateCheckBoxActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         datePanel.add(dateCheckBox, gridBagConstraints);
 
-        dateFormattedTextField.setMinimumSize(new java.awt.Dimension(170, 19));
-        dateFormattedTextField.setPreferredSize(new java.awt.Dimension(170, 19));
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        dateFormattedTextField.setMinimumSize(new Dimension(170, 19));
+        dateFormattedTextField.setPreferredSize(new Dimension(170, 19));
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         datePanel.add(dateFormattedTextField, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
         controllsPanel.add(datePanel, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(4, 4, 0, 4);
         getContentPane().add(controllsPanel, gridBagConstraints);
 
-        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane2.setMinimumSize(new java.awt.Dimension(100, 100));
-        jScrollPane2.setPreferredSize(new java.awt.Dimension(400, 100));
+        jScrollPane2.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane2.setMinimumSize(new Dimension(100, 100));
+        jScrollPane2.setPreferredSize(new Dimension(400, 100));
 
         commentsTextArea.setLineWrap(true);
         commentsTextArea.setToolTipText("Enter additional free-form comments here");
         commentsTextArea.setWrapStyleWord(true);
         jScrollPane2.setViewportView(commentsTextArea);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new Insets(4, 4, 0, 4);
         getContentPane().add(jScrollPane2, gridBagConstraints);
 
         statusLabel.setText(" ");
-        statusLabel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        statusLabel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(4, 4, 4, 4);
         getContentPane().add(statusLabel, gridBagConstraints);
 
-        commentsCheckPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        commentsCheckPanel.setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)));
         commentsCheckPanel.setToolTipText("Check all the comments that apply");
-        commentsCheckPanel.setMinimumSize(new java.awt.Dimension(200, 200));
-        commentsCheckPanel.setPreferredSize(new java.awt.Dimension(200, 500));
-        commentsCheckPanel.setLayout(new java.awt.BorderLayout());
+        commentsCheckPanel.setMinimumSize(new Dimension(200, 200));
+        commentsCheckPanel.setPreferredSize(new Dimension(200, 500));
+        commentsCheckPanel.setLayout(new BorderLayout());
 
-        org.jdesktop.layout.GroupLayout scrollableCommentsPanelLayout = new org.jdesktop.layout.GroupLayout(scrollableCommentsPanel);
+        GroupLayout scrollableCommentsPanelLayout = new GroupLayout(scrollableCommentsPanel);
         scrollableCommentsPanel.setLayout(scrollableCommentsPanelLayout);
         scrollableCommentsPanelLayout.setHorizontalGroup(
-            scrollableCommentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 196, Short.MAX_VALUE)
+            scrollableCommentsPanelLayout.createParallelGroup(Alignment.LEADING)
+            .addGap(0, 196, Short.MAX_VALUE)
         );
         scrollableCommentsPanelLayout.setVerticalGroup(
-            scrollableCommentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 296, Short.MAX_VALUE)
+            scrollableCommentsPanelLayout.createParallelGroup(Alignment.LEADING)
+            .addGap(0, 296, Short.MAX_VALUE)
         );
 
         commentsScrollPane.setViewportView(scrollableCommentsPanel);
 
-        commentsCheckPanel.add(commentsScrollPane, java.awt.BorderLayout.CENTER);
+        commentsCheckPanel.add(commentsScrollPane, BorderLayout.CENTER);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new Insets(4, 4, 0, 4);
         getContentPane().add(commentsCheckPanel, gridBagConstraints);
 
         pack();
@@ -616,27 +638,27 @@ private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel buttonPanel;
-    private javax.swing.JButton cancelButton;
-    private javax.swing.JPanel commentsCheckPanel;
-    private javax.swing.JScrollPane commentsScrollPane;
-    private javax.swing.JTextArea commentsTextArea;
-    private javax.swing.JPanel controllsPanel;
-    private javax.swing.JCheckBox dateCheckBox;
-    private javax.swing.JFormattedTextField dateFormattedTextField;
-    private javax.swing.JPanel datePanel;
-    private javax.swing.JLabel filler1;
-    private javax.swing.JComboBox instrumentComboBox;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JScrollPane jScrollPane2;
-    private com.dbschools.music.Metronome metronome;
-    private javax.swing.JCheckBox passCheckBox;
-    private javax.swing.JComboBox pieceComboBox;
-    private javax.swing.JButton saveButton;
-    private javax.swing.JPanel scrollableCommentsPanel;
-    private javax.swing.JPanel selectors;
-    private javax.swing.JLabel statusLabel;
-    private javax.swing.JComboBox subInstrumentComboBox;
+    private JPanel buttonPanel;
+    private JButton cancelButton;
+    private JPanel commentsCheckPanel;
+    private JScrollPane commentsScrollPane;
+    private JTextArea commentsTextArea;
+    private JPanel controllsPanel;
+    private JCheckBox dateCheckBox;
+    private JFormattedTextField dateFormattedTextField;
+    private JPanel datePanel;
+    private JLabel filler1;
+    private JComboBox instrumentComboBox;
+    private JLabel jLabel2;
+    private JScrollPane jScrollPane2;
+    private Metronome metronome;
+    private JCheckBox passCheckBox;
+    private JComboBox pieceComboBox;
+    private JButton saveButton;
+    private JPanel scrollableCommentsPanel;
+    private JPanel selectors;
+    private JLabel statusLabel;
+    private JComboBox subInstrumentComboBox;
     // End of variables declaration//GEN-END:variables
 
 }
