@@ -1,15 +1,16 @@
 package com.dbschools.music.assess.ui
 
-import java.util.{HashMap, ArrayList}
+import java.util.ArrayList
 import junit.framework.TestCase
 import junit.framework.Assert._
 import org.jmock.lib.action.ReturnValueAction
 import org.jmock.Mockery
 import org.jmock.Expectations
-import com.dbschools.music.events.EventObserver
 import com.dbschools.music.dao.{RemoteDao}
 import com.dbschools.music.orm._
 import com.dbschools.music.assess.Pieces
+import com.dbschools.music.TermUtils
+import com.google.common.collect.{HashMultimap, Multimap}
 
 class TestAssessmentRecordDialog extends TestCase {
   /**
@@ -19,24 +20,22 @@ class TestAssessmentRecordDialog extends TestCase {
     val mockery = new Mockery()
     val dao = mockery.mock(classOf[RemoteDao])
     val pieces = Pieces.createPieces
-    var instruments = new ArrayList[Instrument]
-    var flute = new Instrument("Flute", 1)
+    val instruments = new ArrayList[Instrument]
+    val flute = new Instrument("Flute", 1)
     flute.setId(1)
     instruments.add(flute)
-    var clarinet = new Instrument("Clarinet", 2)
+    val clarinet = new Instrument("Clarinet", 2)
     clarinet.setId(2)
     instruments.add(clarinet)
-    var trombone = new Instrument("Trombone", 3)
+    val trombone = new Instrument("Trombone", 3)
     trombone.setId(3)
     instruments.add(trombone)
     val dave = new Musician(101L, "Dave", "Clark", 2010, "M")
     dave.setId(1)
-    var musicianGroupsMap = new HashMap[Integer, ArrayList[MusicianGroup]]
-    var group = new Group("Symphonic Band", 1, true)
-    var mg = new MusicianGroup(dave, TermUtils.getCurrentTerm(), group, trombone)
-    var groups = new ArrayList[MusicianGroup]
-    groups.add(mg)
-    musicianGroupsMap.put(1, groups)
+    val musicianGroupsMap = new HashMultimap[java.lang.Integer, MusicianGroup]
+    val group = new Group("Symphonic Band", 1, true)
+    val mg = new MusicianGroup(dave, TermUtils.getCurrentTerm(), group, trombone)
+    musicianGroupsMap.put(1, mg)
 
     mockery.checking(new Expectations {{
         oneOf(dao).getUser
@@ -49,8 +48,6 @@ class TestAssessmentRecordDialog extends TestCase {
         will(new ReturnValueAction(musicianGroupsMap))
         oneOf(dao).getComments
         will(new ReturnValueAction(new ArrayList[PredefinedComment]))
-        oneOf(dao).getRejectionReasons
-        will(new ReturnValueAction(new ArrayList[RejectionReason]))
     }})
     val asms = new ArrayList[Assessment]
     val ard = new AssessmentRecordDialog(dao, dave, asms, null);
