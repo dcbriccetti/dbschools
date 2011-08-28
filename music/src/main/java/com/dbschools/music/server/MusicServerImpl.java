@@ -92,7 +92,8 @@ public class MusicServerImpl extends UnicastRemoteObject
         for (Entry<String,SessionFactory> e : databases.entrySet()) {
             final String databaseName = e.getKey();
             final SessionFactory sessionFactory = e.getValue();
-            databaseInstances.put(databaseName, 
+            DefaultDataCreator.createIfEmpty(sessionFactory);
+            databaseInstances.put(databaseName,
                     new DatabaseInstance(sessionFactory, Helper.getMusicPieces(sessionFactory)));
             logger.debug("DatabaseInstance created for " + databaseName);
         }
@@ -100,9 +101,6 @@ public class MusicServerImpl extends UnicastRemoteObject
         logger.debug(rmiRegistry + "contains " + Arrays.asList(rmiRegistry.list()));
         rmiRegistry.rebind(Constants.RMI_MUSIC_BIND_NAME, this);
         logger.info("MusicServer created and bound to registry");
-        for (SessionFactory sessionFactory : databases.values()) {
-            DefaultDataCreator.createIfEmpty(sessionFactory);
-        }
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         try {
             ObjectName objectName = new ObjectName("com.dbschools:type=MusicServer");
