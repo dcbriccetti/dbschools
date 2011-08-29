@@ -48,10 +48,10 @@ class MusicianImporter {
             Query query = session.createQuery("from Musician where studentId = :id");
             query.setLong("id", studentId);
             List<Musician> list = query.list();
-            if (list.size() > 0) {
+            if (! list.isEmpty()) {
                 musician = list.get(0);
                 final Set<MusicianGroup> mgs = musician.getMusicianGroups();
-                if (mgs != null && mgs.size() > 0) {
+                if (mgs != null && ! mgs.isEmpty()) {
                     instrument = mgs.iterator().next().getInstrument();
                 }
             } else {
