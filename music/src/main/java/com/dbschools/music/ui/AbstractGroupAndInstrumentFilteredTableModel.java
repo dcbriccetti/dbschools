@@ -97,8 +97,6 @@ public abstract class AbstractGroupAndInstrumentFilteredTableModel extends Abstr
     /**
      * Gets a collection of musician IDs that match the filters in effect, and
      * the GroupTerms to which a musician belongs, and on what instruments.
-     * @param musicianId
-     * @return whether the musician is included
      */
     protected Collection<Integer> getMatchingMusicianIds() {
         final HashSet<Integer> matchingMusicianIds = new HashSet<Integer>();
