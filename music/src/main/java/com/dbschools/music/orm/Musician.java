@@ -29,7 +29,7 @@ public final class Musician extends AbstractPersistentObject implements Comparab
     @Column(name="musician_id")
     private Integer id;
 
-    @Column(name="student_id")
+    @Column(name="student_id", unique=true, nullable=false)
     private Long studentId;
 
     @Column(name="first_name",nullable=false)
