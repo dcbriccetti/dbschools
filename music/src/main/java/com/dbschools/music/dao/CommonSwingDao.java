@@ -10,10 +10,11 @@ import java.util.concurrent.Executors;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
 
-import com.dbschools.music.orm.Assessment;
 import com.dbschools.music.orm.Musician;
 import com.dbschools.music.orm.MusicianGroup;
 import com.dbschools.music.server.MusicServer;
+
+import javax.swing.JOptionPane;
 
 /**
  * Data access object for saving data asynchronously, and having a callback
@@ -44,9 +45,10 @@ public final class CommonSwingDao implements RemoteSaver {
         PropertyUtils.setProperty(object, "id", id);
     }
     
+    @Override
     public void save(final Object object) {
         exec.execute(new Runnable(){
-            public void run() {
+            @Override public void run() {
                 try {
                     Integer id = (Integer) musicServer.saveObject(sessionId, object);
                     if (id != null) {
@@ -55,74 +57,74 @@ public final class CommonSwingDao implements RemoteSaver {
                 } catch (Exception e) {
                     e.printStackTrace();
                     log.error(e);
+                    JOptionPane.showMessageDialog(null, e.getMessage(), "Error Saving",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
     }
 
+    @Override
     public void update(final Object object) {
         exec.execute(new Runnable(){
-            public void run() {
+            @Override public void run() {
                 try {
                     musicServer.updateObject(sessionId, object);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                     log.error(e);
+                    JOptionPane.showMessageDialog(null, e.getMessage(), "Error Saving",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }});
     }
 
-    public void saveAssessment(final Assessment assessment) {
-        exec.execute(new Runnable() {
-            public void run() {
-                try {
-                    Integer id = (Integer) musicServer.saveObject(sessionId, assessment);
-                    assignId(id, assessment);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    log.error(e);
-                }
-            }});
-    }
-
+    @Override
     public void delete(final Object object) {
         exec.execute(new Runnable() {
-            public void run() {
+            @Override public void run() {
                 try {
                     musicServer.deleteObject(sessionId, object);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                     log.error(e);
+                    JOptionPane.showMessageDialog(null, e.getMessage(), "Error Saving",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }});
     }
 
+    @Override
     public void saveMusicianMusicGroups(final int termId,
             final int musicianId, final Collection<MusicianGroup> allGroupsForThisMusician) {
         exec.execute(new Runnable() {
-            public void run() {
+            @Override public void run() {
                 try {
                     musicServer.saveMusicianMusicGroups(
                             sessionId, termId, allGroupsForThisMusician);
                 } catch (Exception e) {
                     e.printStackTrace();
                     log.error(e);
+                    JOptionPane.showMessageDialog(null, e.getMessage(), "Error Saving",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }});
     }
 
+    @Override
     public void saveNewMusicianAndMusicGroups(final int termId,
             final Musician musician, final Set<MusicianGroup> allGroupsForThisMusician) {
         exec.execute(new Runnable() {
-            public void run() {
+            @Override public void run() {
                 try {
                     musicServer.saveNewMusicianAndMusicGroups(sessionId, termId, musician, 
                             allGroupsForThisMusician);
                 } catch (Exception e) {
                     e.printStackTrace();
                     log.error(e);
+                    JOptionPane.showMessageDialog(null, e.getMessage(), "Error Saving",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }});
     }
-
 }
