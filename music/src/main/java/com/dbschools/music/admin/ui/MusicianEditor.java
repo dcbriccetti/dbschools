@@ -3,6 +3,7 @@ package com.dbschools.music.admin.ui;
 import com.dbschools.music.ui.NamedItemDisplayAdapter;
 import com.dbschools.music.*;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.util.ArrayList;
@@ -105,9 +106,18 @@ public final class MusicianEditor extends javax.swing.JPanel {
     }
 
     public Musician getMusician() {
-        musician.setStudentId((Long) idTf.getValue());
-        musician.setFirstName(lastNameTf.getText());
-        musician.setLastName(firstNameTf.getText());
+        Long studentId = (Long) idTf.getValue();
+        if (studentId == null || studentId == 0) throw new IllegalStateException("Invalid student ID");
+        musician.setStudentId(studentId);
+
+        String lastName = lastNameTf.getText();
+        if (StringUtils.isBlank(lastName)) throw new IllegalStateException("Missing last name");
+        musician.setLastName(lastName);
+
+        String firstName = firstNameTf.getText();
+        if (StringUtils.isBlank(firstName)) throw new IllegalStateException("Missing first name");
+        musician.setFirstName(firstName);
+
         musician.setGraduationYear(TermUtils.gradeAsGraduationYear(((Integer) gradeTf.getValue()), schoolYear));
         musician.setSex(maleRb.isSelected() ? "M" : "F");
         return musician;
@@ -194,11 +204,13 @@ public final class MusicianEditor extends javax.swing.JPanel {
         lastNameTf = new JTextField();
         jLabel7 = new JLabel();
 
+        setMaximumSize(new Dimension(800, 400));
+
         jLabel1.setFont(new Font("Lucida Grande", 1, 13));
         jLabel1.setText("Student ID:");
 
         jLabel2.setFont(new Font("Lucida Grande", 1, 13)); // NOI18N
-        jLabel2.setText("Last Name:");
+        jLabel2.setText("First Name:");
 
         firstNameTf.setColumns(40);
         firstNameTf.setText(" ");
@@ -244,7 +256,7 @@ public final class MusicianEditor extends javax.swing.JPanel {
         gradeTf.setText("6");
 
         jLabel7.setFont(new Font("Lucida Grande", 1, 13)); // NOI18N
-        jLabel7.setText("First Name:");
+        jLabel7.setText("Last Name:");
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -255,38 +267,44 @@ public final class MusicianEditor extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel7))
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING, false)
-                            .addComponent(idTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(firstNameTf, GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
-                            .addComponent(lastNameTf)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel4))
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(gradeTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(maleRb)
-                                .addGap(24, 24, 24)
-                                .addComponent(femaleRb))))
+                                .addComponent(jLabel1)
+                                .addGap(12, 12, 12)
+                                .addComponent(idTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                    .addComponent(jLabel3)
+                                    .addComponent(jLabel4))
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                    .addComponent(gradeTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(maleRb)
+                                        .addGap(24, 24, 24)
+                                        .addComponent(femaleRb))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                    .addComponent(group2Cb, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(group1Cb, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(group3Cb, GroupLayout.PREFERRED_SIZE, 278, GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel5))
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                    .addComponent(jLabel6)
+                                    .addComponent(instrument3Cb, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(instrument2Cb, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(instrument1Cb, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
+                        .addContainerGap(20, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(group2Cb, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(group1Cb, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(group3Cb, GroupLayout.PREFERRED_SIZE, 278, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel5))
+                        .addComponent(jLabel7)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(jLabel6)
-                            .addComponent(instrument3Cb, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(instrument2Cb, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(instrument1Cb, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(20, Short.MAX_VALUE))
+                        .addComponent(lastNameTf, GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
+                        .addGap(330, 330, 330))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(firstNameTf, GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
+                        .addGap(281, 281, 281))))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {group1Cb, group2Cb, group3Cb, instrument1Cb, instrument2Cb, instrument3Cb});
@@ -298,14 +316,14 @@ public final class MusicianEditor extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(idTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addGap(8, 8, 8)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(firstNameTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(lastNameTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(firstNameTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(jLabel3)

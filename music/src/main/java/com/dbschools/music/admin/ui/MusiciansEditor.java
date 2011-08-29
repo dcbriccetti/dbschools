@@ -57,9 +57,7 @@ public class MusiciansEditor extends javax.swing.JPanel {
     private final RemoteDao remoteDao;
     private final MusicianMover musicianMover;
     private final Collection<Instrument> instruments;
-    private final Collection<Integer> terms;
     private Integer selectedTerm;
-    private JPopupMenu popup;
     private final Frame dialogParent = Utils.getDialogParent(this);
     private final AbstractAction deleteAction;
     private final JMenu moveToGroupMenu = new JMenu("Move to group");
@@ -79,10 +77,9 @@ public class MusiciansEditor extends javax.swing.JPanel {
         TableUtil.setColumnWidths(preferredColWidths, maxColWidths, 
             minColWidths, musicianTable.getColumnModel(), null);
         instruments = new TreeSet<Instrument>(remoteDao.getInstruments());
-        terms = getSortedTerms();
         termCombo.removeAllItems();
         final int currentTerm = TermUtils.getCurrentTerm();
-        for (Integer aTerm : terms) {
+        for (Integer aTerm : getSortedTerms()) {
             final YearDecorator decoratedYear = new YearDecorator(aTerm);
             termCombo.addItem(decoratedYear);
             if (aTerm == currentTerm) {
@@ -196,7 +193,7 @@ public class MusiciansEditor extends javax.swing.JPanel {
     }
     
     private void setUpPopupMenu() {
-        popup = new JPopupMenu();
+        JPopupMenu popup = new JPopupMenu();
         buildMoveToGroupMenu();
         popup.add(moveToGroupMenu);
         buildMoveToInstrumentMenu();

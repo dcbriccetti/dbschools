@@ -7,10 +7,10 @@ import java.util.Collection;
 import com.dbschools.music.admin.ui.MusicianEditor.GroupAndInstrument;
 import com.dbschools.music.orm.Musician;
 import com.dbschools.music.orm.NamedItem;
+
+import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.WindowConstants;
 
 /**
  * Dialog for editing a musician. Contains a {@link MusicianEditor}.
@@ -74,6 +74,8 @@ public class MusicianEditorDialog extends javax.swing.JDialog {
         musicianEditor = new MusicianEditor();
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Add or Change Musician");
+        setResizable(false);
 
         cancelButton.setMnemonic('C');
         cancelButton.setText("Cancel");
@@ -91,27 +93,27 @@ public class MusicianEditorDialog extends javax.swing.JDialog {
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(430, Short.MAX_VALUE)
+                .addContainerGap(444, Short.MAX_VALUE)
                 .addComponent(saveButton)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(cancelButton)
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(musicianEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(musicianEditor, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(musicianEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(musicianEditor, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(saveButton)
                     .addComponent(cancelButton)))
@@ -126,8 +128,18 @@ public class MusicianEditorDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        saved = true;
-        dispose();
+        try {
+            getMusician();
+            if (getGroupAndInstrumentAssignments().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Missing group and instrument assignment",
+                        "Error", JOptionPane.WARNING_MESSAGE);
+            } else {
+                saved = true;
+                dispose();
+            }
+        } catch(IllegalStateException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.WARNING_MESSAGE);
+        }
     }//GEN-LAST:event_saveButtonActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
