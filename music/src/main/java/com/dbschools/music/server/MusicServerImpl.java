@@ -110,9 +110,7 @@ public class MusicServerImpl extends UnicastRemoteObject
         }
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServer#getMusician(int, java.lang.Integer)
-     */
+    @Override
     public Musician getMusician(int sessionId, Integer musicianId) throws RemoteException {
         final ClientSession clientSession = clientSessions.get(sessionId);
         final Session session = getHibernateSession(clientSession);
@@ -121,6 +119,7 @@ public class MusicServerImpl extends UnicastRemoteObject
         return musician;
     }
 
+    @Override
     public Event getNextEvent(int sessionId) throws RemoteException {
         final ClientSession clientSession = clientSessions.get(sessionId);
         try {
@@ -131,9 +130,7 @@ public class MusicServerImpl extends UnicastRemoteObject
         }
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServer#getMusicians(int, boolean)
-     */
+    @Override
     @SuppressWarnings("unchecked")
     public Collection<Musician> getMusicians(int sessionId, boolean currentYearOnly)
     throws RemoteException {
@@ -142,9 +139,7 @@ public class MusicServerImpl extends UnicastRemoteObject
         return Helper.getMusicians(currentYearOnly, session);
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServer#getAssessmentInfo(int, java.util.Collection)
-     */
+    @Override
     @SuppressWarnings("unchecked")
     public Collection<Musician> getAssessmentInfo(int sessionId, 
             Collection<Integer> musicianIds) throws RemoteException {
@@ -163,9 +158,7 @@ public class MusicServerImpl extends UnicastRemoteObject
         return musicians;
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServer#getGroupTermMemberIdsMap(int)
-     */
+    @Override
     @SuppressWarnings("unchecked")
     public Map<GroupTerm,Set<Integer>> getGroupTermMemberIdsMap(int sessionId) throws RemoteException {
         final ClientSession clientSession = clientSessions.get(sessionId);
@@ -184,9 +177,7 @@ public class MusicServerImpl extends UnicastRemoteObject
         return groupTermMembersMap;
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServer#getEntities(int, java.lang.Class, java.util.Collection) 
-     */
+    @Override
     public <T> Collection<T> getEntities(
             int sessionId, Class<T> entityClass, 
             Collection<Criterion> criterionColl) 
@@ -205,27 +196,21 @@ public class MusicServerImpl extends UnicastRemoteObject
         return entities;
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServer#getMusicPieces(int)
-     */
-    public Collection<Piece> getMusicPieces(int sessionId) 
+    @Override
+    public Collection<Piece> getMusicPieces(int sessionId)
             throws RemoteException {
         final DatabaseInstance dbi = databaseInstances.get(clientSessions.get(sessionId).getDatabaseName());
         return Helper.getMusicPieces(dbi.getSessionFactory());
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServer#getSummaryRecords(int, Collection)
-     */
+    @Override
     public Collection<SummaryRecord> getSummaryRecords(int sessionId, Collection<Integer> musicianIdList) throws RemoteException {
         final ClientSession clientSession = clientSessions.get(sessionId);
         final DatabaseInstance dbi = databaseInstances.get(clientSession.getDatabaseName());
         return Helper.getSummaryRecords(dbi, musicianIdList);
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServer#getSummaryRecords(int, java.util.Collection, java.util.Collection, boolean)
-     */
+    @Override
     public Collection<SummaryRecord> getSummaryRecords(int sessionId, Collection<Integer> groupIdList,
             Collection<Integer> instrumentIdList, boolean currentTermOnly) throws RemoteException {
         final ClientSession clientSession = clientSessions.get(sessionId);
@@ -234,9 +219,7 @@ public class MusicServerImpl extends UnicastRemoteObject
                 dbi.getSessionFactory(), groupIdList, instrumentIdList, currentTermOnly));
     }
     
-    /**
-     * @see com.dbschools.music.server.MusicServer#getCommentCounts(int)
-     */
+    @Override
     public Map<Integer, Integer> getCommentCounts(int sessionId) throws RemoteException, SQLException {
         final ClientSession clientSession = clientSessions.get(sessionId);
         final Session session = getHibernateSession(clientSession);
@@ -274,9 +257,7 @@ public class MusicServerImpl extends UnicastRemoteObject
         session.save(new Log(typeCode, clientSession.getUser().getLogin(), details));
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServer#saveMusicianMusicGroups(int, int, Collection)
-     */
+    @Override
     public void saveMusicianMusicGroups(int sessionId, int schoolYear,
             Collection<MusicianGroup> musicianGroups)
             throws RemoteException {
@@ -313,19 +294,15 @@ public class MusicServerImpl extends UnicastRemoteObject
         session.close();
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServer#saveNewMusicianAndMusicGroups(int, int, com.dbschools.music.orm.Musician, Collection)
-     */
-    public void saveNewMusicianAndMusicGroups(int sessionId, int termId, Musician musician, 
+    @Override
+    public void saveNewMusicianAndMusicGroups(int sessionId, int termId, Musician musician,
             Collection<MusicianGroup> allGroupsForThisMusician) throws RemoteException {
        saveObject(sessionId, musician);
        saveMusicianMusicGroups(sessionId, termId, 
                allGroupsForThisMusician);
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServer#saveObject(int, java.lang.Object)
-     */
+    @Override
     public Serializable saveObject(int sessionId, Object object) throws RemoteException {
         final ClientSession clientSession = clientSessions.get(sessionId);
         final DatabaseInstance dbi = databaseInstances.get(clientSession.getDatabaseName());
@@ -354,9 +331,7 @@ public class MusicServerImpl extends UnicastRemoteObject
         }
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServer#updateObject(int, java.lang.Object)
-     */
+    @Override
     public void updateObject(int sessionId, Object object) throws RemoteException {
         final ClientSession clientSession = clientSessions.get(sessionId);
         final DatabaseInstance dbi = databaseInstances.get(clientSession.getDatabaseName());
@@ -371,9 +346,7 @@ public class MusicServerImpl extends UnicastRemoteObject
         processSummaryRecordDependency(object, dbi);
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServer#deleteObject(int, java.lang.Object)
-     */
+    @Override
     public void deleteObject(int sessionId, Object object)
             throws RemoteException {
         final ClientSession clientSession = clientSessions.get(sessionId);
@@ -411,6 +384,7 @@ public class MusicServerImpl extends UnicastRemoteObject
         return databaseInstances.get(clientSession.getDatabaseName()).getSessionFactory().openSession();
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public ClientSession logIn(String databaseName, String userName, String password) 
             throws RemoteException, DatabaseAccessException, NoSuchUserPasswordException {
@@ -442,6 +416,7 @@ public class MusicServerImpl extends UnicastRemoteObject
         }
     }
     
+    @Override
     public void logOut(int sessionId) throws RemoteException {
         ClientSession clientSession = clientSessions.get(sessionId);
         final Session session = getHibernateSession(clientSession);
@@ -453,6 +428,7 @@ public class MusicServerImpl extends UnicastRemoteObject
         logger.info("User " +  clientSession.getUser().getLogin() + " logging out"); 
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public Collection<Integer> getSchoolYears(int sessionId) throws RemoteException {
         final ClientSession clientSession = clientSessions.get(sessionId);
@@ -462,16 +438,12 @@ public class MusicServerImpl extends UnicastRemoteObject
         return terms;
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServerImplMBean#getNumLogins()
-     */
+    @Override
     public int getNumLogins() {
         return numLogins;
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServerImplMBean#getLoggedInUserNames()
-     */
+    @Override
     public Iterable<String> getLoggedInUserNames() {
         Collection<String> names = new ArrayList<String>();
         for (ClientSession cs : clientSessions.values()) {
@@ -481,23 +453,17 @@ public class MusicServerImpl extends UnicastRemoteObject
         return names;
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServerImplMBean#getNumAssessments()
-     */
+    @Override
     public int getNumAssessments() {
         return numAssessments;
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServerImplMBean#getNumGroupAssignments()
-     */
+    @Override
     public int getNumGroupAssignments() {
         return numGroupAssignments;
     }
 
-    /**
-     * @see com.dbschools.music.server.MusicServerImplMBean#getLastLoginDate()
-     */
+    @Override
     public Date getLastLoginDate() {
         return lastLoginDate;
     }
