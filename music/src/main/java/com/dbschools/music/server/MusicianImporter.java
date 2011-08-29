@@ -3,7 +3,8 @@ package com.dbschools.music.server;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import static org.apache.commons.lang.StringUtils.isNumeric;
+
 import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -23,8 +24,7 @@ class MusicianImporter {
     private final static Logger log = Logger.getLogger(MusicianImporter.class);
     
     public void importMusicians(MusicianImportBatch mib, final Session session) {
-        String[] lines = mib.getImportText();
-        for (String line : lines) {
+        for (String line : mib.getImportText()) {
             log.info(line);
             String[] fields = line.split("\t");
             if (fields.length == 5 || fields.length == 10) {
@@ -38,13 +38,12 @@ class MusicianImporter {
         }
     }
 
-    private void processMusician(Session session, int groupId, int schoolYear, 
-            String[] fields, int offset) {
-        final String f = fields[offset + 0];
-        if (StringUtils.isNumeric(f)) {
+    private void processMusician(Session session, int groupId, int schoolYear, String[] fields, int offset) {
+        final String studentIdStr = fields[offset + 0];
+        if (isNumeric(studentIdStr)) {
             final Musician musician;
             Instrument instrument = getUnassignedInstrument(session);
-            Long studentId = Long.parseLong(f);
+            final Long studentId = Long.parseLong(studentIdStr);
             Query query = session.createQuery("from Musician where studentId = :id");
             query.setLong("id", studentId);
             List<Musician> list = query.list();
@@ -55,38 +54,50 @@ class MusicianImporter {
                     instrument = mgs.iterator().next().getInstrument();
                 }
             } else {
-                musician = new Musician();
-                musician.setStudentId(studentId);
-                musician.setLastName(fields[offset + 1]);
-                musician.setFirstName(fields[offset + 2]);
-                musician.setGraduationYear(TermUtils.gradeAsGraduationYear(
-                        Integer.parseInt(fields[offset + 3]), schoolYear));
-                musician.setSex(fields[offset + 4]);
-                session.save(musician);
+                musician = createMusician(session, schoolYear, studentId, fields, offset);
             }
             Group group = (Group) session.load(Group.class, groupId);
-            
-            Query mgQuery = session.createQuery("from MusicianGroup where group = :group " +
-                    "and musician = :musician " +
-                    "and schoolYear = :schoolYear");
-            mgQuery.setParameter("group", group);
-            mgQuery.setParameter("musician", musician);
-            mgQuery.setParameter("schoolYear", schoolYear);
-            log.info("looking for " + mgQuery);
-            List mgList = mgQuery.list();
-            if (mgList.isEmpty()) {
-                MusicianGroup mg = new MusicianGroup();
-                mg.setGroup(group);
-                mg.setInstrument(instrument);
-                mg.setMusician(musician);
-                log.info("termId: " + schoolYear);
-                mg.setSchoolYear(schoolYear);
-                log.info("saving " + mg);
-                session.save(mg);
+
+            if (! hasAssignment(session, schoolYear, musician, group)) {
+                makeAssignment(session, schoolYear, musician, group, instrument);
             }
         } else {
-            log.warn(f + " is not a valid student ID");
+            log.warn(studentIdStr + " is not a valid student ID");
         }
+    }
+
+    private Musician createMusician(Session session, int schoolYear, Long studentId, String[] fields, int offset) {
+        Musician musician = new Musician();
+        musician.setStudentId(studentId);
+        musician.setLastName(fields[offset + 1]);
+        musician.setFirstName(fields[offset + 2]);
+        musician.setGraduationYear(TermUtils.gradeAsGraduationYear(
+                Integer.parseInt(fields[offset + 3]), schoolYear));
+        musician.setSex(fields[offset + 4]);
+        session.save(musician);
+        return musician;
+    }
+
+    private boolean hasAssignment(Session session, int schoolYear, Musician musician, Group group) {
+        Query mgQuery = session.createQuery("from MusicianGroup where group = :group " +
+                "and musician = :musician and schoolYear = :schoolYear");
+        mgQuery.setParameter("group", group);
+        mgQuery.setParameter("musician", musician);
+        mgQuery.setParameter("schoolYear", schoolYear);
+        log.info("looking for " + mgQuery);
+        return ! mgQuery.list().isEmpty();
+    }
+
+    private void makeAssignment(Session session, int schoolYear, Musician musician, Group group,
+            Instrument instrument) {
+        MusicianGroup mg = new MusicianGroup();
+        mg.setGroup(group);
+        mg.setInstrument(instrument);
+        mg.setMusician(musician);
+        log.info("termId: " + schoolYear);
+        mg.setSchoolYear(schoolYear);
+        log.info("saving " + mg);
+        session.save(mg);
     }
 
     private Instrument getUnassignedInstrument(Session session) {
