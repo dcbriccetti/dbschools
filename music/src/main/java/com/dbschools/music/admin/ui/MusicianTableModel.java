@@ -144,25 +144,10 @@ public class MusicianTableModel extends AbstractGroupAndInstrumentFilteredTableM
         return filteredMusicians.get(rowIndex);
     }
 
+    @Override
     public void refresh() {
         reloadServerData(true);
         load(true);
-    }
-
-    public void deleteRows(int[] selectedRows) {
-        final Collection<Integer> deleteMusicianIds = new ArrayList<Integer>(selectedRows.length);
-        for (int i = selectedRows.length - 1; i >= 0; --i) {
-            final int deleteRowIndex = selectedRows[i];
-            deleteMusicianIds.add(filteredMusicians.get(deleteRowIndex).getId());
-            filteredMusicians.remove(deleteRowIndex);
-        }
-        Iterator<Musician> musIt = musicians.iterator();
-        while (musIt.hasNext()) {
-            Musician musician = musIt.next();
-            if (deleteMusicianIds.contains(musician.getId())) {
-                musIt.remove();
-            }
-        }
     }
 
     public void copyToClipboard() {
