@@ -1,9 +1,5 @@
 package com.dbschools.music.admin.ui;
 
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
-
-import com.dbschools.gui.JwsClipboardUtil;
 import com.dbschools.music.orm.Group;
 
 /**
@@ -27,86 +23,15 @@ public class ImportDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jDialog1 = new javax.swing.JDialog();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        textPane1 = new javax.swing.JTextPane();
-        cancelButton1 = new javax.swing.JButton();
-        importButton1 = new javax.swing.JButton();
-        pasteButton1 = new javax.swing.JButton();
-        groupCombo1 = new javax.swing.JComboBox();
-        jLabel2 = new javax.swing.JLabel();
         cancelButton = new javax.swing.JButton();
         importButton = new javax.swing.JButton();
-        pasteButton = new javax.swing.JButton();
         groupCombo = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         textPane = new javax.swing.JTextPane();
         jLabel1 = new javax.swing.JLabel();
 
-        jScrollPane2.setViewportView(textPane1);
-
-        cancelButton1.setText("Cancel");
-        cancelButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButton1ActionPerformed(evt);
-            }
-        });
-
-        importButton1.setText("Import");
-        importButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                importButton1ActionPerformed(evt);
-            }
-        });
-
-        pasteButton1.setText("Paste");
-        pasteButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pasteButton1ActionPerformed(evt);
-            }
-        });
-
-        jLabel2.setText("Tab-separated ID, last name, first name, grade, sex. One or two columns. ");
-
-        javax.swing.GroupLayout jDialog1Layout = new javax.swing.GroupLayout(jDialog1.getContentPane());
-        jDialog1.getContentPane().setLayout(jDialog1Layout);
-        jDialog1Layout.setHorizontalGroup(
-            jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jDialog1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jDialog1Layout.createSequentialGroup()
-                        .addComponent(groupCombo1, javax.swing.GroupLayout.PREFERRED_SIZE, 254, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(importButton1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cancelButton1)
-                        .addGap(18, 18, 18)
-                        .addComponent(pasteButton1)
-                        .addGap(55, 55, 55))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jDialog1Layout.createSequentialGroup()
-                        .addGroup(jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE))
-                        .addContainerGap())))
-        );
-        jDialog1Layout.setVerticalGroup(
-            jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jDialog1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel2)
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(importButton1)
-                    .addComponent(cancelButton1)
-                    .addComponent(pasteButton1)
-                    .addComponent(groupCombo1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-        );
-
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Import Musicians");
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -119,13 +44,6 @@ public class ImportDialog extends javax.swing.JDialog {
         importButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 importButtonActionPerformed(evt);
-            }
-        });
-
-        pasteButton.setText("Paste");
-        pasteButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pasteButtonActionPerformed(evt);
             }
         });
 
@@ -143,9 +61,7 @@ public class ImportDialog extends javax.swing.JDialog {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 563, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(groupCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 254, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 48, Short.MAX_VALUE)
-                        .addComponent(pasteButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 131, Short.MAX_VALUE)
                         .addComponent(importButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cancelButton))
@@ -155,25 +71,20 @@ public class ImportDialog extends javax.swing.JDialog {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(20, 20, 20)
+                .addContainerGap()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)
-                    .addComponent(importButton)
-                    .addComponent(pasteButton)
-                    .addComponent(groupCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(groupCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(importButton))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void pasteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pasteButtonActionPerformed
-        pasteIntoTextPane();
-    }//GEN-LAST:event_pasteButtonActionPerformed
 
     private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
         dispose();
@@ -183,18 +94,6 @@ public class ImportDialog extends javax.swing.JDialog {
         canceled = true;
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
-
-    private void cancelButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cancelButton1ActionPerformed
-
-    private void importButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_importButton1ActionPerformed
-
-    private void pasteButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pasteButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_pasteButton1ActionPerformed
     
     public void setGroups(Iterable<Group> groups) {
         groupCombo.removeAllItems();
@@ -207,16 +106,6 @@ public class ImportDialog extends javax.swing.JDialog {
         return (Group) groupCombo.getSelectedItem();
     }
     
-    private void pasteIntoTextPane() {
-        try {
-            textPane.setText(JwsClipboardUtil.getStringFromJwsOrSystemClipboard());
-        } catch (UnsupportedFlavorException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    
     public String getText() {
         return textPane.getText();
     }
@@ -225,33 +114,13 @@ public class ImportDialog extends javax.swing.JDialog {
         return canceled;
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ImportDialog(new javax.swing.JFrame(), true).setVisible(true);
-            }
-        });
-    }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
-    private javax.swing.JButton cancelButton1;
     private javax.swing.JComboBox groupCombo;
-    private javax.swing.JComboBox groupCombo1;
     private javax.swing.JButton importButton;
-    private javax.swing.JButton importButton1;
-    private javax.swing.JDialog jDialog1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JButton pasteButton;
-    private javax.swing.JButton pasteButton1;
     private javax.swing.JTextPane textPane;
-    private javax.swing.JTextPane textPane1;
     // End of variables declaration//GEN-END:variables
     
 }
