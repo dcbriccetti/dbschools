@@ -56,6 +56,7 @@ import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.text.DateFormatter;
 
+import com.google.common.base.Nullable;
 import org.apache.log4j.Logger;
 
 import com.dbschools.gui.CustomDialog;
@@ -94,7 +95,7 @@ public final class AssessmentRecordDialog extends CustomDialog {
 
     public AssessmentRecordDialog(RemoteDao remoteDao, 
             Musician musician, Collection<Assessment> assessments,
-            Assessment assessment) {
+            @Nullable Assessment assessment) {
         super(null, true);
         this.remoteDao = remoteDao;
         this.musician = musician;

@@ -9,6 +9,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 
 import com.dbschools.music.orm.PredefinedComment;
+import com.google.common.base.Nullable;
 
 /**
  * Manager for the details of the comments.
@@ -22,8 +23,7 @@ final class CommentManager {
         this.remoteDao = remoteDao;
     }
 
-    void setUpComments(Collection<PredefinedComment> selectedComments,
-            JPanel scrollableCommentsPanel) {
+    void setUpComments(@Nullable Collection<PredefinedComment> selectedComments, JPanel scrollableCommentsPanel) {
         final Collection<PredefinedComment> predefinedComments = remoteDao.getComments();
         int row = 0;
         commentCheckBoxes = new ArrayList<CommentCheckBox>();
@@ -41,12 +41,9 @@ final class CommentManager {
         }
     }
 
-    private boolean isCommentSelected (
-            Collection<PredefinedComment> selectedComments, PredefinedComment predefinedComment) {
-        if (selectedComments != null) {
-            return selectedComments.contains(predefinedComment);
-        }
-        return false;
+    private boolean isCommentSelected(@Nullable Collection<PredefinedComment> selectedComments,
+            PredefinedComment predefinedComment) {
+        return selectedComments != null && selectedComments.contains(predefinedComment);
     }
 
     Collection<PredefinedComment> getSelectedComments() {

@@ -4,6 +4,7 @@ import scala.collection.JavaConversions._
 import java.util.Collection
 import java.util.TreeSet
 import com.dbschools.music.orm.{Assessment, Instrument, NoNextPieceIndicator, Piece, Subinstrument}
+import com.google.common.base.Nullable
 
 /**
  * NextPieceFinder finds the next piece on which a musician is to be tested.
@@ -23,7 +24,8 @@ final class NextPieceFinder(piecesCol: Collection[Piece]) {
    * @param subinstrument a subinstrument, or null if subinstrument is not to be considered
    * @return the next piece
    */
-  def nextPiece(assessments: Collection[Assessment], instrument: Instrument, subinstrument: Subinstrument): Piece =
+  def nextPiece(assessments: Collection[Assessment], @Nullable instrument: Instrument,
+      @Nullable subinstrument: Subinstrument): Piece =
     findHighestPass(assessments, instrument, subinstrument) match {
       case None => pieces.first
       case Some(highestPassedPiece) =>
