@@ -3,19 +3,15 @@ package com.dbschools.music.server
 import scala.collection.JavaConversions._
 import java.io.Serializable
 import java.lang.management.ManagementFactory
-import java.rmi.RemoteException
 import java.rmi.registry.LocateRegistry
 import java.rmi.registry.Registry
 import java.rmi.server.UnicastRemoteObject
-import java.util.ArrayList
-import java.util.Arrays
-import java.util.Collection
+import java.util.{ArrayList,Arrays,Collection,Collections}
 import java.util.Date
-import java.util.HashMap
+import java.util.{HashMap,HashSet}
 import java.util.List
 import java.util.Map
 import java.util.Set
-import java.util.TreeSet
 import java.util.concurrent.ConcurrentHashMap
 import javax.management.ObjectName
 import org.apache.commons.lang.StringUtils
@@ -40,7 +36,6 @@ import com.dbschools.music.orm.MusicianGroup
 import com.dbschools.music.orm.Piece
 import com.dbschools.music.orm.User
 import java.math.BigInteger
-import java.util.HashSet
 
 /**
  * A server implementation for the music application.
@@ -96,10 +91,8 @@ class MusicServerImpl(databases: Map[String, SessionFactory], rmiRegistryPort: I
     Helper.getMusicians(currentYearOnly, session)
   }
 
-  def getAssessmentInfo(sessionId: Int,
-      musicianIds: Collection[java.lang.Integer]): Collection[Musician] = {
-    val musicians: Collection[Musician] = new TreeSet[Musician]
-    if (musicianIds != null && musicianIds.size > 0) {
+  def getAssessmentInfo(sessionId: Int, musicianIds: Collection[java.lang.Integer]): Collection[Musician] = {
+    if (musicianIds.size > 0) {
       val clientSession = clientSessions.get(sessionId)
       val session = getHibernateSession(clientSession)
       val criteria = session.createCriteria(classOf[Musician])
@@ -107,10 +100,12 @@ class MusicServerImpl(databases: Map[String, SessionFactory], rmiRegistryPort: I
       criteria.setFetchMode("rejections", FetchMode.JOIN)
       criteria.setFetchMode("musicianGroups", FetchMode.JOIN)
       criteria.add(Restrictions.in("id", musicianIds))
-      musicians.addAll(criteria.list.asInstanceOf[List[Musician]])
+      val musicians = criteria.list.asInstanceOf[List[Musician]]
       session.close
+      asJavaList(musicians.toList.sortWith((m1,m2) => m1.compareTo(m2) > 0))
+    } else {
+      Collections.emptyList();
     }
-    musicians
   }
 
   def getGroupTermMemberIdsMap(sessionId: Int): Map[GroupTerm, Set[java.lang.Integer]] = {
@@ -381,5 +376,5 @@ class MusicServerImpl(databases: Map[String, SessionFactory], rmiRegistryPort: I
 }
 
 object MusicServerImpl {
-  private val serialVersionUID: Long = -3517652103010873651L
+  private val serialVersionUID = 1L
 }
