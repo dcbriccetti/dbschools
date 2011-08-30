@@ -96,7 +96,7 @@ public final class StudentDetailsPanel extends javax.swing.JPanel {
 
             if (details instanceof Assessment) {
                 final Assessment assessment = (Assessment) details;
-                if (assessment.getMusician().getId() == musician.getId()) {
+                if (assessment.getMusician().getId().equals(musician.getId())) {
                     if ((t == SAVE_OBJECT || t == UPDATE_OBJECT)) {
                         assessmentsModel.addOrUpdate(assessment);
                     } else if (t == DELETE_OBJECT) {
@@ -105,7 +105,7 @@ public final class StudentDetailsPanel extends javax.swing.JPanel {
                 }
             } else if (details instanceof Rejection) {
                 final Rejection rejection = (Rejection) details;
-                if (rejection.getMusician().getId() == musician.getId()) {
+                if (rejection.getMusician().getId().equals(musician.getId())) {
                     if (t == SAVE_OBJECT) {
                         rejectionsModel.addRejection(rejection);
                         showLastRejectionRow();
