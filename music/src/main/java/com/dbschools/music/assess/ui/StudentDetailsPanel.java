@@ -20,8 +20,6 @@
 
 package com.dbschools.music.assess.ui;
 
-import com.dbschools.music.dao.RemoteDao;
-import com.dbschools.music.decortrs.AssessmentDecorator;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -41,6 +39,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import com.dbschools.music.assess.TestingReport;
+import com.dbschools.music.dao.RemoteDao;
 import com.dbschools.gui.ErrorHandler;
 import com.dbschools.gui.JwsFileSaveUtil;
 import com.dbschools.gui.PromptUtils;
@@ -49,7 +49,6 @@ import com.dbschools.gui.TableUtil;
 import com.dbschools.gui.TextUtil;
 import com.dbschools.music.NonPersistentPreferences;
 import com.dbschools.music.TermUtils;
-import com.dbschools.music.decortrs.RejectionDecorator;
 import com.dbschools.music.events.Event;
 import com.dbschools.music.events.EventObserver;
 import com.dbschools.music.events.TypeCode;
@@ -62,11 +61,6 @@ import com.dbschools.music.orm.MusicianGroup;
 import com.dbschools.music.orm.Rejection;
 import com.dbschools.music.orm.RejectionReason;
 import com.dbschools.music.orm.User;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.TreeSet;
-import org.antlr.stringtemplate.StringTemplate;
-import org.antlr.stringtemplate.StringTemplateGroup;
 import org.apache.log4j.Logger;
 
 /**
@@ -500,41 +494,11 @@ public final class StudentDetailsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_testButtonActionPerformed
 
     private void reportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reportButtonActionPerformed
-        StringTemplateGroup group = new StringTemplateGroup("myGroup");
-        StringTemplate report = group.getInstanceOf("templates/report-html");
-        final Musician maInfo = 
-                remoteDao.getMusicianAndAssessmentInfo(musician.getId());
-        report.setAttribute("musician", maInfo);
-        report.setAttribute("groupMemberships", groupMembershipsLabel.getText());
-        final DateFormat df = new SimpleDateFormat(com.dbschools.music.decortrs.Constants.DATE_TIME_FORMAT);
-        report.setAttribute("datetime", df.format(new Date()));
-        report.setAttribute("keywordCounts", assessmentsModel.getKeywordCountsAsString());
-        prepareReportAssessments(assessmentsModel.getSelectedAssessments(), report);
-        prepareReportRejections(maInfo.getRejections(), report);
-        final String reportString = report.toString();
-        JwsFileSaveUtil.saveStringToFile(this,reportString, 
-                new String[]{"html"}, "Testing-Report.html");
+        final String reportString = TestingReport.create(remoteDao.getMusicianAndAssessmentInfo(musician.getId()),
+                groupMembershipsLabel.getText(), assessmentsModel.getKeywordCountsAsString(),
+                assessmentsModel.getSelectedAssessments());
+        JwsFileSaveUtil.saveStringToFile(this, reportString, new String[]{"html"}, "Testing-Report.html");
 }//GEN-LAST:event_reportButtonActionPerformed
-
-    private void prepareReportAssessments(final Collection<Assessment> assessments, StringTemplate report) {
-        List<AssessmentDecorator> adecs = new 
-                ArrayList<AssessmentDecorator>(assessments.size());
-        final TreeSet<Assessment> sortedAssessments = new TreeSet<Assessment>(assessments);
-        for (Assessment as : sortedAssessments) {
-            adecs.add(new AssessmentDecorator(as));
-        }
-        report.setAttribute("assessments", adecs);
-    }
-
-    private void prepareReportRejections(final Collection<Rejection> rejections, StringTemplate report) {
-        List<RejectionDecorator> rdecs = new 
-                ArrayList<RejectionDecorator>(rejections.size());
-        final TreeSet<Rejection> sortedRejections = new TreeSet<Rejection>(rejections);
-        for (Rejection rej : sortedRejections) {
-            rdecs.add(new RejectionDecorator(rej));
-        }
-        report.setAttribute("rejections", rdecs);
-    }
 
     private void processSelectedStudent() {
         enableStudentActionButtons(false);
