@@ -64,7 +64,8 @@ public class Helper {
     static Collection<Integer> extractMusicianIds(Collection<MusicianGroup> musicianGroups) {
         Collection<Integer> musicianIdList = new HashSet<Integer>(musicianGroups.size());
         for (MusicianGroup mg : musicianGroups) {
-            musicianIdList.add(mg.getMusician().getId());
+            final Integer id = mg.getMusician().getId();
+            if (id != null) musicianIdList.add(id);
         }
         return musicianIdList;
     }
