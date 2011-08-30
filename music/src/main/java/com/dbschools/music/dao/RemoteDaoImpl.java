@@ -267,7 +267,9 @@ public final class RemoteDaoImpl implements RemoteDao {
     public Collection<Group> getGroups() {
         if (groups == null) {
             try {
-                groups = musicServer.getEntities(sessionId, Group.class, null);
+                List<Group> entities = new ArrayList<Group>(musicServer.getEntities(sessionId, Group.class, null));
+                Collections.sort(entities);
+                groups = entities;
             } catch (RemoteException e) {
                 log.error(e);
                 throw new RuntimeException(e);
