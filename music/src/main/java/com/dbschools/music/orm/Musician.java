@@ -70,9 +70,7 @@ public final class Musician extends AbstractPersistentObject implements Comparab
         this.sex = sex;
     }
 
-    /**
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
+    @Override
     public int compareTo(final Musician other) {
         int c = lastName.compareTo(other.lastName);
         return c == 0 ? firstName.compareTo(other.firstName) : c;
