@@ -120,7 +120,6 @@ public interface MusicServer extends Remote {
     /**
      * Gets all summary records for the musicians specified.
      * @param sessionId
-     * @param refresh TODO
      * @param musicianIdList TODO
      * @return summary records
      * @throws RemoteException
@@ -131,7 +130,6 @@ public interface MusicServer extends Remote {
      * Gets all summary records for musicians in the specified list of groups
      * on the specified list of instruments.
      * @param sessionId
-     * @param refresh if <code>true</code> ignores cached records
      * @param groupIdList a list of group IDs, or null if not limiting on groups
      * @param instrumentIdList a list of instrument IDs, or null if not limiting on instruments
      * @param currentTermOnly TODO
