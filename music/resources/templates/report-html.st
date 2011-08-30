@@ -22,7 +22,7 @@ recording feedback and whether the student passed the test.</p>
 <th>Date</th>
 <th>Tester</th>
 <th>Piece</th>
-<th>Passed</th>
+<th>Result</th>
 <th>Instrument</th>
 <th>Comments</th>
 </tr>
