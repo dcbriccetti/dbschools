@@ -226,9 +226,9 @@ class MusicServerImpl(databases: Map[String, SessionFactory], rmiRegistryPort: I
   def saveNewMusicianAndMusicGroups(sessionId: Int, termId: Int, musician: Musician,
       allGroupsForThisMusician: Collection[MusicianGroup]) {
     musicianWithStudentId(sessionId, musician.getStudentId.longValue()) match {
-      case Some(musician) =>
+      case Some(existingMusician) =>
         logger.warn("Musician with that student ID already exists. Ignoring musician fields and only saving group assignments.")
-        allGroupsForThisMusician.foreach(mg => mg.setMusician(musician))
+        allGroupsForThisMusician.foreach(mg => mg.setMusician(existingMusician))
       case _ => saveObject(sessionId, musician)
     }
     saveMusicianMusicGroups(sessionId, termId, allGroupsForThisMusician)
