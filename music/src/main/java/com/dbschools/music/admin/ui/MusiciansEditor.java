@@ -378,8 +378,7 @@ public class MusiciansEditor extends javax.swing.JPanel {
     private void editMusician(MusicianEditorDialog dialog, Musician musician) {
         dialog.setSchoolYear(selectedTerm);
         dialog.setMusician(musician);
-        Collection<GroupAndInstrument> giList = createGroupAndInstrumentList(musician);
-        dialog.setGroupAndInstrumentAssignments(giList);
+        dialog.setGroupAndInstrumentAssignments(createGroupAndInstrumentList(musician));
         dialog.setLocationRelativeTo(dialogParent);
         dialog.setVisible(true);
         if (dialog.isSaved()) {
@@ -403,36 +402,30 @@ public class MusiciansEditor extends javax.swing.JPanel {
     }
 
     private MusicianEditorDialog createEditDialog() {
-        MusicianEditorDialog dialog = new MusicianEditorDialog(
-                dialogParent, true);
+        MusicianEditorDialog dialog = new MusicianEditorDialog(dialogParent, true);
         dialog.setGroups(remoteDao.getGroups());
         dialog.setInstruments(remoteDao.getInstruments());
         return dialog;
     }
 
     private void saveMusician(MusicianEditorDialog dialog) {
-        final Iterable<GroupAndInstrument> gis = 
-                dialog.getGroupAndInstrumentAssignments();
-        final Musician mus = dialog.getMusician();
-        
+        final Musician musician = dialog.getMusician();
         final Set<MusicianGroup> newMgs = new HashSet<MusicianGroup>();
         
-        for (GroupAndInstrument gi : gis) {
+        for (GroupAndInstrument gi : dialog.getGroupAndInstrumentAssignments()) {
             final MusicianGroup newMg = new MusicianGroup();
-            newMg.setMusician(mus);
+            newMg.setMusician(musician);
             newMg.setGroup((Group) gi.getMusicGroup());
             newMg.setSchoolYear(selectedTerm);
             newMg.setInstrument((Instrument) gi.getMusicInstrument());
             newMg.setInstrumentRanking(0);
             newMgs.add(newMg);
         }
-        if (mus.getId() == null) {
-            remoteDao.saveNewMusicianAndMusicGroups(selectedTerm,
-                    mus, newMgs);
+        if (musician.getId() == null) {
+            remoteDao.saveNewMusicianAndMusicGroups(selectedTerm, musician, newMgs);
         } else {
-            remoteDao.update(mus);
-            remoteDao.saveMusicianMusicGroups(selectedTerm,
-                    mus.getId(), newMgs);
+            remoteDao.update(musician);
+            remoteDao.saveMusicianMusicGroups(selectedTerm, musician.getId(), newMgs);
         }
     }
 

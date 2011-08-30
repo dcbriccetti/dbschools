@@ -61,12 +61,13 @@ public interface MusicServer extends Remote {
     
     /**
      * Gets the musician with the specified ID.
+     *
      * @param sessionId
      * @param musicianId
      * @return musician
      * @throws RemoteException
      */
-    Musician getMusician(int sessionId, Integer musicianId) throws RemoteException;
+    Musician getMusician(int sessionId, int musicianId) throws RemoteException;
     
     /**
      * Gets all musicians.

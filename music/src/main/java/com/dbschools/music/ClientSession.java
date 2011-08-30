@@ -31,40 +31,41 @@ import com.dbschools.music.orm.User;
 
 public class ClientSession implements Serializable, Comparable<ClientSession> {
     private static final long serialVersionUID = -4169836336490640853L;
-	private final Integer sessionId;
-	private final User user;
+    private final Integer sessionId;
+    private final User user;
     private final String databaseName;
     private final BlockingQueue<Event> eventQueue = new LinkedBlockingQueue<Event>();
-    
-	public ClientSession(User user, String databaseName) {
+
+    public ClientSession(User user, String databaseName) {
         this.user = user;
         this.databaseName = databaseName;
-		sessionId = (int) (Math.random() * Integer.MAX_VALUE);
-	}
-	
-	@Override
+        sessionId = (int) (Math.random() * Integer.MAX_VALUE);
+    }
+
+    @Override
     public String toString() {
         return new ToStringBuilder(this).append("sessionId", sessionId).
                 append("user", user).toString();
-	}
+    }
 
-	public void enqueueEvent(Event event) {
-	    eventQueue.add(event);
-	}
-	
-	public Event dequeueEvent() throws InterruptedException {
-	    return eventQueue.take();
-	}
-	
-	public int compareTo(ClientSession o) {
-		return sessionId.compareTo(o.sessionId);
-	}
+    public void enqueueEvent(Event event) {
+        eventQueue.add(event);
+    }
 
-	public Integer getSessionId() {
-		return sessionId;
-	}
+    public Event dequeueEvent() throws InterruptedException {
+        return eventQueue.take();
+    }
 
-	public final User getUser() {
+    @Override
+    public int compareTo(ClientSession o) {
+        return sessionId.compareTo(o.sessionId);
+    }
+
+    public Integer getSessionId() {
+        return sessionId;
+    }
+
+    public final User getUser() {
         return user;
     }
 
