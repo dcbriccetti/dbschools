@@ -14,6 +14,7 @@ import com.dbschools.music.orm.Musician;
 import com.dbschools.music.orm.MusicianGroup;
 import com.dbschools.music.server.MusicServer;
 
+import java.awt.Component;
 import javax.swing.JOptionPane;
 
 /**
@@ -27,15 +28,17 @@ public final class CommonSwingDao implements RemoteSaver {
     private final MusicServer musicServer;
     private final int sessionId;
     private final ExecutorService exec = Executors.newFixedThreadPool(5);
-    
-    public CommonSwingDao(MusicServer musicServer, int sessionId) {
+    private final Component msgParent;
+
+    public CommonSwingDao(MusicServer musicServer, int sessionId, Component msgParent) {
+        this.msgParent = msgParent;
         if (musicServer == null) {
             throw new IllegalArgumentException("musicServer is null");
         }
+        this.musicServer = musicServer;
         if (sessionId == 0) {
             throw new IllegalArgumentException("sessionId is 0");
         }
-        this.musicServer = musicServer;
         this.sessionId = sessionId;
     }
 
@@ -57,7 +60,7 @@ public final class CommonSwingDao implements RemoteSaver {
                 } catch (Exception e) {
                     e.printStackTrace();
                     log.error(e);
-                    JOptionPane.showMessageDialog(null, e.getMessage(), "Error Saving",
+                    JOptionPane.showMessageDialog(msgParent, e.getMessage(), "Error Saving",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -73,7 +76,7 @@ public final class CommonSwingDao implements RemoteSaver {
                 } catch (RemoteException e) {
                     e.printStackTrace();
                     log.error(e);
-                    JOptionPane.showMessageDialog(null, e.getMessage(), "Error Saving",
+                    JOptionPane.showMessageDialog(msgParent, e.getMessage(), "Error Saving",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }});
@@ -88,7 +91,7 @@ public final class CommonSwingDao implements RemoteSaver {
                 } catch (RemoteException e) {
                     e.printStackTrace();
                     log.error(e);
-                    JOptionPane.showMessageDialog(null, e.getMessage(), "Error Saving",
+                    JOptionPane.showMessageDialog(msgParent, e.getMessage(), "Error Saving",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }});
@@ -105,7 +108,7 @@ public final class CommonSwingDao implements RemoteSaver {
                 } catch (Exception e) {
                     e.printStackTrace();
                     log.error(e);
-                    JOptionPane.showMessageDialog(null, e.getMessage(), "Error Saving",
+                    JOptionPane.showMessageDialog(msgParent, e.getMessage(), "Error Saving",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }});
@@ -122,7 +125,7 @@ public final class CommonSwingDao implements RemoteSaver {
                 } catch (Exception e) {
                     e.printStackTrace();
                     log.error(e);
-                    JOptionPane.showMessageDialog(null, e.getMessage(), "Error Saving",
+                    JOptionPane.showMessageDialog(msgParent, e.getMessage(), "Error Saving",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }});

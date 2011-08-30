@@ -51,7 +51,7 @@ public abstract class AbstractMusicApp extends ClientApp {
                 final String passwordText = getPassword().trim();
                 rejectBadUserPass(userNameText, passwordText);
                 remoteDao = new RemoteDaoImpl(new MusicServerProxyFactory(
-                                        serverInfo.getServerName(), serverInfo.getRmiRegistryPort()));
+                        serverInfo.getServerName(), serverInfo.getRmiRegistryPort()), this);
                 remoteDao.logIn(serverInfo.getDatabaseName(), userNameText, passwordText);
                 setLoggedInUserName(userNameText);
                 setLoggedIn(true);
