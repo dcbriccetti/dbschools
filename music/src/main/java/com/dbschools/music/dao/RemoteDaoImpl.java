@@ -3,8 +3,10 @@ package com.dbschools.music.dao;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
+import java.awt.Component;
 import javax.swing.SwingUtilities;
 
+import com.dbschools.music.admin.ui.MusicianImportBatch;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -40,6 +42,7 @@ import java.util.*;
 public final class RemoteDaoImpl implements RemoteDao {
     private static final Logger log = Logger.getLogger(RemoteDao.class);
     private final MusicServerProxyFactory musicServerProxyFactory;
+    private final Component msgParent;
     private MusicServer musicServer;
     private int sessionId;
     private User user;
@@ -59,9 +62,10 @@ public final class RemoteDaoImpl implements RemoteDao {
     private Multimap<Integer, MusicianGroup> musicianMusicGroupsMap;
     private final Set<EventObserver> eventObservers = 
         Collections.synchronizedSet(new HashSet<EventObserver>());
-    
-    public RemoteDaoImpl(final MusicServerProxyFactory musicServerProxyfactory) {
+
+    public RemoteDaoImpl(final MusicServerProxyFactory musicServerProxyfactory, final Component msgParent) {
         this.musicServerProxyFactory = musicServerProxyfactory;
+        this.msgParent = msgParent;
     }
 
     public boolean addEventObserver(EventObserver eventObserver) {
@@ -319,7 +323,7 @@ public final class RemoteDaoImpl implements RemoteDao {
             ClientSession clientSession = musicServer.logIn(databaseName, login, password);
             sessionId = clientSession.getSessionId();
             user = clientSession.getUser();
-            remoteSaver = new CommonSwingDao(musicServer, sessionId);
+            remoteSaver = new CommonSwingDao(musicServer, sessionId, msgParent);
             createEventNotifier();
         }
     }
@@ -328,20 +332,20 @@ public final class RemoteDaoImpl implements RemoteDao {
         new Thread(new Runnable() {
             public void run() {
                 try {
-                    while (true) { // TODO add a flag so we can stop
-                                    // normally
+                    while (true) { // TODO add a flag so we can stop normally
                         final Event event = musicServer.getNextEvent(sessionId);
                         log.debug(event);
-                        
-                        if (event.getDetails() instanceof Musician || event.getDetails() instanceof MusicianGroup
-                                || event.getDetails() instanceof Group) {
+
+                        final Object eventDetails = event.getDetails();
+                        if (eventDetails instanceof Musician || eventDetails instanceof MusicianGroup
+                                || eventDetails instanceof Group || eventDetails instanceof MusicianImportBatch) {
                             log.info("Clearing musician and group caches");
                             groups = null;
                             musicians = null;
                             musicianGroups = null;
                             musicianMusicGroupsMap = null;
                             groupTermMemberIdsMap = null;
-                        } else if (event.getDetails() instanceof Instrument) {
+                        } else if (eventDetails instanceof Instrument) {
                             instruments = null;
                         }
 
