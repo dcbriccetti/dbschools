@@ -20,9 +20,7 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.management.ObjectName
 import org.apache.commons.lang.StringUtils
 import org.apache.log4j.Logger
-import org.hibernate.FetchMode
-import org.hibernate.Session
-import org.hibernate.SessionFactory
+import org.hibernate.{FetchMode,Session,SessionFactory,Transaction}
 import org.hibernate.criterion.Criterion
 import org.hibernate.criterion.Restrictions
 import com.dbschools.DatabaseAccessException
@@ -78,29 +76,22 @@ class MusicServerImpl(databases: Map[String, SessionFactory], rmiRegistryPort: I
   var mbs = ManagementFactory.getPlatformMBeanServer
   mbs.registerMBean(this, new ObjectName("com.dbschools:type=MusicServer"))
 
-  def getMusician(sessionId: Int, musicianId: java.lang.Integer): Musician = {
-    val clientSession: ClientSession = clientSessions.get(sessionId)
+  def getMusician(sessionId: Int, musicianId: Int): Musician = {
+    val clientSession = clientSessions.get(sessionId)
     val session = getHibernateSession(clientSession)
-    var musician: Musician = session.load(classOf[Musician], musicianId).asInstanceOf[Musician]
+    val musician = session.load(classOf[Musician], musicianId).asInstanceOf[Musician]
     session.close
     musician
   }
 
   def getNextEvent(sessionId: Int): Event = {
-    val clientSession: ClientSession = clientSessions.get(sessionId)
-    try {
-      logger.debug("Fetching event from " + clientSession)
-      clientSession.dequeueEvent
-    }
-    catch {
-      case e: InterruptedException => {
-        throw new RemoteException(e.getMessage)
-      }
-    }
+    val clientSession = clientSessions.get(sessionId)
+    logger.debug("Fetching event from " + clientSession)
+    clientSession.dequeueEvent
   }
 
   def getMusicians(sessionId: Int, currentYearOnly: Boolean): Collection[Musician] = {
-    val clientSession: ClientSession = clientSessions.get(sessionId)
+    val clientSession = clientSessions.get(sessionId)
     val session = getHibernateSession(clientSession)
     Helper.getMusicians(currentYearOnly, session)
   }
@@ -175,7 +166,7 @@ class MusicServerImpl(databases: Map[String, SessionFactory], rmiRegistryPort: I
     val list = session.createSQLQuery(
       "select predefinedcomments_comment_id, count(predefinedcomments_comment_id) " +
       "from assessment_tag group by predefinedcomments_comment_id").list.asInstanceOf[List[Array[AnyRef]]]
-    var commentCounts = new HashMap[java.lang.Integer, java.lang.Integer]
+    val commentCounts = new HashMap[java.lang.Integer, java.lang.Integer]
     for (obj <- list) {
       commentCounts.put(obj(0).asInstanceOf[java.lang.Integer], (obj(1).asInstanceOf[BigInteger]).intValue)
     }
@@ -192,9 +183,7 @@ class MusicServerImpl(databases: Map[String, SessionFactory], rmiRegistryPort: I
 
   private def enqueueForAllClients(event: Event) {
     clientSessions synchronized {
-      for (cs <- clientSessions.values) {
-        cs.enqueueEvent(event)
-      }
+      clientSessions.values.foreach(_.enqueueEvent(event))
     }
   }
 
@@ -203,10 +192,8 @@ class MusicServerImpl(databases: Map[String, SessionFactory], rmiRegistryPort: I
   }
 
   def saveMusicianMusicGroups(sessionId: Int, schoolYear: Int, musicianGroups: Collection[MusicianGroup]) {
+    if (musicianGroups.isEmpty) return
     val clientSession = clientSessions.get(sessionId)
-    if (musicianGroups.isEmpty) {
-      return
-    }
     val session = getHibernateSession(clientSession)
     val transaction = session.beginTransaction
     session.createQuery("delete MusicianGroup where musician_id in (:musicianIdList) and schoolYear = :schoolYear").
@@ -228,9 +215,27 @@ class MusicServerImpl(databases: Map[String, SessionFactory], rmiRegistryPort: I
     session.close
   }
 
+  private def musicianWithStudentId(sessionId: Int, studentId: Long): Option[Musician] = {
+    val clientSession = clientSessions.get(sessionId)
+    val session = getHibernateSession(clientSession)
+    val query = session.createQuery("from Musician where studentId = :studentId")
+    query.setLong("studentId", studentId)
+    val result: Option[Musician] = query.list match {
+      case ml: List[Musician] if ! ml.isEmpty => Some(ml(0))
+      case _ => None
+    }
+    session.close
+    result
+  }
+
   def saveNewMusicianAndMusicGroups(sessionId: Int, termId: Int, musician: Musician,
       allGroupsForThisMusician: Collection[MusicianGroup]) {
-    saveObject(sessionId, musician)
+    musicianWithStudentId(sessionId, musician.getStudentId.longValue()) match {
+      case Some(musician) =>
+        logger.warn("Musician with that student ID already exists. Ignoring musician fields and only saving group assignments.")
+        allGroupsForThisMusician.foreach(mg => mg.setMusician(musician))
+      case _ => saveObject(sessionId, musician)
+    }
     saveMusicianMusicGroups(sessionId, termId, allGroupsForThisMusician)
   }
 
@@ -245,18 +250,14 @@ class MusicServerImpl(databases: Map[String, SessionFactory], rmiRegistryPort: I
     } else {
       key = session.save(obj)
     }
-    val typeCode = TypeCode.SAVE_OBJECT
-    log(clientSession, session, typeCode, obj.toString)
-    transaction.commit()
-    session.close
-    enqueueForAllClients(new Event(typeCode, obj))
-    processSummaryRecordDependency(obj, dbi)
+    completeSave(clientSession, session, TypeCode.SAVE_OBJECT, obj, transaction, dbi)
     key
   }
 
   private def processSummaryRecordDependency(obj : AnyRef, dbi: DatabaseInstance) {
-    if (obj.isInstanceOf[SummaryRecordDependency]) {
-      notifyChangedSummaryRecord(dbi, (obj.asInstanceOf[SummaryRecordDependency]).getMusician.getId)
+    obj match {
+      case srd: SummaryRecordDependency => notifyChangedSummaryRecord(dbi, srd.getMusician.getId)
+      case _ =>
     }
   }
 
@@ -264,9 +265,13 @@ class MusicServerImpl(databases: Map[String, SessionFactory], rmiRegistryPort: I
     val clientSession = clientSessions.get(sessionId)
     val dbi = databaseInstances.get(clientSession.getDatabaseName)
     val session = getHibernateSession(clientSession)
-    var transaction = session.beginTransaction
+    val transaction = session.beginTransaction
     session.update(obj)
-    val typeCode: TypeCode = TypeCode.UPDATE_OBJECT
+    completeSave(clientSession, session, TypeCode.UPDATE_OBJECT, obj, transaction, dbi)
+  }
+
+  private def completeSave(clientSession: ClientSession, session: Session, typeCode: TypeCode,
+      obj: AnyRef, transaction: Transaction, dbi: DatabaseInstance) {
     log(clientSession, session, typeCode, obj.toString)
     transaction.commit()
     session.close
@@ -282,10 +287,11 @@ class MusicServerImpl(databases: Map[String, SessionFactory], rmiRegistryPort: I
     val typeCode = TypeCode.DELETE_OBJECT
     val invalidSRMusicians = new HashSet[java.lang.Integer]
     obj match {
-      case objs: Iterable[AnyRef] =>
+      case objs: java.lang.Iterable[AnyRef] =>
         for (elem <- objs) {
           elem match {
             case srd: SummaryRecordDependency => invalidSRMusicians.add(srd.getMusician.getId)
+            case _ =>
           }
           deleteElement(session, elem, clientSession, typeCode, dbi)
         }
