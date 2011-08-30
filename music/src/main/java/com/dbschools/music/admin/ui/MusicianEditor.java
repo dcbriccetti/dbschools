@@ -1,5 +1,6 @@
 package com.dbschools.music.admin.ui;
 
+import com.dbschools.music.decortrs.YearDecorator;
 import com.dbschools.music.ui.NamedItemDisplayAdapter;
 import com.dbschools.music.*;
 import java.awt.Component;
@@ -103,6 +104,7 @@ public final class MusicianEditor extends javax.swing.JPanel {
     
     public void setSchoolYear(int schoolYear) {
         this.schoolYear = schoolYear;
+        year.setText(new YearDecorator(schoolYear).toString());
     }
 
     public Musician getMusician() {
@@ -203,13 +205,14 @@ public final class MusicianEditor extends javax.swing.JPanel {
         gradeTf = new JFormattedTextField();
         lastNameTf = new JTextField();
         jLabel7 = new JLabel();
+        year = new JLabel();
 
         setMaximumSize(new Dimension(800, 400));
 
         jLabel1.setFont(new Font("Lucida Grande", 1, 13));
         jLabel1.setText("Student ID:");
 
-        jLabel2.setFont(new Font("Lucida Grande", 1, 13)); // NOI18N
+        jLabel2.setFont(new Font("Lucida Grande", 1, 13));
         jLabel2.setText("First Name:");
 
         firstNameTf.setColumns(40);
@@ -255,8 +258,11 @@ public final class MusicianEditor extends javax.swing.JPanel {
         gradeTf.setColumns(2);
         gradeTf.setText("6");
 
-        jLabel7.setFont(new Font("Lucida Grande", 1, 13)); // NOI18N
+        jLabel7.setFont(new Font("Lucida Grande", 1, 13));
         jLabel7.setText("Last Name:");
+
+        year.setHorizontalAlignment(SwingConstants.RIGHT);
+        year.setText("year");
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -266,11 +272,13 @@ public final class MusicianEditor extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel1)
                                 .addGap(12, 12, 12)
-                                .addComponent(idTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                .addComponent(idTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(year, GroupLayout.PREFERRED_SIZE, 156, GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                                     .addComponent(jLabel3)
@@ -315,7 +323,8 @@ public final class MusicianEditor extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(idTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(idTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(year))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(lastNameTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -375,6 +384,7 @@ public final class MusicianEditor extends javax.swing.JPanel {
     private JLabel jLabel7;
     private JTextField lastNameTf;
     private JRadioButton maleRb;
+    private JLabel year;
     // End of variables declaration//GEN-END:variables
     
 }
