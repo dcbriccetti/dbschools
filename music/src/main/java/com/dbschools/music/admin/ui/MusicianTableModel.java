@@ -49,7 +49,9 @@ public class MusicianTableModel extends AbstractGroupAndInstrumentFilteredTableM
 
     @Override
     protected void processNotRefreshCausingEvent(Event event) {
-        if (event.getTypeCode() == TypeCode.DELETE_OBJECT && event.getDetails() instanceof Musician) {
+        TypeCode code = event.getTypeCode();
+        if (code == TypeCode.REMOVE_FROM_ALL_GROUPS ||
+                (code == TypeCode.DELETE_OBJECT && event.getDetails() instanceof Musician)) {
             filteredMusicians.remove(event.getDetails());
             musicians.remove(event.getDetails());
             fireChangeUnderSwing();

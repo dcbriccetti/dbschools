@@ -175,6 +175,15 @@ public interface MusicServer extends Remote {
             Collection<MusicianGroup> allGroupsForThisMusician) throws RemoteException;
 
     /**
+     * Removes musicians from all groups in the specified term.
+     * @param sessionId
+     * @param termId the term defining the scope of the operation
+     * @param musicians the musicians on which to operate
+     */
+    void removeMusiciansFromGroupsInTerm(int sessionId, int termId, Collection<Musician> musicians)
+            throws RemoteException;
+
+    /**
      * Saves an object.
      * @param sessionId
      * @param object

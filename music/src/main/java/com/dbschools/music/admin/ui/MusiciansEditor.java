@@ -167,19 +167,17 @@ public class MusiciansEditor extends javax.swing.JPanel {
             return namedItem;
         }
     }
-    
+
     private Action getMoveToGroupAction(String name) {
         return new AbstractAction(name) {
-                public void actionPerformed(ActionEvent e) {
-                final Group movingIntoMusicGroup = 
-                        (Group) ((MoveMenuItem) e.getSource()).getNamedItem();
-                musicianMover.moveSelectedToGroup(selectedTerm, 
-                        movingIntoMusicGroup,
+            public void actionPerformed(ActionEvent e) {
+                musicianMover.moveSelectedToGroup(selectedTerm,
+                        (Group) ((MoveMenuItem) e.getSource()).getNamedItem(),
                         createSelectedIterator(), false);
-                }
-            };
+            }
+        };
     }
-    
+
     private Action getMoveToInstrumentAction(String name) {
         return new AbstractAction(name) {
                 public void actionPerformed(ActionEvent e) {
@@ -192,12 +190,26 @@ public class MusiciansEditor extends javax.swing.JPanel {
         };
     }
     
+    private Action getDisconnectAction() {
+        AbstractAction action = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                musicianMover.disconnect(selectedTerm, createSelectedIterator());
+            }
+        };
+        action.putValue(Action.NAME, "Remove from all groups of the term");
+        action.putValue(Action.SHORT_DESCRIPTION,
+                "Removes the student from all groups in this term, while preserving any testing data and prior group placements");
+        return action;
+    }
+
     private void setUpPopupMenu() {
         JPopupMenu popup = new JPopupMenu();
         buildMoveToGroupMenu();
         popup.add(moveToGroupMenu);
         buildMoveToInstrumentMenu();
         popup.add(moveToInstrumentMenu);
+        popup.add(getDisconnectAction());
         popup.add(new JMenuItem(deleteAction));
         
         //Add listener to components that can bring up popup menus.

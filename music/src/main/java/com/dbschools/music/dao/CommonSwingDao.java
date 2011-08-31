@@ -130,4 +130,19 @@ public final class CommonSwingDao implements RemoteSaver {
                 }
             }});
     }
+
+    @Override
+    public void removeMusiciansFromGroupsInTerm(final int termId, final Collection<Musician> musicians) {
+        exec.execute(new Runnable() {
+            @Override public void run() {
+                try {
+                    musicServer.removeMusiciansFromGroupsInTerm(sessionId, termId, musicians);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    log.error(e);
+                    JOptionPane.showMessageDialog(msgParent, e.getMessage(), "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }});
+    }
 }

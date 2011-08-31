@@ -403,11 +403,14 @@ public final class RemoteDaoImpl implements RemoteDao {
         remoteSaver.saveMusicianMusicGroups(termId, 
                 musicianId, allGroupsForThisMusician);
     }
-
-    public void saveNewMusicianAndMusicGroups(final int termId, Musician musician, 
+    public void saveNewMusicianAndMusicGroups(final int termId, Musician musician,
             Set<MusicianGroup> allGroupsForThisMusician) {
         remoteSaver.saveNewMusicianAndMusicGroups(termId,
                 musician, allGroupsForThisMusician);
+    }
+
+    public void removeMusiciansFromGroupsInTerm(int termId, Collection<Musician> musicians) {
+        remoteSaver.removeMusiciansFromGroupsInTerm(termId, musicians);
     }
 
     public User getUser() {

@@ -36,6 +36,7 @@ import com.dbschools.music.orm.MusicianGroup
 import com.dbschools.music.orm.Piece
 import com.dbschools.music.orm.User
 import java.math.BigInteger
+import com.google.common.base.Nullable
 
 /**
  * A server implementation for the music application.
@@ -186,26 +187,56 @@ class MusicServerImpl(databases: Map[String, SessionFactory], rmiRegistryPort: I
     session.save(new Log(typeCode, clientSession.getUser.getLogin, details))
   }
 
+  private def disconnect(session: Session, schoolYear: Int, musicianIds: Collection[java.lang.Integer]) {
+    if (! musicianIds.isEmpty) {
+      session.createQuery("delete MusicianGroup where musician_id in (:musicianIdList) and schoolYear = :schoolYear").
+        setParameterList("musicianIdList", musicianIds).
+        setParameter("schoolYear", schoolYear).
+        executeUpdate
+    }
+  }
+
+  private def noteAssignment(clientSession: ClientSession, session: Session, typeCode: TypeCode, msg: String,
+                              @Nullable details: AnyRef) {
+    logger.info(msg)
+    log(clientSession, session, typeCode, msg)
+    numGroupAssignments += 1
+    enqueueForAllClients(new Event(typeCode, details))
+  }
+
   def saveMusicianMusicGroups(sessionId: Int, schoolYear: Int, musicianGroups: Collection[MusicianGroup]) {
-    if (musicianGroups.isEmpty) return
     val clientSession = clientSessions.get(sessionId)
     val session = getHibernateSession(clientSession)
     val transaction = session.beginTransaction
-    session.createQuery("delete MusicianGroup where musician_id in (:musicianIdList) and schoolYear = :schoolYear").
-      setParameterList("musicianIdList", Helper.extractMusicianIds(musicianGroups)).
-      setParameter("schoolYear", schoolYear).
-      executeUpdate
+    val musicianIds = Helper.extractMusicianIds(musicianGroups)
+    disconnect(session, schoolYear, musicianIds)
     val typeCode = TypeCode.SAVE_MUSICAN_MUSIC_GROUP
-    for (mmg <- musicianGroups) {
-      val msg = mmg.getMusician.getId + " " + mmg.getMusician.getStudentId + " " +
-        mmg.getMusician.getName + " put in " + new YearDecorator(mmg.getSchoolYear) + " " +
-        mmg.getGroup.getName + " on " + mmg.getInstrument.getName
-      logger.info(msg)
-      session.save(mmg)
-      log(clientSession, session, typeCode, msg)
-      numGroupAssignments += 1
-      enqueueForAllClients(new Event(typeCode, mmg))
+
+    for (musgrp <- musicianGroups) {
+      session.save(musgrp)
+      val msg = musgrp.getMusician.getId + " " + musgrp.getMusician.getStudentId + " " +
+        musgrp.getMusician.getName + " put in " + new YearDecorator(musgrp.getSchoolYear) + " " +
+        musgrp.getGroup.getName + " on " + musgrp.getInstrument.getName
+      noteAssignment(clientSession, session, typeCode, msg, musgrp)
     }
+
+    transaction.commit()
+    session.close
+  }
+
+  def removeMusiciansFromGroupsInTerm(sessionId: Int, schoolYear: Int, musicians: Collection[Musician]) {
+    val clientSession = clientSessions.get(sessionId)
+    val session = getHibernateSession(clientSession)
+    val transaction = session.beginTransaction
+    disconnect(session, schoolYear, musicians.map(_.getId))
+
+    val typeCode = TypeCode.REMOVE_FROM_ALL_GROUPS
+    musicians.foreach(musician => {
+      val msg = musician.getId + " " + musician.getStudentId + " " +
+        musician.getName + " removed from all groups in " + new YearDecorator(schoolYear)
+      noteAssignment(clientSession, session, typeCode, msg, musician)
+    })
+
     transaction.commit()
     session.close
   }

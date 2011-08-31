@@ -20,4 +20,5 @@ public interface RemoteSaver {
             int termId, int musicianId, Collection<MusicianGroup> allGroupsForThisMusician);
     void saveNewMusicianAndMusicGroups(final int termId,
             final Musician musician, final Set<MusicianGroup> allGroupsForThisMusician);
+    void removeMusiciansFromGroupsInTerm(int termId, Collection<Musician> musicians);
 }
