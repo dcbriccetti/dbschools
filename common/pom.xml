@@ -3,7 +3,7 @@
   <groupId>com.dbschools</groupId>
   <artifactId>common</artifactId>
   <name>DBSchools Common</name>
-  <version>1.3.5</version>
+  <version>1.3.6</version>
   <url>http://dbschools.com</url>
   <build>
     <plugins>
