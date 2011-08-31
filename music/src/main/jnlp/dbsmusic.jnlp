@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp
+  spec="1.0+"
+  codebase="http://dbschools.com/jws"
+  href="dbsmusic.jnlp">
+  <information>
+    <title>DBSchools Music Gradebook 2.4.0</title>
+    <vendor>Dave Briccetti Software LLC</vendor>
+    <homepage href="http://davebsoft.com"/>
+    <description>DBSchools Music Gradebook</description>
+    <description kind="short">Lets you test music students.</description>
+    <icon href="dbsmusic.png"/>
+  </information>
+  <shortcut>
+	<desktop/>
+	<menu submenu="DBSchools"/>
+  </shortcut>
+  <security><all-permissions/></security>
+  <resources>
+    <j2se version="1.6+"/>
+    <jar href="lib/dbschools-music-2.4.0-jar-with-dependencies.jar"/>
+  </resources>
+  <application-desc main-class="com.dbschools.music.Gradebook">
+    <argument>dbschools.com</argument>
+    <argument>1099</argument>
+    <argument>dbsmusic</argument>
+  </application-desc>
+</jnlp>
