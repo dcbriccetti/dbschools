@@ -43,15 +43,14 @@ public class MusicianTableModel extends AbstractGroupAndInstrumentFilteredTableM
 
     protected boolean causesRefresh(Event event) {
         final TypeCode t = event.getTypeCode();
-        return t == TypeCode.SAVE_MUSICAN_MUSIC_GROUP ||
+        return t  == TypeCode.REMOVE_FROM_ALL_GROUPS || t == TypeCode.SAVE_MUSICAN_MUSIC_GROUP ||
                 (t == TypeCode.SAVE_OBJECT && event.getDetails() instanceof MusicianImportBatch);
     }
 
     @Override
     protected void processNotRefreshCausingEvent(Event event) {
         TypeCode code = event.getTypeCode();
-        if (code == TypeCode.REMOVE_FROM_ALL_GROUPS ||
-                (code == TypeCode.DELETE_OBJECT && event.getDetails() instanceof Musician)) {
+        if (code == TypeCode.DELETE_OBJECT && event.getDetails() instanceof Musician) {
             filteredMusicians.remove(event.getDetails());
             musicians.remove(event.getDetails());
             fireChangeUnderSwing();
