@@ -12,8 +12,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 
@@ -29,6 +27,7 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeModel;
 
 import org.apache.log4j.Logger;
+import org.jdesktop.layout.LayoutStyle;
 
 public class SeatingEditor extends javax.swing.JPanel {
     private final static Logger log = Logger.getLogger(SeatingEditor.class);
@@ -154,15 +153,15 @@ public class SeatingEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new Insets(6, 6, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
-        GroupLayout seatingPanelLayout = new GroupLayout(seatingPanel);
+        org.jdesktop.layout.GroupLayout seatingPanelLayout = new org.jdesktop.layout.GroupLayout(seatingPanel);
         seatingPanel.setLayout(seatingPanelLayout);
         seatingPanelLayout.setHorizontalGroup(
-            seatingPanelLayout.createParallelGroup(Alignment.LEADING)
-            .addGap(0, 272, Short.MAX_VALUE)
+            seatingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 272, Short.MAX_VALUE)
         );
         seatingPanelLayout.setVerticalGroup(
-            seatingPanelLayout.createParallelGroup(Alignment.LEADING)
-            .addGap(0, 222, Short.MAX_VALUE)
+            seatingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 222, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new GridBagConstraints();
@@ -188,32 +187,32 @@ public class SeatingEditor extends javax.swing.JPanel {
         seatTf.setColumns(2);
         seatTf.setText("1");
 
-        GroupLayout jPanel2Layout = new GroupLayout(jPanel2);
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(insertButton)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(rowTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(seatTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addGap(170, 170, 170))
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(insertButton)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(jLabel1)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(rowTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(jLabel2)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(seatTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(170, 170, 170))
         );
         jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel2Layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(insertButton)
-                    .addComponent(jLabel1)
-                    .addComponent(rowTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2)
-                    .addComponent(seatTf, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(insertButton)
+                    .add(jLabel1)
+                    .add(rowTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2)
+                    .add(seatTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 

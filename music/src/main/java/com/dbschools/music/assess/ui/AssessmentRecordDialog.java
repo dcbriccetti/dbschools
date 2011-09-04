@@ -40,8 +40,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import javax.swing.BorderFactory;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 
@@ -410,15 +408,15 @@ public final class AssessmentRecordDialog extends CustomDialog {
         commentsCheckPanel.setPreferredSize(new Dimension(200, 500));
         commentsCheckPanel.setLayout(new BorderLayout());
 
-        GroupLayout scrollableCommentsPanelLayout = new GroupLayout(scrollableCommentsPanel);
+        org.jdesktop.layout.GroupLayout scrollableCommentsPanelLayout = new org.jdesktop.layout.GroupLayout(scrollableCommentsPanel);
         scrollableCommentsPanel.setLayout(scrollableCommentsPanelLayout);
         scrollableCommentsPanelLayout.setHorizontalGroup(
-            scrollableCommentsPanelLayout.createParallelGroup(Alignment.LEADING)
-            .addGap(0, 196, Short.MAX_VALUE)
+            scrollableCommentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 196, Short.MAX_VALUE)
         );
         scrollableCommentsPanelLayout.setVerticalGroup(
-            scrollableCommentsPanelLayout.createParallelGroup(Alignment.LEADING)
-            .addGap(0, 296, Short.MAX_VALUE)
+            scrollableCommentsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 296, Short.MAX_VALUE)
         );
 
         commentsScrollPane.setViewportView(scrollableCommentsPanel);

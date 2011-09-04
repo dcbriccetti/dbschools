@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:pom="http://maven.apache.org/POM/4.0.0">
+<project>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.dbschools</groupId>
     <artifactId>dbschools-music</artifactId>
@@ -8,7 +8,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <name>DBSchools Music</name>
-    <version>2.4.1</version>
+    <version>2.4.2</version>
     <url>http://dbschools.com</url>
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
@@ -71,8 +71,8 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.5</source>
+                    <target>1.5</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>

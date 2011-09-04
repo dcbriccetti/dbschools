@@ -4,7 +4,7 @@
   codebase="http://dbschools.com/jws"
   href="dbsmusic.jnlp">
   <information>
-    <title>DBSchools Music Gradebook 2.4.1</title>
+    <title>DBSchools Music Gradebook 2.4.2</title>
     <vendor>Dave Briccetti Software LLC</vendor>
     <homepage href="http://davebsoft.com"/>
     <description>DBSchools Music Gradebook</description>
@@ -17,8 +17,8 @@
   </shortcut>
   <security><all-permissions/></security>
   <resources>
-    <j2se version="1.6+"/>
-    <jar href="lib/dbschools-music-2.4.1-jar-with-dependencies.jar"/>
+    <j2se version="1.5+"/>
+    <jar href="lib/dbschools-music-2.4.2-jar-with-dependencies.jar"/>
   </resources>
   <application-desc main-class="com.dbschools.music.Gradebook">
     <argument>dbschools.com</argument>
