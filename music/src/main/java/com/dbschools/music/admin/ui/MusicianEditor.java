@@ -127,8 +127,8 @@ public final class MusicianEditor extends javax.swing.JPanel {
         assert schoolYear != null;
         this.musician = musician;
         idTf.setValue(musician.getStudentId());
-        lastNameTf.setText(musician.getFirstName());
-        firstNameTf.setText(musician.getLastName());
+        firstNameTf.setText(musician.getFirstName());
+        lastNameTf.setText(musician.getLastName());
         final Integer graduationYear = musician.getGraduationYear();
         gradeTf.setValue(graduationYear == null ? 0 : 
                 TermUtils.graduationYearAsGrade(
