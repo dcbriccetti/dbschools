@@ -54,7 +54,7 @@ public class Metronome extends JPanel {
         try {
             final Synthesizer synthesizer = MidiSystem.getSynthesizer();
             synthesizer.open();
-            channel = synthesizer.getChannels()[9];
+            channel = synthesizer.getChannels()[9]; // MIDI channel 10 has percussion instruments
             
         } catch (MidiUnavailableException ex) {
             log.error(ex);
