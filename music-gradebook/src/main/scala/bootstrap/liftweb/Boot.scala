@@ -65,7 +65,23 @@ class Boot {
 
     // Use HTML5 for rendering
     LiftRules.htmlProperties.default.set((r: Req) =>
-      new Html5Properties(r.userAgent))    
+      new Html5Properties(r.userAgent))
+
+    // Configure notice fade-out in order to not pollute page with notifications
+    LiftRules.noticesAutoFadeOut.default.set((notices: NoticeType.Value) ⇒ {
+      notices match {
+        case NoticeType.Notice  ⇒ Full((4 seconds, 2 seconds))
+        case NoticeType.Warning ⇒ Full((6 seconds, 2 seconds))
+        case NoticeType.Error   ⇒ Full((8 seconds, 2 seconds))
+        case _                  ⇒ Empty
+      }
+    })
+
+    /* set custom 404 handler */
+    LiftRules.uriNotFound.prepend(NamedPF("404handler") {
+      case (req, failure) ⇒
+        NotFoundAsTemplate(ParsePath(List("404"), "html", false, false))
+    })
 
     Db.initialize()
     S.addAround(new LoanWrapper{override def apply[T](f: => T): T = {inTransaction {f}}})
