@@ -1,15 +1,15 @@
 ## Properties for DEVELOPMENT mode
 
 # DB Driver: h2, postgres
-use.db=h2
+db.engine=postgres
 
 # DB drop and create data?
-db.recreate=true
+db.recreate=false
 
 ## Next DB related properties are defined as per com.dbschools.mgb.schemaSchemaHelper naming
 
-##h2 db setup
-db.driver=org.h2.Driver
-db.url=jdbc:h2:mem:dbschools;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=3000
+##postgres db setup
+db.driver=org.postgresql.Driver
+db.url=jdbc:postgresql://localhost:5432/dbschools
 db.user=dbschools
-db.password=
+db.password=dbschools
