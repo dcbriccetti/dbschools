@@ -64,7 +64,7 @@ object SchemaHelper extends Loggable {
   }
 
   private def initSquerylRecord(settings: Settings) {
-    logger.info("initSquerylRecord with Settings: driver=" + settings.driver + " url=" + settings.url + " user=" + settings.user + " pw=" + settings.password)
+    logger.info("initSquerylRecord with Settings: driver=%s url=%s user=%s".format(settings.driver, settings.url, settings.user))
     SquerylRecord.initWithSquerylSession {
       Class.forName(settings.driver)
       Session.create(ConnectionPoolProvider.getPoolConnection(settings), settings.adapter)
@@ -76,11 +76,11 @@ object SchemaHelper extends Loggable {
    * @since 1.0.0
    */
   trait Settings {
-    val adapter: DatabaseAdapter
-    val driver: String = ""
-    val url: String = ""
-    val user: String = ""
-    val password: String = ""
+    def adapter: DatabaseAdapter
+    def driver: String
+    def url: String
+    def user: String
+    def password: String
   }
 
   /**
@@ -93,7 +93,7 @@ object SchemaHelper extends Loggable {
     override val url = Props.get("db.url", "jdbc:h2:database/testXYZDB;FILE_LOCK=NO")
     override val user = Props.get("db.user", "test")
     override val password = Props.get("db.password", "")
-    logger.info("H2Settings: setting up H2 Adapter. driver=" + driver + " url=" + url + " user=" + user + " pw=" + password)
+    logger.info("H2Settings: setting up H2 Adapter. driver=%s url=%s user=%s".format(driver, url, user))
   }
 
   /**
@@ -106,7 +106,7 @@ object SchemaHelper extends Loggable {
     override val url = Props.get("db.url", "")
     override val user = Props.get("db.user", "test")
     override val password = Props.get("db.password", "test")
-    logger.info("PostgresSettings: setting up Posgres Adapter. driver=" + driver + " url=" + url + " user=" + user + " pw=" + password)
+    logger.info("PostgresSettings: setting up Posgres Adapter. driver=%s url=%s user=%s".format(driver, url, user))
   }
 
   /**
@@ -133,13 +133,13 @@ object SchemaHelper extends Loggable {
       try {
         Class.forName(settings.driver)
 
-        val pool = new BoneCP(config)
+        val result = new BoneCP(config)
 
         net.liftweb.http.LiftRules.unloadHooks.append(() ⇒ {
-          pool.shutdown; logger.info("Good citizen: closed connection pool.")
+          result.shutdown; logger.info("Good citizen: closed connection pool.")
         })
         logger.info("Connection pool properly initialized.")
-        pool
+        result
       }
       catch {
         case e: Exception ⇒ {
