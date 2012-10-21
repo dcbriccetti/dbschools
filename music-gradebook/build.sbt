@@ -30,3 +30,4 @@ libraryDependencies ++= {
   )
 }
 
+fullRunTask(TaskKey[Unit]("load-sample-data", "Loads Students data"), Compile, "com.dbschools.mgb.TestDataMaker")
