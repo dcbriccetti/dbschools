@@ -32,7 +32,7 @@ class Students {
 
     "#studentRow"   #> musicians.map(m =>
       ".stuName  *" #> m.name &
-        ".id     *" #> m.musician_id &
+      ".id       *" #> m.musician_id &
       ".stuId    *" #> m.student_id &
       ".gradYear *" #> m.graduation_year
     )
