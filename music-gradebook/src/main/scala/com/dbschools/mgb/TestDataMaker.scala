@@ -208,7 +208,7 @@ luis
 carol
 cindy""").map(_.split("\\W").map(_.capitalize))
 
-  def make() {
+  def main(args: Array[String]) {
     transaction {
       val instrumentIds = AppSchema.instruments.map(_.instrument_id).toArray
       val groupIds = AppSchema.groups.map(_.group_id).toArray
