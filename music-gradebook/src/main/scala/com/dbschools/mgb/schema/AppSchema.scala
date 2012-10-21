@@ -8,4 +8,5 @@ object AppSchema extends Schema {
   val musicianGroups  = table[MusicianGroup]("musician_group")
   val instruments     = table[Instrument]   ("instrument")
   val assessments     = table[Assessment]   ("assessment")
+  val assessmentTags  = table[AssessmentTag]("assessment_tag")
 }

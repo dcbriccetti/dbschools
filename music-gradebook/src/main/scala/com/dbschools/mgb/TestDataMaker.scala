@@ -6,8 +6,10 @@ import schema.{MusicianGroup, Musician, AppSchema}
 
 object TestDataMaker {
 
-  val names = List("""
-smith
+  def getNames(names: String): Array[String] = names.split("\\W").map(_.capitalize)
+
+  private val lastNames = getNames(
+"""smith
 jones
 johnson
 lee
@@ -106,7 +108,8 @@ silva
 hughes
 ruiz
 shah
-davies""",
+davies""")
+  private val firstNames = getNames(
 """john
 david
 michael
@@ -206,22 +209,55 @@ heather
 christian
 luis
 carol
-cindy""").map(_.split("\\W").map(_.capitalize))
+cindy""")
 
   def main(args: Array[String]) {
+    Db.initialize()
     transaction {
-      val instrumentIds = AppSchema.instruments.map(_.instrument_id).toArray
-      val groupIds = AppSchema.groups.map(_.group_id).toArray
-      var id = 10000 // Until we set up sequences
-      names(0).foreach(lastName => {
-        val firstName = names(1)((random * names(1).length).toInt)
-        val m = AppSchema.musicians.insert(Musician(id, id, firstName, lastName, 2013))
-        id += 1
-        AppSchema.musicianGroups.insert(MusicianGroup(id, m.musician_id,
-          groupIds((random * groupIds.length).toInt),
+      deleteStudents()
+      createAndGroupStudents()
+    }
+  }
+
+  private def deleteStudents() {
+    AppSchema.musicianGroups  .deleteWhere(mg => mg.id === mg.id)
+    AppSchema.assessmentTags  .deleteWhere(a => a.assessment_id === a.assessment_id)
+    AppSchema.assessments     .deleteWhere(a => a.assessment_id === a.assessment_id)
+    AppSchema.musicians       .deleteWhere(m => m.musician_id === m.musician_id)
+  }
+
+  private def createAndGroupStudents() {
+    val instrumentIds = AppSchema.instruments.map(_.instrument_id).toArray
+    var id = 10000 // Until we set up sequences
+    lastNames.foreach(lastName => {
+      val firstName = firstNames((random * firstNames.length).toInt)
+      val m = AppSchema.musicians.insert(Musician(id, id, firstName, lastName, 2013))
+      id += 1
+
+      val groupIds = random match {
+        case n if n < .1  => GroupIds(0)
+        case n if n < .2  => GroupIds(2)
+        case n if n < .25 => GroupIds(3)
+        case _            => GroupIds(1)
+      }
+      groupIds.foreach(groupId => {
+        AppSchema.musicianGroups.insert(MusicianGroup(id, m.musician_id, groupId,
           instrumentIds((random * instrumentIds.length).toInt), 2013))
-        println(lastName + ", " + firstName)
+        id += 1
       })
+      println("Added %s, %s to %d groups".format(lastName, firstName, groupIds.size))
+    })
+  }
+
+  private object GroupIds {
+    private val groupIds = AppSchema.groups.map(_.group_id).toArray
+
+    /** Returns the requested number of unique, randomly-chosen group IDs */
+    def apply(num: Int) = {
+      var ids = Set[Int]()
+      while(ids.size < num)
+        ids += groupIds((random * groupIds.length).toInt)
+      ids
     }
   }
 }
