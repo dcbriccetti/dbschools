@@ -53,10 +53,10 @@ class Students {
       select(m)
       orderBy(m.last_name, m.first_name))).getOrElse(List[Musician]())
 
-    val musicianDetailses = matchingMusicians.map(m => MusicianDetails(m, fullGroupAssignments(Some(m.musician_id)),
+    val musicianDetailsItems = matchingMusicians.map(m => MusicianDetails(m, fullGroupAssignments(Some(m.musician_id)),
       AppSchema.assessments.where(_.musician_id === m.musician_id).toSeq))
 
-    "#student"        #> musicianDetailses.map(md =>
+    "#student"        #> musicianDetailsItems.map(md =>
      ".heading *"     #> "%s, %d, %d, %d".format(md.musician.name, md.musician.student_id,
                          md.musician.musician_id, md.musician.graduation_year) &
      ".groups"        #> md.joinData.map { jd =>
