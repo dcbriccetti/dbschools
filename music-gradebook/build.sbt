@@ -26,7 +26,8 @@ libraryDependencies ++= {
     "org.specs2"        %% "specs2"             % "1.12.1"           % "test",
     "com.h2database"    % "h2"                  % "1.3.167",
     "org.squeryl"       %% "squeryl"            % "0.9.5-3",
-    "postgresql"        % "postgresql"          % "8.4-701.jdbc4"
+    "postgresql"        % "postgresql"          % "8.4-701.jdbc4",
+    "org.scala-tools.time" %% "time"            % "0.5"
   )
 }
 
