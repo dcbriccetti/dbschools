@@ -13,14 +13,11 @@ import org.squeryl.dsl.GroupWithMeasures
 
 class Statistics {
 
-  private val dtFrom = {
-    val n = DateTime.now.withDayOfMonth(1)
-    val yearEndMonth = 7
-    if (n.getMonthOfYear >= yearEndMonth) n.withMonth(yearEndMonth) else n.withMonth(yearEndMonth).minus(1.year)
-  }
-  private val dtTo = dtFrom + 1.year
+  private val (dtFrom, dtTo) = Terms.termFromTo()
 
-  def assessmentsByGroup  = createTable("Group", queryByGroup)
+  def assessmentsByGroup  = createTable("Group",  queryByGroup)
+  def assessmentsByGrade  = createTable("Grade",  queryByGrade,
+    (gradYear: String) => Terms.graduationYearAsGrade(gradYear.toInt).toString)
   def assessmentsByTester = createTable("Tester", queryByTester)
 
   private def toTs(dt: DateTime) = new Timestamp(dt.millis)
@@ -35,17 +32,29 @@ class Statistics {
     compute(count(a.assessment_id))
   )
 
+  private def queryByGrade(pass: Boolean) = from(musicians, assessments)((m, a) =>
+    where(m.musician_id === a.musician_id and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
+    groupBy(m.graduation_year.toString)
+    compute(count(a.assessment_id))
+  )
+
   private def queryByTester(pass: Boolean) = from(users, assessments)((u, a) =>
     where(u.id === a.user_id and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
     groupBy(u.last_name)
     compute(count(a.assessment_id))
   )
 
-  private def createTable(heading: String, query: (Boolean => QueryGm)) = {
-    def queryToMap(query: QueryGm) = query.map(gm => gm.key -> gm.measures).toMap
+  private def identityKeyTransformer(key: String) = key
+
+  private def createTable(
+    rowHeading:     String,
+    query:          Boolean => QueryGm,
+    keyTransformer: String => String = identityKeyTransformer
+  ) = {
+    def queryToMap(query: QueryGm) = query.map(gm => keyTransformer(gm.key) -> gm.measures).toMap
     val passesMap   = queryToMap(query(true))
     val failuresMap = queryToMap(query(false))
-    css(heading, passesMap.keys.toSet ++ failuresMap.keys.toSet, passesMap, failuresMap)
+    css(rowHeading, passesMap.keys.toSet ++ failuresMap.keys.toSet, passesMap, failuresMap)
   }
 
   private def css(rowHeading: String, groupNames: Iterable[String],

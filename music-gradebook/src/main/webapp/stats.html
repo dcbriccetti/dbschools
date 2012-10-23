@@ -2,7 +2,9 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
-    <h2>Assessments by Group</h2>
+    <h2>Assessments</h2>
+
+    <h3>By Group</h3>
 
     <div data-lift="Statistics.assessmentsByGroup">
         <table>
@@ -27,7 +29,32 @@
         </table>
     </div>
 
-    <h2>Assessments by Tester</h2>
+    <h3>By Grade</h3>
+
+    <div data-lift="Statistics.assessmentsByGrade">
+        <table>
+            <thead>
+            <tr>
+                <th class="rowHeading"/>
+                <th>Assessments</th>
+                <th>Pass</th>
+                <th>Fail</th>
+                <th>% Pass</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="assessmentsRow">
+                <td class="rowName"/>
+                <td class="asses"/>
+                <td class="pass"/>
+                <td class="fail"/>
+                <td class="pctPass"/>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>By Tester</h3>
 
     <div data-lift="Statistics.assessmentsByTester">
         <table>
