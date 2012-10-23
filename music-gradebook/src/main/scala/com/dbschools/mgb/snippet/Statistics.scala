@@ -1,15 +1,15 @@
 package com.dbschools.mgb
 package snippet
 
+import java.sql.Timestamp
+import org.scala_tools.time.Imports._
+import org.squeryl.{PrimitiveTypeMode, Query}
 import org.squeryl.PrimitiveTypeMode._
+import org.squeryl.dsl.GroupWithMeasures
 import net.liftweb._
 import util.BindHelpers._
-import org.scala_tools.time.Imports._
 import schema.AppSchema
 import AppSchema.{groups, musicianGroups, musicians, assessments, users}
-import java.sql.Timestamp
-import org.squeryl.{PrimitiveTypeMode, Query}
-import org.squeryl.dsl.GroupWithMeasures
 
 class Statistics {
 
