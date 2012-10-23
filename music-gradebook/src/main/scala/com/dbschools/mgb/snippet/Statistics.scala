@@ -41,16 +41,19 @@ class Statistics {
     compute(count(a.assessment_id))
   )
 
-  private def createTable(heading: String, q: (Boolean => QueryGm)) = {
-    def m(q: QueryGm) = q.map(gm => gm.key -> gm.measures).toMap
-    css(heading, m(q(true)).keys.toSet ++ m(q(false)).keys.toSet, m(q(true)), m(q(false)))
+  private def createTable(heading: String, query: (Boolean => QueryGm)) = {
+    def queryToMap(query: QueryGm) = query.map(gm => gm.key -> gm.measures).toMap
+    val passesMap   = queryToMap(query(true))
+    val failuresMap = queryToMap(query(false))
+    css(heading, passesMap.keys.toSet ++ failuresMap.keys.toSet, passesMap, failuresMap)
   }
 
-  private def css(heading: String, groupNames: Iterable[String], p: Map[String, Long], f: Map[String, Long]) =
-    ".rowHeading *"   #> heading &
+  private def css(rowHeading: String, groupNames: Iterable[String],
+      passesMap: Map[String, Long], failuresMap: Map[String, Long]) =
+    ".rowHeading *"   #> rowHeading &
     ".assessmentsRow" #> groupNames.toSeq.sorted.map(x => {
-      val passes = p(x)
-      val failures = f(x)
+      val passes = passesMap(x)
+      val failures = failuresMap(x)
       val total = passes + failures
       ".rowName    *" #> x &
       ".asses      *" #> total &
