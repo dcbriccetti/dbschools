@@ -6,77 +6,20 @@
 
     <h3>By Group</h3>
 
-    <div data-lift="Statistics.assessmentsByGroup">
-        <table>
-            <thead>
-            <tr>
-                <th class="rowHeading"/>
-                <th>Assessments</th>
-                <th>Pass</th>
-                <th>Fail</th>
-                <th>% Pass</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr class="assessmentsRow">
-                <td class="rowName"/>
-                <td class="asses"/>
-                <td class="pass"/>
-                <td class="fail"/>
-                <td class="pctPass"/>
-            </tr>
-            </tbody>
-        </table>
+    <div data-lift="Statistics.assessmentsByGroup?eager_eval=true">
+        <lift:embed what="_assmtTable" />
     </div>
 
     <h3>By Grade</h3>
 
-    <div data-lift="Statistics.assessmentsByGrade">
-        <table>
-            <thead>
-            <tr>
-                <th class="rowHeading"/>
-                <th>Assessments</th>
-                <th>Pass</th>
-                <th>Fail</th>
-                <th>% Pass</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr class="assessmentsRow">
-                <td class="rowName"/>
-                <td class="asses"/>
-                <td class="pass"/>
-                <td class="fail"/>
-                <td class="pctPass"/>
-            </tr>
-            </tbody>
-        </table>
+    <div data-lift="Statistics.assessmentsByGrade?eager_eval=true">
+        <lift:embed what="_assmtTable" />
     </div>
 
     <h3>By Tester</h3>
 
-    <div data-lift="Statistics.assessmentsByTester">
-        <table>
-            <thead>
-            <tr>
-                <th class="rowHeading"/>
-                <th>Assessments</th>
-                <th>Pass</th>
-                <th>Fail</th>
-                <th>% Pass</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr class="assessmentsRow">
-                <td class="rowName"/>
-                <td class="asses"/>
-                <td class="pass"/>
-                <td class="fail"/>
-                <td class="pctPass"/>
-            </tr>
-            </tbody>
-        </table>
+    <div data-lift="Statistics.assessmentsByTester?eager_eval=true">
+        <lift:embed what="_assmtTable" />
     </div>
 </div>
 </body>
