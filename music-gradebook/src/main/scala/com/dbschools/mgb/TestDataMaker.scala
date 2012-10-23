@@ -218,6 +218,17 @@ cindy""")
       createAndGroupStudents()
     }
   }
+  
+  /** Feed database with dummy data.
+   * 
+   * @note pre-condition: DB needs to be initialized
+   * @see com.dbschools.mgb.Db#initialize()
+   */
+  def feedDbWithDummyData() {
+    deleteStudents()
+    // @todo investigate why a java.lang.ArrayIndexOutOfBoundsException is reached when creating groupIds: case _ => GroupIds(1)
+    // createAndGroupStudents()
+  }
 
   private def deleteStudents() {
     AppSchema.musicianGroups  .deleteWhere(mg => mg.id === mg.id)
