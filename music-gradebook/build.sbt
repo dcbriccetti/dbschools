@@ -30,8 +30,9 @@ libraryDependencies ++= {
     "org.squeryl"       %% "squeryl"            % "0.9.5-3",
     "postgresql"        % "postgresql"          % "8.4-701.jdbc4",
     "org.scala-tools.time" %% "time"            % "0.5",
-    "com.jolbox" % "bonecp" % "0.7.1.RELEASE" // connection pooling
+    "org.mindrot"       %  "jbcrypt"            % "0.3m",
+    "com.jolbox"        % "bonecp"              % "0.7.1.RELEASE" // connection pooling
   )
 }
 
-fullRunTask(TaskKey[Unit]("load-sample-data", "Loads Students data"), Compile, "com.dbschools.mgb.TestDataMaker")
+fullRunTask(TaskKey[Unit]("load-sample-data", "Loads sample data"), Compile, "com.dbschools.mgb.TestDataMaker")

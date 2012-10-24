@@ -15,6 +15,9 @@ import net.liftmodules.JQueryModule
 import org.squeryl.PrimitiveTypeMode._
 import com.dbschools.mgb.Db
 
+object RunState {
+  object loggedIn extends SessionVar[Boolean] (false)
+}
 
 /**
  * A class that's instantiated early and run.  It allows the application
@@ -25,13 +28,19 @@ class Boot {
     // where to search snippet
     LiftRules.addToPackages("com.dbschools.mgb")
 
+    val loggedIn    = If(() => RunState.loggedIn,   "Not logged in")
+    val notLoggedIn = If(() => ! RunState.loggedIn, "Already logged in")
+
     // Build SiteMap
     def sitemap = SiteMap(
       Menu.i("Home"      ) / "index",
-      Menu.i("No Groups" ) / "noGroups",
-      Menu.i("Details"   ) / "stuDetails",
-      Menu.i("Statistics") / "stats"
-        )
+      Menu.i("Log In"    ) / "logIn"        >> notLoggedIn,
+      Menu.i("Groups"    ) / "groups"       >> loggedIn,
+      Menu.i("No Groups" ) / "noGroups"     >> loggedIn,
+      Menu.i("Details"   ) / "stuDetails"   >> loggedIn,
+      Menu.i("Statistics") / "stats"        >> loggedIn,
+      Menu.i("Log Out"   ) / "logOut"       >> loggedIn
+    )
 
     LiftRules.setSiteMap(sitemap)
 
