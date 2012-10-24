@@ -6,35 +6,34 @@ import net.liftweb.squerylrecord.RecordTypeMode.transaction
 import net.liftweb.squerylrecord.SquerylRecord
 import com.dbschools.mgb.TestDataMaker
 
-/** Used to initialize a DB connection and setup the connection pool.
- * 
- * @since 1.0.0
+/**
+ * Initializes a DB connection and setup the connection pool.
  */
 object SchemaHelper extends Loggable {
 
-  /** Init schema with a H2 DB. */
-  def initH2 {
+  /** Initializes schema with a H2 DB. */
+  def initH2() {
     initSquerylRecord(new H2Settings)
   }
 
-  /** Init schema with a Postgres DB. */
-  def initPostgres {
+  /** Initializes schema with a PostgreSQL DB. */
+  def initPostgres() {
     initSquerylRecord(new PostgresSettings)
   }
 
   /** Initializes the connection pool only. */
-  def touch {
+  def touch() {
     transaction {}
   }
 
-  /** Drop and create the schema again. */
-  def recreateSchema {
+  /** Drops and creates the schema. */
+  def recreateSchema() {
     transaction {
       try {
         AppSchema.printDdl
         AppSchema.drop
         AppSchema.create
-        TestDataMaker.feedDbWithDummyData
+        TestDataMaker.feedDbWithDummyData()
       }
       catch {
         case e: Exception ⇒ {
@@ -43,11 +42,10 @@ object SchemaHelper extends Loggable {
         }
       }
     }
-
   }
 
-  /** Initializes Squeryl Record given some custom DB settings.
-   * 
+  /**
+   * Initializes Squeryl Record given some custom DB settings.
    * @param settings the custom settings to be used during DB connection initialization 
    */
   private def initSquerylRecord(settings: DbSettings) {

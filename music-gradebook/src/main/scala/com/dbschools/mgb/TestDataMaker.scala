@@ -227,6 +227,7 @@ cindy""")
   def feedDbWithDummyData() {
     deleteStudents()
     // @todo investigate why a java.lang.ArrayIndexOutOfBoundsException is reached when creating groupIds: case _ => GroupIds(1)
+    // todo avoid duplication between this method and main
     // createAndGroupStudents()
   }
 
