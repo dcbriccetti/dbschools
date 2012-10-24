@@ -20,6 +20,8 @@ libraryDependencies ++= {
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",
     "net.liftweb"       %% "lift-mapper"        % liftVersion        % "compile",
     "net.liftmodules"   %% "lift-jquery-module" % (liftVersion + "-1.0"),
+    "net.liftweb"       %% "lift-record"        % liftVersion,
+    "net.liftweb" %% "lift-squeryl-record" % liftVersion exclude("org.squeryl","squeryl"),
     "org.eclipse.jetty" % "jetty-webapp"        % "8.1.7.v20120910"  % "container,test",
     "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "container,test" artifacts Artifact("javax.servlet", "jar", "jar"),
     "ch.qos.logback"    % "logback-classic"     % "1.0.7",
@@ -27,7 +29,8 @@ libraryDependencies ++= {
     "com.h2database"    % "h2"                  % "1.3.167",
     "org.squeryl"       %% "squeryl"            % "0.9.5-3",
     "postgresql"        % "postgresql"          % "8.4-701.jdbc4",
-    "org.scala-tools.time" %% "time"            % "0.5"
+    "org.scala-tools.time" %% "time"            % "0.5",
+    "com.jolbox" % "bonecp" % "0.7.1.RELEASE" // connection pooling
   )
 }
 

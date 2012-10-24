@@ -1,0 +1,13 @@
+## Properties for DEVELOPMENT mode
+
+# DB Driver: h2, postgres
+db.engine=postgres
+
+# DB drop and create data?
+db.recreate=false
+
+##postgres db setup
+db.driver=org.postgresql.Driver
+db.url=jdbc:postgresql://localhost:5432/dbschools
+db.user=dbschools
+db.password=dbschools
