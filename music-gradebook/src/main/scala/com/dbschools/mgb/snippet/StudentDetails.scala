@@ -1,6 +1,7 @@
 package com.dbschools.mgb
 package snippet
 
+import xml.Text
 import scalaz._
 import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
@@ -11,13 +12,8 @@ import http._
 import js._
 import js.JE.JsRaw
 import js.JsCmds._
-import schema._
-import schema.GroupAssignment
-import scala.Some
-import schema.Musician
-import xml.Text
-import schema.Assessment
-import IdGenerator.genId
+import schema.{Assessment, Musician, AppSchema}
+import model.{GroupAssignments, GroupAssignment}
 
 class StudentDetails extends Loggable {
   private var selectedMusicians = Set[Int]()
@@ -74,21 +70,7 @@ class StudentDetails extends Loggable {
 
     def process(): JsCmd = {
       selectedGroupId <|*|> selectedInstrumentId map {
-        case (g, i) =>
-          val currentTerm = Terms.currentTerm
-          if (! selectedMusicianGroups.isEmpty) {
-            if (replaceExistingAssignment) {
-              logger.info("Move %s to %d %d".format(selectedMusicianGroups, g, i))
-              update(AppSchema.musicianGroups)(mg =>
-                where(mg.id in selectedMusicianGroups) set(mg.group_id := g, mg.instrument_id := i))
-            } else {
-              AppSchema.musicianGroups.insert(
-                from(AppSchema.musicianGroups)(mg =>
-                  where(mg.id in selectedMusicianGroups and not(mg.group_id === g and mg.school_year === currentTerm))
-                  select(mg)).map(mg => MusicianGroup(genId(), mg.musician_id, g, i, currentTerm))
-              )
-            }
-          }
+        case (g, i) => GroupAssignments.create(selectedMusicianGroups, replaceExistingAssignment, g, i)
       }
       reloadPage
     }
@@ -101,6 +83,7 @@ class StudentDetails extends Loggable {
                        Empty, iid => {
                        selectedInstrumentId = Some(iid.toInt)}) ++ SHtml.hidden(process))
   }
+
 
   def deleteGroupAssignment = SHtml.ajaxButton("Delete", () => {
     if (! selectedMusicianGroups.isEmpty) {

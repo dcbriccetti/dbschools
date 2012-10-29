@@ -6,7 +6,8 @@ import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
 import http.SHtml
 import util._
-import schema.{Musician, AppSchema, GroupAssignments}
+import schema.{Musician, AppSchema}
+import model.GroupAssignments
 
 class Students {
 
