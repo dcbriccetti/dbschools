@@ -34,12 +34,12 @@ class Boot {
     // Build SiteMap
     def sitemap = SiteMap(
       Menu.i("Home"      ) / "index",
-      Menu.i("Log In"    ) / "logIn"        >> notLoggedIn,
-      Menu.i("Groups"    ) / "groups"       >> loggedIn,
-      Menu.i("No Groups" ) / "noGroups"     >> loggedIn,
-      Menu.i("Details"   ) / "stuDetails"   >> loggedIn,
-      Menu.i("Statistics") / "stats"        >> loggedIn,
-      Menu.i("Log Out"   ) / "logOut"       >> loggedIn
+      Menu.i("Log In"    ) / "logIn"          >> notLoggedIn,
+      Menu.i("Groups"    ) / "groups"         >> loggedIn,
+      Menu.i("No Groups" ) / "noGroups"       >> loggedIn,
+      Menu.i("Details"   ) / "studentDetails" >> loggedIn,
+      Menu.i("Statistics") / "stats"          >> loggedIn,
+      Menu.i("Log Out"   ) / "logOut"         >> loggedIn
     )
 
     LiftRules.setSiteMap(sitemap)
