@@ -1,7 +1,6 @@
 package com.dbschools.mgb
 package snippet
 
-import xml.Text
 import scalaz._
 import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
@@ -11,15 +10,14 @@ import util._
 import http._
 import js._
 import js.JE.JsRaw
-import js.JE.JsRaw
-import js.JsCmds.Confirm
-import net.liftweb.http.js.JsCmds._
+import js.JsCmds._
 import schema._
 import schema.GroupAssignment
 import scala.Some
 import schema.Musician
 import xml.Text
 import schema.Assessment
+import IdGenerator.genId
 
 class StudentDetails extends Loggable {
   private var selectedMusicians = Set[Int]()
@@ -84,13 +82,11 @@ class StudentDetails extends Loggable {
               update(AppSchema.musicianGroups)(mg =>
                 where(mg.id in selectedMusicianGroups) set(mg.group_id := g, mg.instrument_id := i))
             } else {
-              // AppSchema.musicianGroups.insert(   todo use existing hibernate sequence for now?
+              AppSchema.musicianGroups.insert(
                 from(AppSchema.musicianGroups)(mg =>
                   where(mg.id in selectedMusicianGroups and not(mg.group_id === g and mg.school_year === currentTerm))
-                  select(mg)).map(mg =>
-                  MusicianGroup(0, mg.musician_id, g, i, currentTerm)
-                )
-              //)
+                  select(mg)).map(mg => MusicianGroup(genId(), mg.musician_id, g, i, currentTerm))
+              )
             }
           }
       }
