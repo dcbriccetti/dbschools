@@ -16,13 +16,20 @@
         </ul>
     </div>
 
-    <h3>Move Selected Students</h3>
+    <h3>Change Current Year Group and Instrument Assignment</h3>
     <form class="lift:form.ajax">
         <div data-lift="StudentDetails.moveControls">
+            <div><span id="replace"/></div>
             <div><span id="groups"/></div>
             <div><span id="instruments"/></div>
             <input id="submitMove" type="submit" value="Move"/><br/>
         </div>
+    </form>
+    <br/>
+
+    <h3>Delete Group Assignments</h3>
+    <form class="lift:form.ajax">
+        <div data-lift="StudentDetails.deleteGroupAssignment"/>
     </form>
 
 </div>

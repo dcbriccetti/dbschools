@@ -10,10 +10,22 @@ import common.{Loggable, Empty}
 import util._
 import http._
 import js._
+import js.JE.JsRaw
+import js.JE.JsRaw
+import js.JsCmds.Confirm
 import net.liftweb.http.js.JsCmds._
-import schema.{Musician,GroupAssignment,GroupAssignments,Assessment,AppSchema}
+import schema._
+import schema.GroupAssignment
+import scala.Some
+import schema.Musician
+import xml.Text
+import schema.Assessment
 
 class StudentDetails extends Loggable {
+  private var selectedMusicians = Set[Int]()
+  private var selectedMusicianGroups = Set[Int]()
+  private val reloadPage = JsRaw("location.reload()")
+
   def render = {
     case class MusicianDetails(musician: Musician, groups: Iterable[GroupAssignment], assessments: Iterable[Assessment])
 
@@ -33,12 +45,19 @@ class StudentDetails extends Loggable {
       AppSchema.assessments.where(_.musician_id === musician.musician_id).toSeq))
 
     def makeGroups(ga: GroupAssignment) =
-      "* *" #> (SHtml.ajaxCheckbox(false, checked => {Noop}) ++ Text(
-        "%d: %s, %s".format(ga.musicianGroup.school_year, ga.group.name, ga.instrument.name)))
+      "* *" #>  (SHtml.ajaxCheckbox(false, checked => {
+                  if (checked) selectedMusicianGroups += ga.musicianGroup.id
+                  else selectedMusicianGroups -= ga.musicianGroup.id
+                  Noop
+                }) ++ Text("%d: %s, %s".format(ga.musicianGroup.school_year, ga.group.name, ga.instrument.name)))
 
     def makeDetails(md: MusicianDetails) =
-      ".heading *"      #> "%s, %d, %d, %d".format(md.musician.name, md.musician.student_id,
-                           md.musician.musician_id, md.musician.graduation_year) &
+      ".heading *"      #> (SHtml.ajaxCheckbox(false, checked => {
+                          if (checked) selectedMusicians += md.musician.musician_id
+                          else selectedMusicians -= md.musician.musician_id
+                          Noop
+                        }) ++ Text("%s, %d, %d, %d".format(md.musician.name, md.musician.student_id,
+                           md.musician.musician_id, md.musician.graduation_year))) &
       ".groups"         #> md.groups.map(makeGroups) &
       ".assessments *"  #> {
         val (pass, fail) = md.assessments.partition(_.pass)
@@ -49,12 +68,51 @@ class StudentDetails extends Loggable {
   }
 
   def moveControls = {
+    val groups = AppSchema.groups.toSeq
+    var selectedGroupId = groups.headOption.map(_.group_id)
+    val instruments = AppSchema.instruments.toSeq
+    var selectedInstrumentId = instruments.headOption.map(_.instrument_id)
+    var replaceExistingAssignment = true
+
     def process(): JsCmd = {
-      logger.info("Move form submitted")
-      Noop
+      selectedGroupId <|*|> selectedInstrumentId map {
+        case (g, i) =>
+          val currentTerm = Terms.currentTerm
+          if (! selectedMusicianGroups.isEmpty) {
+            if (replaceExistingAssignment) {
+              logger.info("Move %s to %d %d".format(selectedMusicianGroups, g, i))
+              update(AppSchema.musicianGroups)(mg =>
+                where(mg.id in selectedMusicianGroups) set(mg.group_id := g, mg.instrument_id := i))
+            } else {
+              // AppSchema.musicianGroups.insert(   todo use existing hibernate sequence for now?
+                from(AppSchema.musicianGroups)(mg =>
+                  where(mg.id in selectedMusicianGroups and not(mg.group_id === g and mg.school_year === currentTerm))
+                  select(mg)).map(mg =>
+                  MusicianGroup(0, mg.musician_id, g, i, currentTerm)
+                )
+              //)
+            }
+          }
+      }
+      reloadPage
     }
-    "#groups"       #> SHtml.ajaxSelect(AppSchema.groups.map(g => (g.group_id.toString, g.name)).toSeq, Empty, gid => {Noop}) &
-    "#instruments"  #> (SHtml.ajaxSelect(AppSchema.instruments.map(i => (i.instrument_id.toString, i.name)).toSeq, Empty, iid => {Noop})
-                         ++ SHtml.hidden(process))
+
+    "#replace"     #> (SHtml.ajaxCheckbox(replaceExistingAssignment, chk => {replaceExistingAssignment = chk; Noop}) ++
+                      Text("Replace the existing group assignment, if one exists, otherwise create an additional one")) &
+    "#groups"      #> SHtml.ajaxSelect(groups.map(g => (g.group_id.toString, g.name)).toSeq, Empty, gid => {
+                       selectedGroupId = Some(gid.toInt) }) &
+    "#instruments" #> (SHtml.ajaxSelect(AppSchema.instruments.map(i => (i.instrument_id.toString, i.name)).toSeq,
+                       Empty, iid => {
+                       selectedInstrumentId = Some(iid.toInt)}) ++ SHtml.hidden(process))
   }
+
+  def deleteGroupAssignment = SHtml.ajaxButton("Delete", () => {
+    if (! selectedMusicianGroups.isEmpty) {
+      Confirm("Are you sure you want to remove the %d selected group assignments?".format(selectedMusicianGroups.size),
+        SHtml.ajaxInvoke(() => {
+          AppSchema.musicianGroups.deleteWhere(_.id in selectedMusicianGroups)
+          reloadPage
+        }))
+    } else Noop
+  })
 }
