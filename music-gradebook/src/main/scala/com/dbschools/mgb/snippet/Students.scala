@@ -1,11 +1,12 @@
 package com.dbschools.mgb
 package snippet
 
+import scalaz._
+import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
 import common.Full
 import util._
-import Helpers._
 import http._
 import schema._
 import schema.Group
@@ -48,14 +49,13 @@ class Students {
     def whereLike(search: String)(m: Musician)  = where(m.last_name.like("%" + search + "%"))
     def whereId(id: Int)(m: Musician)           = where(m.musician_id === id)
 
-    val opWhere = S.param("name") match {
-      case Full(search) => Some(whereLike(search) _)
-      case _            => S.param("id").toOption.map(id => whereId(id.toInt) _)
-    }
+    val opWhere =
+      S.param("name").map(like => whereLike(like) _).orElse(
+      S.param("id")  .map(id   => whereId(id.toInt) _))
 
     val matchingMusicians = opWhere.map(whereFn => from(AppSchema.musicians)(musician =>
       whereFn(musician) select(musician)
-      orderBy(musician.last_name, musician.first_name))).getOrElse(List[Musician]())
+      orderBy(musician.last_name, musician.first_name)).toSeq) | Seq[Musician]()
 
     val musicianDetailsItems = matchingMusicians.map(musician =>
       MusicianDetails(musician, groupAssignments(Some(musician.musician_id)),

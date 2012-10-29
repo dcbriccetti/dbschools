@@ -17,6 +17,7 @@ scalacOptions ++= Seq("-deprecation", "-unchecked")
 libraryDependencies ++= {
   val liftVersion = "2.5-M1"
   Seq(
+    "org.scalaz"        %% "scalaz-core"        % "7.0-SNAPSHOT",
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",
     "net.liftweb"       %% "lift-mapper"        % liftVersion        % "compile",
     "net.liftmodules"   %% "lift-jquery-module" % (liftVersion + "-1.0"),
