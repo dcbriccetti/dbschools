@@ -1,6 +1,6 @@
 package com.dbschools.mgb.snippet
 
-import net.liftweb.http.{S, SessionVar, SHtml}
+import net.liftweb.http.{RequestVar, S, SessionVar, SHtml}
 import net.liftweb.util.Helpers._
 import bootstrap.liftweb.RunState
 import xml.NodeSeq
@@ -9,7 +9,7 @@ class Authenticator {
 
   def authForm =
     "#userName *" #> SHtml.text(Authenticator.userName, name => Authenticator.userName(name.trim), "id" -> "userName") &
-    "#password"   #> SHtml.password(Authenticator.password, Authenticator.password(_),  "id" -> "password") &
+    "#password"   #> SHtml.password("", Authenticator.password(_),  "id" -> "password") &
     "#submit"     #> SHtml.submit("Log In", () => {
       if (true) {  // todo put authentication here
         RunState.loggedIn(true)
@@ -28,11 +28,10 @@ class Authenticator {
 
 object Authenticator {
   object userName extends SessionVar("")
-  object password extends SessionVar("")
+  object password extends RequestVar("")
 
   def logOut() {
     RunState.loggedIn(false)
-    password("")
     userName("")
   }
 
