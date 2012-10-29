@@ -7,11 +7,6 @@ import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
 import util._
 import schema._
-import schema.Group
-import schema.Instrument
-import scala.Some
-import schema.Musician
-import schema.MusicianGroup
 
 class Students {
 
