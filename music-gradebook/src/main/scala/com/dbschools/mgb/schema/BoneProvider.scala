@@ -59,7 +59,7 @@ object BoneProvider extends ConnectionProvider with Loggable {
   
   /** @inheritdoc */
   def getConnection(): Connection = {
-    if(isInitialized()){
+    if(isInitialized){
       pool.getConnection
     } else {
       logger.error("Tried to get a connection without initializing the connection provider first")
