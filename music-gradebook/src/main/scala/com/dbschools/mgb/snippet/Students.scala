@@ -1,19 +1,19 @@
 package com.dbschools.mgb
 package snippet
 
-import scalaz._
-import Scalaz._
+import xml.Text
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
+import http.SHtml
 import util._
-import schema._
+import schema.{Musician, AppSchema, GroupAssignments}
 
 class Students {
 
   def inGroups =
     "#studentRow"   #> GroupAssignments(None).map(row =>
       ".schYear  *" #> row.musicianGroup.school_year &
-      ".stuName  *" #> row.musician.name &
+      ".stuName  *" #> studentLink(row.musician) &
       ".gradYear *" #> row.musician.graduation_year &
       ".id       *" #> row.musician.musician_id &
       ".stuId    *" #> row.musician.student_id &
@@ -26,10 +26,12 @@ class Students {
       where(mg.map(_.id).isNull) select(m) on (m.musician_id === mg.map(_.musician_id)))
 
     "#studentRow"   #> musicians.map(m =>
-      ".stuName  *" #> m.name &
+      ".stuName  *" #> studentLink(m) &
       ".id       *" #> m.musician_id &
       ".stuId    *" #> m.student_id &
       ".gradYear *" #> m.graduation_year
     )
   }
+
+  private def studentLink(m: Musician) = SHtml.link("studentDetails?id=" + m.musician_id, () => {}, Text(m.name))
 }
