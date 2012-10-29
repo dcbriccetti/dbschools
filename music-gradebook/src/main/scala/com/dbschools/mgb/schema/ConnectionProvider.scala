@@ -23,17 +23,17 @@ trait ConnectionProvider {
    * @see [[com.dbschools.mgb.schema.ConnectionProvider#getConnection()]]
    */
   def getConnection(settings: DbSettings): Connection = {
-    if (!isInitialized()) {
-      init(settings);
+    if (!isInitialized) {
+      init(settings)
     }
 
-    getConnection();
+    getConnection
   }
 
   /**
    * Used to determine whether the connection provider was initialized.
    */
-  def isInitialized(): Boolean
+  def isInitialized: Boolean
 
   /** Initializes the connection provider.
    * 
@@ -50,5 +50,5 @@ trait ConnectionProvider {
    * @note pre-condition: [[com.dbschools.mgb.schema.ConnectionProvider#isInitialized()]] must return true
    * @throws IllegalStateException in case this connection provider was not initialized first
    */
-  def getConnection(): Connection
+  def getConnection: Connection
 }
