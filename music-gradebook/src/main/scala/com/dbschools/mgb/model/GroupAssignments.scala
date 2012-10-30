@@ -1,5 +1,7 @@
 package com.dbschools.mgb.model
 
+import scalaz._
+import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.common.Loggable
 import com.dbschools.mgb.Terms
@@ -26,10 +28,7 @@ object GroupAssignments extends Loggable {
   private def conditions(opId: Option[Int], m: Musician, mg: MusicianGroup, g: Group, i: Instrument) = {
     val joinConditions = m.musician_id === mg.musician_id and mg.group_id === g.group_id and
       mg.instrument_id === i.instrument_id
-    opId match {
-      case None => joinConditions
-      case Some(id) => joinConditions and m.musician_id === id
-    }
+    opId.map(id => joinConditions and m.musician_id === id) | joinConditions
   }
 
   def create(musicianGroups: Iterable[Int], replaceExisting: Boolean, groupId: Int, instrumentId: Int): AnyVal = {
