@@ -37,7 +37,7 @@ class Boot {
       Menu.i("Log In"    ) / "logIn"          >> notLoggedIn,
       Menu.i("Groups"    ) / "groups"         >> loggedIn,
       Menu.i("No Groups" ) / "noGroups"       >> loggedIn,
-      Menu.i("Details"   ) / "studentDetails" >> loggedIn,
+      Menu.i("Details"   ) / "studentDetails" >> loggedIn >> Hidden,
       Menu.i("Statistics") / "stats"          >> loggedIn,
       Menu.i("Log Out"   ) / "logOut"         >> loggedIn
     )
