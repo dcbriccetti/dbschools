@@ -12,6 +12,7 @@ import http._
 import js._
 import js.JE.JsRaw
 import js.JsCmds._
+import Helpers.asInt
 import schema.{Assessment, Musician, MusicianGroup, AppSchema}
 import model.{GroupAssignments, GroupAssignment}
 
@@ -21,16 +22,10 @@ class StudentDetails extends Loggable {
 
   def render = {
     case class MusicianDetails(musician: Musician, groups: Iterable[GroupAssignment], assessments: Iterable[Assessment])
-
-    def whereLike(search: String)(m: Musician)  = where(m.last_name.like("%" + search + "%"))
-    def whereId(id: Int)(m: Musician)           = where(m.musician_id === id)
-
-    val opWhere =
-      S.param("name").map(like => whereLike(like) _).orElse(
-      S.param("id")  .map(id   => whereId(id.toInt) _))
-
-    val matchingMusicians = opWhere.map(whereFn => from(AppSchema.musicians)(musician =>
-      whereFn(musician) select(musician)
+    val opId = S.param("id").flatMap(asInt).toOption
+    val matchingMusicians = opId.map(id => from(AppSchema.musicians)(musician =>
+      where(musician.musician_id === id)
+      select(musician)
       orderBy(musician.last_name, musician.first_name)).toSeq) | Seq[Musician]()
 
     val musicianDetailsItems = matchingMusicians.map(musician =>
