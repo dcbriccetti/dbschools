@@ -1,8 +1,8 @@
 package com.dbschools.mgb.model
 
-import com.dbschools.mgb.Terms
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.common.Loggable
+import com.dbschools.mgb.Terms
 import com.dbschools.mgb.schema._
 import com.dbschools.mgb.schema.IdGenerator._
 import com.dbschools.mgb.schema.Group
@@ -32,19 +32,20 @@ object GroupAssignments extends Loggable {
     }
   }
 
-  def create(selectedMusicianGroups: Iterable[Int], replaceExistingAssignment: Boolean,
-      groupId: Int, instrumentId: Int): AnyVal = {
+  def create(musicianGroups: Iterable[Int], replaceExisting: Boolean, groupId: Int, instrumentId: Int): AnyVal = {
     val currentTerm = Terms.currentTerm
-    if (!selectedMusicianGroups.isEmpty) {
-      if (replaceExistingAssignment) {
-        logger.info("Move %s to %d %d".format(selectedMusicianGroups, groupId, instrumentId))
+    if (!musicianGroups.isEmpty) {
+      if (replaceExisting) {
+        logger.info("Move %s to %d %d".format(musicianGroups, groupId, instrumentId))
         update(AppSchema.musicianGroups)(mg =>
-          where(mg.id in selectedMusicianGroups) set(mg.group_id := groupId, mg.instrument_id := instrumentId))
+          where(mg.id in musicianGroups)
+          set(mg.group_id := groupId, mg.instrument_id := instrumentId))
       } else {
         AppSchema.musicianGroups.insert(
           from(AppSchema.musicianGroups)(mg =>
-            where(mg.id in selectedMusicianGroups and not(mg.group_id === groupId and mg.school_year === currentTerm))
-              select (mg)).map(mg => MusicianGroup(genId(), mg.musician_id, groupId, instrumentId, currentTerm))
+            where(mg.id in musicianGroups and not(mg.group_id === groupId and mg.school_year === currentTerm))
+              select (MusicianGroup(genId(), mg.musician_id, groupId, instrumentId, currentTerm))
+          ).toSeq
         )
       }
     }
