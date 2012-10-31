@@ -37,7 +37,7 @@ class StudentDetails extends Loggable {
                   if (checked) selectedMusicianGroups += ga.musicianGroup.id -> ga.musicianGroup
                   else selectedMusicianGroups -= ga.musicianGroup.id
                   Noop
-                }) ++ Text("%d: %s, %s".format(ga.musicianGroup.school_year, ga.group.name, ga.instrument.name)))
+                }) ++ Text("%d: %s, %s".format(ga.musicianGroup.school_year, ga.group.name, ga.instrument.name.get)))
 
     def makeDetails(md: MusicianDetails) =
       ".heading *"      #> "%s, %d, %d, %d".format(md.musician.name, md.musician.student_id,
@@ -55,7 +55,7 @@ class StudentDetails extends Loggable {
     val groups = AppSchema.groups.toSeq
     var selectedGroupId = groups.headOption.map(_.group_id)
     val instruments = AppSchema.instruments.toSeq
-    var selectedInstrumentId = instruments.headOption.map(_.instrument_id)
+    var selectedInstrumentId = instruments.headOption.map(_.idField.get)
     var replaceExistingAssignment = true
 
     def process(): JsCmd = {
@@ -69,7 +69,7 @@ class StudentDetails extends Loggable {
                       Text("Replace the existing group assignment, if one exists, otherwise create an additional one")) &
     "#groups"      #> SHtml.ajaxSelect(groups.map(g => (g.group_id.toString, g.name)).toSeq, Empty, gid => {
                        selectedGroupId = Some(gid.toInt) }) &
-    "#instruments" #> (SHtml.ajaxSelect(AppSchema.instruments.map(i => (i.instrument_id.toString, i.name)).toSeq,
+    "#instruments" #> (SHtml.ajaxSelect(AppSchema.instruments.map(i => (i.idField.get.toString, i.name.get)).toSeq,
                        Empty, iid => {
                        selectedInstrumentId = Some(iid.toInt)}) ++ SHtml.hidden(process))
   }

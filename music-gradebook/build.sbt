@@ -1,13 +1,14 @@
-name := "Lift 2.5 starter template"
+name := "Music Grade-Book"
 
 version := "0.0.1"
 
-organization := "net.liftweb"
+organization := "com.dbschools"
 
 scalaVersion := "2.9.1"
 
 resolvers ++= Seq("snapshots"     at "http://oss.sonatype.org/content/repositories/snapshots",
-                "releases"        at "http://oss.sonatype.org/content/repositories/releases"
+                "releases"        at "http://oss.sonatype.org/content/repositories/releases",
+                "Java.net Maven2 Repository"     at "http://download.java.net/maven/2/"
                 )
 
 seq(com.github.siasia.WebPlugin.webSettings :_*)

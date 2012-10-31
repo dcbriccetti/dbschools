@@ -23,7 +23,7 @@ class Students {
       ".id       *" #> row.musician.musician_id &
       ".stuId    *" #> row.musician.student_id &
       ".group    *" #> row.group.name &
-      ".instr    *" #> row.instrument.name
+      ".instr    *" #> row.instrument.name.get
     )
 
   def inNoGroups = {

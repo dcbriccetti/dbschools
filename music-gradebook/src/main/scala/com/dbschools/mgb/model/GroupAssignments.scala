@@ -28,7 +28,7 @@ object GroupAssignments extends Loggable {
   private def conditions(opId: Option[Int], m: Musician, mg: MusicianGroup, g: Group, i: Instrument,
       showPrevious: Boolean) = {
     val joinConditions = m.musician_id === mg.musician_id and mg.group_id === g.group_id and
-      mg.instrument_id === i.instrument_id
+      mg.instrument_id === i.idField.get
     val currentYearCondition = mg.school_year === Terms.currentTerm
     val joinAndIdConditions = opId.map(id => joinConditions and m.musician_id === id) | joinConditions
     if (showPrevious) joinAndIdConditions else joinAndIdConditions and currentYearCondition
