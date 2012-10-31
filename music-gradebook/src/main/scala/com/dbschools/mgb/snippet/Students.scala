@@ -11,8 +11,12 @@ import model.GroupAssignments
 
 class Students {
 
+  var showPrevious = false
+
+  def showPreviousCb = SHtml.ajaxCheckbox(showPrevious, c => showPrevious = c)
+
   def inGroups =
-    "#studentRow"   #> GroupAssignments(None).map(row =>
+    "#studentRow"   #> GroupAssignments(None, showPrevious).map(row =>
       ".schYear  *" #> row.musicianGroup.school_year &
       ".stuName  *" #> studentLink(row.musician) &
       ".gradYear *" #> row.musician.graduation_year &
