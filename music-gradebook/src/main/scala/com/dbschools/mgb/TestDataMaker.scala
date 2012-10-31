@@ -3,8 +3,9 @@ package com.dbschools.mgb
 import math.random
 import org.squeryl.PrimitiveTypeMode._
 import schema.{MusicianGroup, Musician, AppSchema}
+import net.liftweb.common.Loggable
 
-object TestDataMaker {
+object TestDataMaker extends Loggable {
 
   def getNames(names: String): Array[String] = names.split("\\W").map(_.capitalize)
 
@@ -218,18 +219,6 @@ cindy""")
       createAndGroupStudents()
     }
   }
-  
-  /** Feed database with dummy data.
-   * 
-   * @note pre-condition: DB needs to be initialized
-   * @see com.dbschools.mgb.Db#initialize()
-   */
-  def feedDbWithDummyData() {
-    deleteStudents()
-    // @todo investigate why a java.lang.ArrayIndexOutOfBoundsException is reached when creating groupIds: case _ => GroupIds(1)
-    // todo avoid duplication between this method and main
-    // createAndGroupStudents()
-  }
 
   private def deleteStudents() {
     AppSchema.musicianGroups  .deleteWhere(mg => mg.id === mg.id)
@@ -239,7 +228,7 @@ cindy""")
   }
 
   private def createAndGroupStudents() {
-    val instrumentIds = AppSchema.instruments.map(_.instrument_id).toArray
+    val instrumentIds = AppSchema.instruments.map(_.idField.get).toArray
     var id = 10000 // Until we set up sequences
     lastNames.foreach(lastName => {
       val firstName = firstNames((random * firstNames.length).toInt)
@@ -257,7 +246,7 @@ cindy""")
           instrumentIds((random * instrumentIds.length).toInt), 2013))
         id += 1
       })
-      println("Added %s, %s to %d groups".format(lastName, firstName, groupIds.size))
+      logger.trace("Added %s, %s to %d groups".format(lastName, firstName, groupIds.size))
     })
   }
 
@@ -267,8 +256,10 @@ cindy""")
     /** Returns the requested number of unique, randomly-chosen group IDs */
     def apply(num: Int) = {
       var ids = Set[Int]()
-      while(ids.size < num)
-        ids += groupIds((random * groupIds.length).toInt)
+      if(!groupIds.isEmpty){
+        while(ids.size < num)
+          ids += groupIds((random * groupIds.length).toInt)
+        }
       ids
     }
   }

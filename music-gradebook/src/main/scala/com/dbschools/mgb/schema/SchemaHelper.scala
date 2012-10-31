@@ -5,6 +5,7 @@ import net.liftweb.common.Loggable
 import net.liftweb.squerylrecord.RecordTypeMode.transaction
 import net.liftweb.squerylrecord.SquerylRecord
 import com.dbschools.mgb.TestDataMaker
+import java.sql.SQLException
 
 /**
  * Initializes a DB connection and setup the connection pool.
@@ -33,12 +34,11 @@ object SchemaHelper extends Loggable {
         AppSchema.printDdl
         AppSchema.drop
         AppSchema.create
-        TestDataMaker.feedDbWithDummyData()
       }
       catch {
-        case e: Exception ⇒ {
-          logger.error("Recreate schema has failed.")
-          throw new Exception("Failed to recreate the schema." + e.printStackTrace)
+        case exception: SQLException ⇒ {
+          logger.error("Recreate schema has failed.", exception)
+          throw new Exception("Failed to recreate the schema." + exception.getMessage)
         }
       }
     }
