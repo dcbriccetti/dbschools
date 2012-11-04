@@ -4,34 +4,10 @@
 <div id="main" class="lift:surround?with=default;at=content">
     <h2>Students</h2>
 
-    <span><span data-lift="Students.showPreviousCb"/></span> Show previous years
+    <span><span data-lift="Students.showPreviousCb"/></span> School Years
 
-    <div data-lift="Students.inGroups">
-        <table>
-            <thead>
-            <tr>
-                <th>School Year</th>
-                <th>Name</th>
-                <th>Grad. Year</th>
-                <th>ID</th>
-                <th>Student ID</th>
-                <th>Group</th>
-                <th>Instrument</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr id="studentRow">
-                <td class="schYear"/>
-                <td class="stuName"/>
-                <td class="gradYear"/>
-                <td class="id"/>
-                <td class="stuId"/>
-                <td class="group"/>
-                <td class="instr"/>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+    <lift:embed what="_inGroupsTable" />
+
 </div>
 </body>
 </html>

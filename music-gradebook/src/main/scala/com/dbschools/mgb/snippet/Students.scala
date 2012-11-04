@@ -2,21 +2,37 @@ package com.dbschools.mgb
 package snippet
 
 import xml.Text
+import scalaz._
+import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
-import http.SHtml
+import common.{Full, Loggable}
+import http.js.JsCmds._
+import http.js.JsCmds.Replace
+import http.{Templates, SHtml}
 import util._
 import schema.{Musician, AppSchema}
-import model.GroupAssignments
+import model.{Terms, GroupAssignments}
 
-class Students {
+class Students extends Loggable {
 
-  var showPrevious = false
+  var selectedTerm: Option[Int] = Some(Terms.currentTerm) // None means no specific term, therefore all terms
 
-  def showPreviousCb = SHtml.ajaxCheckbox(showPrevious, c => showPrevious = c)
+  def showPreviousCb = {
+    val All = "All"
+    val allTerms = (All, All) :: Terms.allTermsFormatted
+    SHtml.ajaxSelect(allTerms, Full(selectedTerm.map(_.toString) | All), term => {
+      selectedTerm = if (term == All) None else Some(term.toInt)
+      val template = "_inGroupsTable"
+      Templates(List(template)).map(Replace("inGroups", _)) openOr {
+        logger.error("Error loading template " + template)
+        Noop
+      }
+    })
+  }
 
   def inGroups =
-    "#studentRow"   #> GroupAssignments(None, showPrevious).map(row =>
+    "#studentRow"   #> GroupAssignments(None, selectedTerm).map(row =>
       ".schYear  *" #> row.musicianGroup.school_year &
       ".stuName  *" #> studentLink(row.musician) &
       ".gradYear *" #> row.musician.graduation_year &

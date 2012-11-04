@@ -29,7 +29,7 @@ class StudentDetails extends Loggable {
       orderBy(musician.last_name, musician.first_name)).toSeq) | Seq[Musician]()
 
     val musicianDetailsItems = matchingMusicians.map(musician =>
-      MusicianDetails(musician, GroupAssignments(Some(musician.musician_id), true),
+      MusicianDetails(musician, GroupAssignments(Some(musician.musician_id), None),
       AppSchema.assessments.where(_.musician_id === musician.musician_id).toSeq))
 
     def makeGroups(ga: GroupAssignment) =

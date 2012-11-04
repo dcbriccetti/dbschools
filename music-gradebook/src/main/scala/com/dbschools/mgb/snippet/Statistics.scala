@@ -10,6 +10,7 @@ import net.liftweb._
 import util.BindHelpers._
 import schema.AppSchema
 import AppSchema.{groups, musicianGroups, musicians, assessments, users}
+import model.Terms
 
 class Statistics {
 

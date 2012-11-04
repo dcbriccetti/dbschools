@@ -1,6 +1,8 @@
-package com.dbschools.mgb
+package com.dbschools.mgb.model
 
 import org.scala_tools.time.Imports._
+import org.squeryl.PrimitiveTypeMode._
+import com.dbschools.mgb.schema.AppSchema
 
 object Terms {
   val yearEndMonth = 7
@@ -24,4 +26,14 @@ object Terms {
 
   def gradeAsGraduationYear(grade: Int, schoolYear: Int = currentTerm) =
     8 - grade + schoolYear
+
+  /** Returns all school years in a form suitable for a Select control.
+    * For example: List(("2012", "2012–2013"), ("2011", "2011–2012"))
+    */
+  def allTermsFormatted = {
+    val enDash = '–'
+    allTerms.map(year => (year.toString, "%d%c%s".format(year, enDash, (year + 1).toString.substring(2)))).toList
+  }
+
+  def allTerms = from(AppSchema.musicianGroups)(mg => select(mg.school_year) orderBy(mg.school_year desc)).distinct
 }
