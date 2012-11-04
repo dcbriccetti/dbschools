@@ -2,25 +2,25 @@ package com.dbschools.mgb.snippet
 
 import xml.NodeSeq
 import org.squeryl.PrimitiveTypeMode._
-import net.liftweb.http.{RequestVar, S, SessionVar, SHtml}
+import net.liftweb.http.{S, SessionVar, SHtml}
 import net.liftweb.util.Helpers._
 import net.liftweb.util.BCrypt
 import bootstrap.liftweb.RunState
 import com.dbschools.mgb.schema.AppSchema
 
 class Authenticator {
+  import Authenticator.{credentialsValid, userName}
+  var password = ""
 
   def authForm =
-    "#userName *" #> SHtml.text(Authenticator.userName, name => Authenticator.userName(name.trim), "id" -> "userName") &
-    "#password"   #> SHtml.password("", Authenticator.password(_),  "id" -> "password") &
+    "#userName *" #> SHtml.text(userName.is, name => userName(name.trim), "id" -> "userName") &
+    "#password"   #> SHtml.password("", password = _,  "id" -> "password") &
     "#submit"     #> SHtml.submit("Log In", () => {
-      if (AppSchema.users.where(_.login === Authenticator.userName.get).exists(user =>
-        BCrypt.checkpw(Authenticator.password.get, user.epassword))) {
+      if (credentialsValid(password)) {
         RunState loggedIn true
         S.redirectTo("/index")
-      } else {
+      } else
         S.error("Login failed")
-      }
     }, "id" -> "submit")
 
   def logOut(content: NodeSeq): NodeSeq = {
@@ -32,10 +32,12 @@ class Authenticator {
 
 object Authenticator {
   object userName extends SessionVar("")
-  object password extends RequestVar("")
 
   def logOut() {
     RunState loggedIn false
     userName("")
   }
+
+  private def credentialsValid(password: String) =
+    AppSchema.users.where(_.login === userName.is).exists(user => BCrypt.checkpw(password, user.epassword))
 }
