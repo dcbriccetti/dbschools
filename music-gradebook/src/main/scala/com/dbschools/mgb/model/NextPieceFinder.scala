@@ -56,13 +56,11 @@ object NextPieceFinder extends Loggable {
   }
 }
 
-case class LastPass(musicianId: Int, instrumentId: Int, subinstrument: Option[Int], pieceId: Int) {
+case class LastPass(musicianId: Int, instrumentId: Int, opSubinstrument: Option[Int], pieceId: Int) {
   val instruments = AppSchema.instruments.map(i => i.id -> i.name).toMap  // todo cache these
   val subinstruments = AppSchema.subinstruments.map(i => i.id -> i.name).toMap
   val pieces = AppSchema.pieces.map(p => p.id -> p.name).toMap
 
-  override def toString = pieces(pieceId) + " on " + instruments(instrumentId) + (subinstrument match {
-    case Some(si) => " (%s)".format(subinstruments(si))
-    case _ => ""
-  })
+  override def toString = pieces(pieceId) + " on " + instruments(instrumentId) +
+    ~opSubinstrument.map(subinstruments).map(n => " (%s)".format(n))
 }
