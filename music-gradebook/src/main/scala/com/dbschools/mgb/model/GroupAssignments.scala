@@ -12,23 +12,21 @@ case class GroupAssignment(musician: Musician, group: Group, musicianGroup: Musi
   instrument: Instrument)
 
 object GroupAssignments extends Loggable {
-  def apply(id: Option[Int], selectedTerm: Option[Int]) = {
+  def apply(opId: Option[Int], opSelectedTerm: Option[Int]) = {
     import AppSchema._
     val rows = from(musicians, groups, musicianGroups, instruments)((m, g, mg, i) =>
-      where(conditions(id, m, mg, g, i, selectedTerm))
+      where(
+        m.musician_id     === opId.? and
+        m.musician_id     === mg.musician_id and
+        mg.group_id       === g.group_id and
+        mg.instrument_id  === i.idField.is and
+        mg.school_year    === opSelectedTerm.?
+      )
       select(GroupAssignment(m, g, mg, i))
       orderBy(mg.school_year desc, m.last_name, m.first_name, g.name)
     )
     rows
   }
-
-  private def conditions(opId: Option[Int], m: Musician, mg: MusicianGroup, g: Group, i: Instrument,
-      selectedTerm: Option[Int]) =
-    List(
-      opId.map(m.musician_id === _),
-      Some(m.musician_id === mg.musician_id and mg.group_id === g.group_id and mg.instrument_id === i.idField.is),
-      selectedTerm.map(mg.school_year === _)
-    ).flatten.reduce(_ and _)
 
   def create(musicianGroups: Iterable[Int], replaceExisting: Boolean, groupId: Int, instrumentId: Int): AnyVal = {
     val currentTerm = Terms.currentTerm
