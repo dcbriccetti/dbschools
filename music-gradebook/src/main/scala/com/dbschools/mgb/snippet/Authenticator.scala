@@ -14,7 +14,7 @@ class Authenticator {
 
   def authForm =
     "#userName"   #> SHtml.text(userName.is, name => userName(name.trim), "id" -> "userName") &
-    "#password"   #> SHtml.password("", password = _,  "id" -> "password") &
+    "#password"   #> SHtml.password("", password = _, "id" -> "password") &
     "#submit"     #> SHtml.submit("Log In", () => {
       if (credentialsValid(password)) {
         RunState loggedIn true
