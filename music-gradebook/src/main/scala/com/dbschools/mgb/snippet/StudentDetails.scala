@@ -14,7 +14,7 @@ import js.JE.JsRaw
 import js.JsCmds._
 import Helpers.asInt
 import schema.{Assessment, Musician, MusicianGroup, AppSchema}
-import model.{GroupAssignments, GroupAssignment}
+import model.{Terms, GroupAssignments, GroupAssignment}
 
 class StudentDetails extends Loggable {
   private var selectedMusicianGroups = Map[Int, MusicianGroup]()
@@ -41,7 +41,7 @@ class StudentDetails extends Loggable {
 
     def makeDetails(md: MusicianDetails) =
       ".heading *"      #> "%s, %d, %d, %d".format(md.musician.name, md.musician.student_id,
-                           md.musician.musician_id, md.musician.graduation_year) &
+                           md.musician.musician_id, Terms.graduationYearAsGrade(md.musician.graduation_year)) &
       ".groups"         #> md.groups.map(makeGroups) &
       ".assessments *"  #> {
         val (pass, fail) = md.assessments.partition(_.pass)
