@@ -39,5 +39,6 @@ object Authenticator {
   }
 
   private def credentialsValid(password: String) =
-    AppSchema.users.where(_.login === userName.is).exists(user => BCrypt.checkpw(password, user.epassword))
+    AppSchema.users.where(user => user.login === userName.is and user.enabled === true).exists(user =>
+      BCrypt.checkpw(password, user.epassword))
 }
