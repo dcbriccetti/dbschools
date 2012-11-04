@@ -1,9 +1,12 @@
 package com.dbschools.mgb.snippet
 
+import xml.NodeSeq
+import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.http.{RequestVar, S, SessionVar, SHtml}
 import net.liftweb.util.Helpers._
+import net.liftweb.util.BCrypt
 import bootstrap.liftweb.RunState
-import xml.NodeSeq
+import com.dbschools.mgb.schema.AppSchema
 
 class Authenticator {
 
@@ -11,8 +14,9 @@ class Authenticator {
     "#userName *" #> SHtml.text(Authenticator.userName, name => Authenticator.userName(name.trim), "id" -> "userName") &
     "#password"   #> SHtml.password("", Authenticator.password(_),  "id" -> "password") &
     "#submit"     #> SHtml.submit("Log In", () => {
-      if (true) {  // todo put authentication here
-        RunState.loggedIn(true)
+      if (AppSchema.users.where(_.login === Authenticator.userName.get).exists(user =>
+        BCrypt.checkpw(Authenticator.password.get, user.epassword))) {
+        RunState loggedIn true
         S.redirectTo("/index")
       } else {
         S.error("Login failed")
@@ -31,8 +35,7 @@ object Authenticator {
   object password extends RequestVar("")
 
   def logOut() {
-    RunState.loggedIn(false)
+    RunState loggedIn false
     userName("")
   }
-
 }
