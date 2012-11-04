@@ -13,7 +13,7 @@ class Authenticator {
   var password = ""
 
   def authForm =
-    "#userName *" #> SHtml.text(userName.is, name => userName(name.trim), "id" -> "userName") &
+    "#userName"   #> SHtml.text(userName.is, name => userName(name.trim), "id" -> "userName") &
     "#password"   #> SHtml.password("", password = _,  "id" -> "password") &
     "#submit"     #> SHtml.submit("Log In", () => {
       if (credentialsValid(password)) {
