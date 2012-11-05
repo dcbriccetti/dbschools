@@ -265,9 +265,7 @@ cindy""")
     }
   }
   
-  /** Initializes the music_user table with a demo user. 
-   * @note Encrypted password is left empty. 
-   */
+  /** Initializes the music_user table with a demo user.*/
   def createDefaultUserData() {
     def prop(name: String) = Props.get(name).get
     AppSchema.users.insert(User(1, prop("data.users.demo.login"), "", prop("data.users.demo.epassword"), prop("data.users.demo.name.first"), prop("data.users.demo.name.last"), true))
