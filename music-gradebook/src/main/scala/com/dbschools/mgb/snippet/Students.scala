@@ -36,7 +36,7 @@ class Students extends Loggable {
     val lastPasses = lastPassFinder.lastPassed().groupBy(_.musicianId)
 
     "#studentRow"   #> GroupAssignments(None, selectedTerm).map(row =>
-      ".schYear  *" #> row.musicianGroup.school_year &
+      ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
       ".stuName  *" #> studentLink(row.musician) &
       ".grade *"    #> Terms.graduationYearAsGrade(row.musician.graduation_year) &
       ".id       *" #> row.musician.musician_id &

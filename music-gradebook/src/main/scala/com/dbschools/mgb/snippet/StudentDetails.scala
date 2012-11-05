@@ -39,7 +39,8 @@ class StudentDetails extends Loggable {
                   if (checked) selectedMusicianGroups += ga.musicianGroup.id -> ga.musicianGroup
                   else selectedMusicianGroups -= ga.musicianGroup.id
                   Noop
-                }) ++ Text("%d: %s, %s".format(ga.musicianGroup.school_year, ga.group.name, ga.instrument.name.get)))
+                }) ++ Text(Terms.formatted(ga.musicianGroup.school_year)) ++ Text(
+        ": %s, %s".format(ga.group.name, ga.instrument.name.get)))
 
     def makeDetails(md: MusicianDetails) =
       ".heading *"      #> "%s, %d, %d, %d, %s".format(md.musician.name, md.musician.student_id,

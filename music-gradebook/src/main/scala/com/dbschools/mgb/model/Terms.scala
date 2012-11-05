@@ -30,9 +30,11 @@ object Terms {
   /** Returns all school years in a form suitable for a Select control.
     * For example: List(("2012", "2012–2013"), ("2011", "2011–2012"))
     */
-  def allTermsFormatted = {
+  def allTermsFormatted = allTerms.map(year => (year.toString, formatted(year))).toList
+
+  def formatted(year: Int) = {
     val enDash = '–'
-    allTerms.map(year => (year.toString, "%d%c%s".format(year, enDash, (year + 1).toString.substring(2)))).toList
+    "%s%c%s".format(year.toString.substring(2), enDash, (year + 1).toString.substring(2))
   }
 
   def allTerms = from(AppSchema.musicianGroups)(mg => select(mg.school_year) orderBy(mg.school_year desc)).distinct
