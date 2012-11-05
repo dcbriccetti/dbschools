@@ -1,7 +1,6 @@
 package com.dbschools.mgb
 package snippet
 
-import xml.Text
 import scalaz._
 import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
@@ -15,20 +14,27 @@ import js.JsCmds._
 import Helpers.asInt
 import js.JsCmds.Confirm
 import model._
+import schema.AppSchema
+import schema.IdGenerator._
 import model.GroupAssignment
-import schema.{AppSchema, Musician, Assessment, MusicianGroup}
+import scala.Some
+import schema.Musician
+import xml.Text
+import schema.Assessment
+import schema.MusicianGroup
 
 class StudentDetails extends Loggable {
   private var selectedMusicianGroups = Map[Int, MusicianGroup]()
-  private val reloadPage = JsRaw("location.reload()")
+  private val reloadPage: JsCmd = JsRaw("location.reload()")
+  private var opMusicianId = none[Int]
+  private val groups = AppSchema.groups.toSeq.sortBy(_.name)
+  private val instruments = AppSchema.instruments.toSeq.sortBy(_.sequence.is)
 
   def render = {
-    val groups = AppSchema.groups.toSeq.sortBy(_.name)
-    val instruments = AppSchema.instruments.toSeq.sortBy(_.sequence.is)
 
     case class MusicianDetails(musician: Musician, groups: Iterable[GroupAssignment], assessments: Iterable[Assessment])
-    val opId = S.param("id").flatMap(asInt).toOption
-    val matchingMusicians = opId.map(id => from(AppSchema.musicians)(musician =>
+    opMusicianId = S.param("id").flatMap(asInt).toOption
+    val matchingMusicians = opMusicianId.map(id => from(AppSchema.musicians)(musician =>
       where(musician.musician_id === id)
       select(musician)
       orderBy(musician.last_name, musician.first_name)).toSeq) | Seq[Musician]()
@@ -69,14 +75,27 @@ class StudentDetails extends Loggable {
     "#student" #> musicianDetailsItems.map(makeDetails)
   }
 
-  def deleteGroupAssignment = SHtml.ajaxButton("Delete", () => {
-    if (! selectedMusicianGroups.isEmpty) {
-      Confirm("Are you sure you want to remove the %d selected group assignments?".format(selectedMusicianGroups.size),
-        SHtml.ajaxInvoke(() => {
-          AppSchema.musicianGroups.deleteWhere(_.id in selectedMusicianGroups.keys)
-          selectedMusicianGroups = selectedMusicianGroups.empty
-          reloadPage
-        }))
-    } else Noop
-  })
+  def groupAssignments =
+    "#delete" #>
+      SHtml.ajaxButton("Delete selected group assignments", () => {
+        if (! selectedMusicianGroups.isEmpty) {
+          Confirm("Are you sure you want to remove the %d selected group assignments?".format(selectedMusicianGroups.size),
+            SHtml.ajaxInvoke(() => {
+              AppSchema.musicianGroups.deleteWhere(_.id in selectedMusicianGroups.keys)
+              selectedMusicianGroups = selectedMusicianGroups.empty
+              reloadPage
+            }))
+        } else Noop
+      }) &
+    "#create" #> SHtml.ajaxButton("Create current year group assignment", () => {
+      for {
+        group      <- groups.find(_.doesTesting)
+        instrument <- instruments.find(_.name.is == "Unassigned")
+        musicianId <- opMusicianId
+      } {
+        AppSchema.musicianGroups.insert(MusicianGroup(genId(), musicianId, group.group_id, instrument.id,
+          Terms.currentTerm))
+      }
+      reloadPage
+    })
 }
