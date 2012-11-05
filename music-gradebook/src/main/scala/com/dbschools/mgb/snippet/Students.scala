@@ -34,7 +34,7 @@ class Students extends Loggable {
 
   def inGroups = {
     val lastPasses = lastPassFinder.lastPassed().groupBy(_.musicianId)
-
+    (if (selectedTerm.isDefined) ".schYear" #> none[String] else PassThru) andThen (
     "#studentRow"   #> GroupAssignments(None, selectedTerm).map(row =>
       ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
       ".stuName  *" #> studentLink(row.musician) &
@@ -44,7 +44,7 @@ class Students extends Loggable {
       ".group    *" #> row.group.name &
       ".instr    *" #> row.instrument.name.get &
       ".lastPass *" #> ~lastPasses.get(row.musician.musician_id).map(_.mkString(", "))
-    )
+    ))
   }
 
   def inNoGroups = {
