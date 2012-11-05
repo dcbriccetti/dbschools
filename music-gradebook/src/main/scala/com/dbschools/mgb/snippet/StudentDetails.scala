@@ -13,8 +13,10 @@ import js._
 import js.JE.JsRaw
 import js.JsCmds._
 import Helpers.asInt
-import schema.{Assessment, Musician, MusicianGroup, AppSchema}
-import model.{NextPieceFinder, Terms, GroupAssignments, GroupAssignment}
+import js.JsCmds.Confirm
+import model._
+import model.GroupAssignment
+import schema.{AppSchema, Musician, Assessment, MusicianGroup}
 
 class StudentDetails extends Loggable {
   private var selectedMusicianGroups = Map[Int, MusicianGroup]()
@@ -42,7 +44,7 @@ class StudentDetails extends Loggable {
     def makeDetails(md: MusicianDetails) =
       ".heading *"      #> "%s, %d, %d, %d, %s".format(md.musician.name, md.musician.student_id,
                            md.musician.musician_id, Terms.graduationYearAsGrade(md.musician.graduation_year),
-                           NextPieceFinder.lastPassed(Some(md.musician.musician_id)) mkString ", ") &
+                           new LastPassFinder().lastPassed(Some(md.musician.musician_id)) mkString ", ") &
       ".groups"         #> md.groups.map(makeGroups) &
       ".assessments *"  #> {
         val (pass, fail) = md.assessments.partition(_.pass)

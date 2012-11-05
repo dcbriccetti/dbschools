@@ -12,10 +12,11 @@ import http.js.JsCmds.Replace
 import http.{Templates, SHtml}
 import util._
 import schema.{Musician, AppSchema}
-import model.{Terms, GroupAssignments}
+import model.{LastPassFinder, Terms, GroupAssignments}
 
 class Students extends Loggable {
 
+  val lastPassFinder = new LastPassFinder()
   var selectedTerm: Option[Int] = Some(Terms.currentTerm) // None means no specific term, therefore all terms
 
   def showPreviousCb = {
@@ -31,7 +32,9 @@ class Students extends Loggable {
     })
   }
 
-  def inGroups =
+  def inGroups = {
+    val lastPasses = lastPassFinder.lastPassed().groupBy(_.musicianId)
+
     "#studentRow"   #> GroupAssignments(None, selectedTerm).map(row =>
       ".schYear  *" #> row.musicianGroup.school_year &
       ".stuName  *" #> studentLink(row.musician) &
@@ -39,8 +42,10 @@ class Students extends Loggable {
       ".id       *" #> row.musician.musician_id &
       ".stuId    *" #> row.musician.student_id &
       ".group    *" #> row.group.name &
-      ".instr    *" #> row.instrument.name.get
+      ".instr    *" #> row.instrument.name.get &
+      ".lastPass *" #> ~lastPasses.get(row.musician.musician_id).map(_.mkString(", "))
     )
+  }
 
   def inNoGroups = {
     val musicians = join(AppSchema.musicians, AppSchema.musicianGroups.leftOuter)((m, mg) =>
