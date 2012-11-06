@@ -5,6 +5,7 @@ import org.squeryl.PrimitiveTypeMode._
 import schema.{MusicianGroup, Musician, AppSchema, User}
 import net.liftweb.common.Loggable
 import net.liftweb.util.Props
+import java.sql.SQLException
 
 object TestDataMaker extends Loggable {
 
@@ -268,7 +269,17 @@ cindy""")
   /** Initializes the music_user table with a demo user.*/
   def createDefaultUserData() {
     def prop(name: String) = Props.get(name).get
-    AppSchema.users.insert(User(1, prop("data.users.demo.login"), "", prop("data.users.demo.epassword"), prop("data.users.demo.name.first"), prop("data.users.demo.name.last"), true))
-    logger.info("Added a demo user")
+    transaction {
+      try {
+        AppSchema.users.insert(User(1, prop("data.users.demo.login"), "", prop("data.users.demo.epassword"), prop("data.users.demo.name.first"), prop("data.users.demo.name.last"), true))
+        logger.info("Added a demo user")
+      }
+      catch {
+        case exception: SQLException ⇒ {
+          // Only warn about the problem. Failing to add a default user is not considered fatal.
+          logger.warn("Failed to add a test user.", exception)
+        }
+      }
+    }
   }
 }

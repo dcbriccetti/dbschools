@@ -28,6 +28,9 @@ object Db {
 
     if (Props.getBool("db.recreate", false)) {
       SchemaHelper.recreateSchema
+      if (Props.getBool("db.development", false)) {
+        TestDataMaker.createDefaultUserData
+      }
     } else {
       SchemaHelper.touch
     }

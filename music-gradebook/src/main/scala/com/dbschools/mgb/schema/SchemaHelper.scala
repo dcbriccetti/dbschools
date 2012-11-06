@@ -35,7 +35,6 @@ object SchemaHelper extends Loggable {
         AppSchema.printDdl
         AppSchema.drop
         AppSchema.create
-        TestDataMaker.createDefaultUserData()
       }
       catch {
         case exception: SQLException ⇒ {
@@ -44,8 +43,6 @@ object SchemaHelper extends Loggable {
         }
       }
     }
-    
-
   }
 
   /**

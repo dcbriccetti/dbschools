@@ -1,5 +1,7 @@
 ## Properties for DEVELOPMENT mode
 
+db.development=true
+
 # DB Driver: h2, postgres
 db.engine=h2
 
