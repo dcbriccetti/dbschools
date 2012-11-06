@@ -43,30 +43,32 @@ class StudentDetails extends Loggable {
       MusicianDetails(musician, GroupAssignments(Some(musician.musician_id), None),
       AppSchema.assessments.where(_.musician_id === musician.musician_id).toSeq))
 
-    def makeGroups(ga: GroupAssignment) =
-      "* *" #>  (SHtml.ajaxCheckbox(false, checked => {
-                  if (checked) selectedMusicianGroups += ga.musicianGroup.id -> ga.musicianGroup
-                  else selectedMusicianGroups -= ga.musicianGroup.id
-                  if (selectedMusicianGroups.isEmpty) JsHideId("delete") else JsShowId("delete")
-                }) ++ Text(Terms.formatted(ga.musicianGroup.school_year) + ": ") ++
-                (SHtml.ajaxSelect(groups.map(g => (g.group_id.toString, g.name)).toSeq,
-                  Full(ga.musicianGroup.group_id.toString), gid => {
-                  AppSchema.musicianGroups.update(mg => where(mg.id === ga.musicianGroup.id)
-                  set(mg.group_id := gid.toInt))
-                  Noop
-                })) ++
-                (SHtml.ajaxSelect(instruments.map(i => (i.id.toString, i.name.is)).toSeq,
-                  Full(ga.musicianGroup.instrument_id.toString), iid => {
-                  AppSchema.musicianGroups.update(mg => where(mg.id === ga.musicianGroup.id)
-                  set(mg.instrument_id := iid.toInt))
-                  Noop
-                })))
-
     def makeDetails(md: MusicianDetails) =
-      ".heading *"      #> "%s, %d, %d, %d, %s".format(md.musician.name, md.musician.student_id,
-                           md.musician.musician_id, Terms.graduationYearAsGrade(md.musician.graduation_year),
-                           new LastPassFinder().lastPassed(Some(md.musician.musician_id)) mkString ", ") &
-      ".groups"         #> md.groups.map(makeGroups) &
+      ".name *"         #> md.musician.name &
+      ".grade *"        #> Terms.graduationYearAsGrade(md.musician.graduation_year) &
+      ".stuId *"        #> md.musician.student_id &
+      ".mgbId *"        #> md.musician.musician_id &
+      ".lastPiece *"    #> new LastPassFinder().lastPassed(Some(md.musician.musician_id)).mkString(", ") &
+      ".groups"         #>
+        <table class="autoWidth noShade">
+          <tr><th>Sel</th><th>Year</th><th>Group</th><th>Instrument</th></tr>
+          {md.groups.map(ga => {
+          <tr>
+            <td>
+              {assignmentCheckbox(ga)}
+            </td>
+            <td>
+              {Terms.formatted(ga.musicianGroup.school_year)}
+            </td>
+            <td>
+              {groupSelector(ga)}
+            </td>
+            <td>
+              {instrumentSelector(ga)}
+            </td>
+          </tr>
+        })}
+        </table> &
       ".assessments *"  #> {
         val (pass, fail) = md.assessments.partition(_.pass)
         "Assessments: pass: %d, fail: %d".format(pass.size, fail.size)
@@ -74,6 +76,29 @@ class StudentDetails extends Loggable {
 
     "#student" #> musicianDetailsItems.map(makeDetails)
   }
+
+  private def assignmentCheckbox(ga: GroupAssignment) =
+    SHtml.ajaxCheckbox(false, checked => {
+      if (checked) selectedMusicianGroups += ga.musicianGroup.id -> ga.musicianGroup
+      else selectedMusicianGroups -= ga.musicianGroup.id
+      if (selectedMusicianGroups.isEmpty) JsHideId("delete") else JsShowId("delete")
+    })
+
+  private def groupSelector(ga: GroupAssignment) =
+    SHtml.ajaxSelect(groups.map(g => (g.group_id.toString, g.name)).toSeq,
+      Full(ga.musicianGroup.group_id.toString), gid => {
+        AppSchema.musicianGroups.update(mg => where(mg.id === ga.musicianGroup.id)
+          set (mg.group_id := gid.toInt))
+        Noop
+      })
+
+  private def instrumentSelector(ga: GroupAssignment) =
+    SHtml.ajaxSelect(instruments.map(i => (i.id.toString, i.name.is)).toSeq,
+      Full(ga.musicianGroup.instrument_id.toString), iid => {
+        AppSchema.musicianGroups.update(mg => where(mg.id === ga.musicianGroup.id)
+          set (mg.instrument_id := iid.toInt))
+        Noop
+      })
 
   def groupAssignments =
     "#delete" #>

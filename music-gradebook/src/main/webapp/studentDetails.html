@@ -2,18 +2,32 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
-    <h2>Student Details</h2>
-
     <div data-lift="StudentDetails">
-        <ul>
-            <li id="student">
-                <div>
-                    <p class="heading"></p>
-                    <p class="groups"></p>
-                    <p class="assessments"></p>
-                </div>
-            </li>
-        </ul>
+        <div id="student">
+            <div>
+                <h2 class="name"></h2>
+                <table class="autoWidth noShade">
+                    <tr>
+                        <td class="alignRight">Grade:</td>
+                        <td><span class="grade"/></td>
+                    </tr>
+                    <tr>
+                        <td class="alignRight">Student ID:</td>
+                        <td><span class="stuId"/></td>
+                    </tr>
+                    <tr>
+                        <td class="alignRight">Gradebook ID:</td>
+                        <td><span class="mgbId"/></td>
+                    </tr>
+                    <tr>
+                        <td class="alignRight">Last piece passed:</td>
+                        <td><span class="lastPiece"/></td>
+                    </tr>
+                </table>
+                <p class="groups"/>
+                <p class="assessments"/>
+            </div>
+        </div>
     </div>
 
     <h3>Group Assignments</h3>
