@@ -2,7 +2,6 @@ package bootstrap.liftweb
 
 import net.liftweb._
 import util._
-import Helpers._
 
 import common._
 import http._
@@ -18,10 +17,6 @@ object RunState {
   object loggedIn extends SessionVar[Boolean] (false)
 }
 
-/**
- * A class that's instantiated early and run.  It allows the application
- * to modify lift's environment
- */
 class Boot {
   def boot {
     // where to search snippet
@@ -61,7 +56,7 @@ class Boot {
     LiftRules.early.append(_.setCharacterEncoding("UTF-8"))
 
     // What is the function to test if a user is logged in?
-    LiftRules.loggedInTest = Full(() => true)
+    LiftRules.loggedInTest = Full(() => RunState.loggedIn.is)
 
     // Use HTML5 for rendering
     LiftRules.htmlProperties.default.set((r: Req) =>
