@@ -1,4 +1,6 @@
-## Properties for DEVELOPMENT mode
+## Properties for PRODUCTION mode
+
+db.development=false
 
 # DB Driver: h2, postgres
 db.engine=postgres
