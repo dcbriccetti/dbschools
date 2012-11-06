@@ -9,7 +9,6 @@ import http._
 import js.jquery.JQueryArtifacts
 import sitemap._
 import Loc._
-import mapper._
 
 import net.liftmodules.JQueryModule
 import org.squeryl.PrimitiveTypeMode._
@@ -35,7 +34,7 @@ class Boot {
     def sitemap = SiteMap(
       Menu.i("Home"      ) / "index",
       Menu.i("Log In"    ) / "logIn"          >> notLoggedIn,
-      Menu.i("Groups"    ) / "groups"         >> loggedIn,
+      Menu.i("Students"  ) / "students"       >> loggedIn,
       Menu.i("No Groups" ) / "noGroups"       >> loggedIn,
       Menu.i("Details"   ) / "studentDetails" >> loggedIn >> Hidden,
       Menu.i("Problems"  ) / "problems"       >> loggedIn,
