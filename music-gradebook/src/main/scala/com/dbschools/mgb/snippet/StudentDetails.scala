@@ -47,7 +47,7 @@ class StudentDetails extends Loggable {
       "* *" #>  (SHtml.ajaxCheckbox(false, checked => {
                   if (checked) selectedMusicianGroups += ga.musicianGroup.id -> ga.musicianGroup
                   else selectedMusicianGroups -= ga.musicianGroup.id
-                  Noop
+                  if (selectedMusicianGroups.isEmpty) JsHideId("delete") else JsShowId("delete")
                 }) ++ Text(Terms.formatted(ga.musicianGroup.school_year) + ": ") ++
                 (SHtml.ajaxSelect(groups.map(g => (g.group_id.toString, g.name)).toSeq,
                   Full(ga.musicianGroup.group_id.toString), gid => {
