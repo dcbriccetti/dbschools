@@ -70,7 +70,7 @@ class Students extends Loggable {
       ".stuName  *" #> studentLink(m) &
       ".id       *" #> m.musician_id &
       ".stuId    *" #> m.student_id &
-      ".gradYear *" #> m.graduation_year
+      ".grade    *" #> Terms.graduationYearAsGrade(m.graduation_year)
     )
   }
 
