@@ -2,8 +2,10 @@ package com.dbschools.mgb
 
 import math.random
 import org.squeryl.PrimitiveTypeMode._
-import schema.{MusicianGroup, Musician, AppSchema}
+import schema.{MusicianGroup, Musician, AppSchema, User}
 import net.liftweb.common.Loggable
+import net.liftweb.util.Props
+import java.sql.SQLException
 
 object TestDataMaker extends Loggable {
 
@@ -226,7 +228,7 @@ cindy""")
     AppSchema.assessments     .deleteWhere(a => a.assessment_id === a.assessment_id)
     AppSchema.musicians       .deleteWhere(m => m.musician_id === m.musician_id)
   }
-
+  
   private def createAndGroupStudents() {
     val instrumentIds = AppSchema.instruments.map(_.idField.get).toArray
     var id = 10000 // Until we set up sequences
@@ -261,6 +263,23 @@ cindy""")
           ids += groupIds((random * groupIds.length).toInt)
         }
       ids
+    }
+  }
+  
+  /** Initializes the music_user table with a demo user.*/
+  def createDefaultUserData() {
+    def prop(name: String) = Props.get(name).get
+    transaction {
+      try {
+        AppSchema.users.insert(User(1, prop("data.users.demo.login"), "", prop("data.users.demo.epassword"), prop("data.users.demo.name.first"), prop("data.users.demo.name.last"), true))
+        logger.info("Added a demo user")
+      }
+      catch {
+        case exception: SQLException ⇒ {
+          // Only warn about the problem. Failing to add a default user is not considered fatal.
+          logger.warn("Failed to add a test user.", exception)
+        }
+      }
     }
   }
 }

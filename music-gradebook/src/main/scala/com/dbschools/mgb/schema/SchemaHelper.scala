@@ -5,6 +5,8 @@ import net.liftweb.common.Loggable
 import net.liftweb.squerylrecord.RecordTypeMode.transaction
 import net.liftweb.squerylrecord.SquerylRecord
 import java.sql.SQLException
+import com.dbschools.mgb.TestDataMaker
+import com.dbschools.mgb.convert.EncryptPasswords
 
 /**
  * Initializes a DB connection and setup the connection pool.
