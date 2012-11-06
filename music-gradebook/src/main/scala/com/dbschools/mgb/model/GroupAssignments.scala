@@ -12,13 +12,16 @@ case class GroupAssignment(musician: Musician, group: Group, musicianGroup: Musi
   instrument: Instrument)
 
 object GroupAssignments extends Loggable {
-  def apply(opId: Option[Int], opSelectedTerm: Option[Int]) = {
+  def apply(opId: Option[Int], opSelectedTerm: Option[Int] = None, opSelectedGroupId: Option[Int] = None,
+      opSelectedInstrumentId: Option[Int] = None) = {
     import AppSchema._
     val rows = from(musicians, groups, musicianGroups, instruments)((m, g, mg, i) =>
       where(
         m.musician_id     === opId.? and
         m.musician_id     === mg.musician_id and
+        mg.group_id       === opSelectedGroupId.? and
         mg.group_id       === g.group_id and
+        mg.instrument_id  === opSelectedInstrumentId.? and
         mg.instrument_id  === i.idField.is and
         mg.school_year    === opSelectedTerm.?
       )

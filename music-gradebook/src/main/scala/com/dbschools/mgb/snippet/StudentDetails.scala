@@ -19,7 +19,6 @@ import schema.IdGenerator._
 import model.GroupAssignment
 import scala.Some
 import schema.Musician
-import xml.Text
 import schema.Assessment
 import schema.MusicianGroup
 
@@ -40,7 +39,7 @@ class StudentDetails extends Loggable {
       orderBy(musician.last_name, musician.first_name)).toSeq) | Seq[Musician]()
 
     val musicianDetailsItems = matchingMusicians.map(musician =>
-      MusicianDetails(musician, GroupAssignments(Some(musician.musician_id), None),
+      MusicianDetails(musician, GroupAssignments(Some(musician.musician_id)),
       AppSchema.assessments.where(_.musician_id === musician.musician_id).toSeq))
 
     def makeDetails(md: MusicianDetails) =
