@@ -53,7 +53,7 @@ class Students extends Loggable {
     "#studentRow"   #> GroupAssignments(None, opSelectedTerm, opSelectedGroupId, opSelectedInstId).map(row =>
       ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
       ".stuName  *" #> studentLink(row.musician) &
-      ".grade *"    #> Terms.graduationYearAsGrade(row.musician.graduation_year) &
+      ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year) &
       ".id       *" #> row.musician.musician_id &
       ".stuId    *" #> row.musician.student_id &
       ".group    *" #> row.group.name &
