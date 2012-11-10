@@ -35,7 +35,7 @@ class Instruments extends Loggable {
     "#hidden" #> SHtml.hidden(() => requestData(instrument)) &
     "#instrumentSequence" #> SHtml.number(requestData.is.sequence.is, (sequence: Int) => requestData.is.sequence(sequence), 0, 200) &
     "#instrumentName" #> SHtml.text(requestData.is.name.is, name => requestData.is.name(name)) &
-    "#submit" #> SHtml.onSubmitUnit(processCreate)
+    "#submit" #> SHtml.onSubmitUnit(() => doSaveInstrument(doInsertInstrument _))
   }
   
   def delete = {
@@ -47,9 +47,7 @@ class Instruments extends Loggable {
     val instrument = requestData.is
 
     "#instrumentName" #> instrument.name.is &
-      "#yes" #> SHtml.link("/instruments/list", () => {
-        AppSchema.instruments.deleteWhere(ins => ins.idField.is === instrument.idField.is)
-      }, Text("Yes")) &
+      "#yes" #> SHtml.link("/instruments/list", () => doDeleteInstrument(instrument), Text("Yes")) &
       "#no" #> SHtml.link("/instruments/list", () => {}, Text("No"))
   }
   
@@ -63,7 +61,7 @@ class Instruments extends Loggable {
     "#hidden" #> SHtml.hidden(() => requestData(instrument)) &
     "#instrumentSequence" #> SHtml.number(requestData.is.sequence.is, (sequence: Int) => requestData.is.sequence(sequence), 0, 200) &
     "#instrumentName" #> SHtml.text(requestData.is.name.is, name => requestData.is.name(name)) &
-    "#submit" #> SHtml.onSubmitUnit(processEdit)
+    "#submit" #> SHtml.onSubmitUnit(() => doSaveInstrument(doUpdateInstrument _))
   }
   
   def view = {
@@ -78,10 +76,10 @@ class Instruments extends Loggable {
     "#edit" #> SHtml.link("/instruments/edit", () => requestData(instrument), Text("Edit"))
   }
   
-  def processCreate() = {
+  private def doSaveInstrument(predicate: (Instrument) => Unit) = {
     requestData.is.validate match {
       case Nil => {
-        AppSchema.instruments.insert(requestData.is)
+        predicate(requestData.is)
         S.notice("Instrument has been saved")
         S.seeOther("/instruments/list")
       }
@@ -89,14 +87,15 @@ class Instruments extends Loggable {
     }
   }
   
-  def processEdit() = {
-    requestData.is.validate match {
-      case Nil => {
-        AppSchema.instruments.update(requestData.is)
-        S.notice("Instrument has been saved")
-        S.seeOther("/instruments/list")
-      }
-      case errors => S.error(errors)
-    }
+  private def doInsertInstrument(instrument: Instrument) = {
+    AppSchema.instruments.insert(instrument)
+  }
+  
+  private def doUpdateInstrument(instrument: Instrument) = {
+    AppSchema.instruments.update(instrument)
+  }
+
+  private def doDeleteInstrument(instrument: Instrument) = {
+    AppSchema.instruments.deleteWhere(ins => ins.idField.is === instrument.idField.is)
   }
 }
