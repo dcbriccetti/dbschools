@@ -1,9 +1,10 @@
 package bootstrap.liftweb
 
+/** Convenient placeholder for all application paths. */
 object ApplicationPaths {
-  lazy val instrumentsList = new Path("Instruments", "instruments/list")
-  lazy val instrumentsCreate = new Path("New Instrument", "instruments/create")
-  lazy val instrumentsDelete = new Path("Delete Instrument", "instruments/delete")
-  lazy val instrumentsEdit = new Path("Edit Instrument", "instruments/edit")
-  lazy val instrumentsView = new Path("View Instrument", "instruments/view")
+  val instrumentsList = new Path("Instruments", "instruments/list")
+  val instrumentsCreate = new Path("New Instrument", "instruments/create")
+  val instrumentsDelete = new Path("Delete Instrument", "instruments/delete")
+  val instrumentsEdit = new Path("Edit Instrument", "instruments/edit")
+  val instrumentsView = new Path("View Instrument", "instruments/view")
 }
