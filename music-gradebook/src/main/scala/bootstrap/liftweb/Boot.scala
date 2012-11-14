@@ -17,8 +17,20 @@ object RunState {
   object loggedIn extends SessionVar[Boolean] (false)
 }
 
+object Paths {
+  val home            = Menu.i("home"      ) / "index"
+  val logIn           = Menu.i("Log In"    ) / "logIn"
+  val students        = Menu.i("Students"  ) / "students"
+  val noGroups        = Menu.i("No Groups" ) / "noGroups"
+  val studentDetails  = Menu.i("Details"   ) / "studentDetails"
+  val problems        = Menu.i("Problems"  ) / "problems"
+  val stats           = Menu.i("Statistics") / "stats"
+  val logout          = Menu.i("Log Out"   ) / "logOut"
+}
+
 class Boot {
   def boot {
+    import Paths._
     // where to search snippet
     LiftRules.addToPackages("com.dbschools.mgb")
 
@@ -27,14 +39,14 @@ class Boot {
 
     // Build SiteMap
     def sitemap = SiteMap(
-      Menu.i("Home"      ) / "index",
-      Menu.i("Log In"    ) / "logIn"          >> notLoggedIn,
-      Menu.i("Students"  ) / "students"       >> loggedIn,
-      Menu.i("No Groups" ) / "noGroups"       >> loggedIn,
-      Menu.i("Details"   ) / "studentDetails" >> loggedIn >> Hidden,
-      Menu.i("Problems"  ) / "problems"       >> loggedIn,
-      Menu.i("Statistics") / "stats"          >> loggedIn,
-      Menu.i("Log Out"   ) / "logOut"         >> loggedIn
+      home,
+      logIn          >> notLoggedIn,
+      students       >> loggedIn,
+      noGroups       >> loggedIn,
+      studentDetails >> loggedIn >> Hidden,
+      problems       >> loggedIn,
+      stats          >> loggedIn,
+      logout         >> loggedIn
     )
 
     LiftRules.setSiteMap(sitemap)
