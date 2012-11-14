@@ -1,16 +1,18 @@
 package com.dbschools.mgb.snippet
 
+import scala.xml.Text
 import org.squeryl.PrimitiveTypeMode._
+import com.dbschools.mgb.schema.AppSchema
+import com.dbschools.mgb.schema.Instrument
 import net.liftweb._
 import net.liftweb.common.Loggable
-import util._
-import com.dbschools.mgb.schema.{AppSchema, Instrument}
 import net.liftweb.http.RequestVar
-import net.liftweb.http.SHtml
 import net.liftweb.http.S
-import scala.xml.Text
-import net.sf.cglib.proxy.NoOp
+import net.liftweb.http.SHtml
 import net.liftweb.record.field.IntField
+import net.liftweb.sitemap.Menu
+import net.liftweb.util._
+import bootstrap.liftweb.ApplicationPaths
 
 /** Snippet for Instrument CRUD operations. */
 class Instruments extends Loggable {
@@ -23,9 +25,9 @@ class Instruments extends Loggable {
       ".instrumentSequence *"   #> instrument.sequence.is &
       ".instrumentName *"       #> instrument.name.is &
       ".actions *"    #> {
-        SHtml.link("/instruments/view", () => requestData(instrument), Text("View")) ++ Text(" ") ++
-        SHtml.link("/instruments/edit", () => requestData(instrument), Text("Edit")) ++ Text(" ") ++
-        SHtml.link("/instruments/delete", () => requestData(instrument), Text("Delete"))
+        SHtml.link(ApplicationPaths.instrumentsView.href, () => requestData(instrument), Text("View")) ++ Text(" ") ++
+        SHtml.link(ApplicationPaths.instrumentsEdit.href, () => requestData(instrument), Text("Edit")) ++ Text(" ") ++
+        SHtml.link(ApplicationPaths.instrumentsDelete.href, () => requestData(instrument), Text("Delete"))
       }
     })
   }
@@ -41,20 +43,20 @@ class Instruments extends Loggable {
   def delete = {
     if (!requestData.set_?) {
       logger.info("Delete Instrument page has not been reached from Instrument List page. Redirecting to List page.")
-      S.redirectTo("/instruments/list")
+      S.redirectTo(ApplicationPaths.instrumentsList.href)
     }
     
     val instrument = requestData.is
 
     "#instrumentName" #> instrument.name.is &
-      "#yes" #> SHtml.link("/instruments/list", () => doDeleteInstrument(instrument), Text("Yes")) &
-      "#no" #> SHtml.link("/instruments/list", () => {}, Text("No"))
+      "#yes" #> SHtml.link(ApplicationPaths.instrumentsList.href, () => doDeleteInstrument(instrument), Text("Yes")) &
+      "#no" #> SHtml.link(ApplicationPaths.instrumentsList.href, () => {}, Text("No"))
   }
   
   def edit = {
     if (!requestData.set_?) {
       logger.info("Edit Instrument page has not been reached from Instrument List or View Instrument page. Redirecting to List page.")
-      S.redirectTo("/instruments/list")
+      S.redirectTo(ApplicationPaths.instrumentsList.href)
     }
     
     val instrument = requestData.is
@@ -67,13 +69,13 @@ class Instruments extends Loggable {
   def view = {
     if (!requestData.set_?) {
       logger.info("View Instrument page has not been reached from Instrument List. Redirecting to List page.")
-      S.redirectTo("/instruments/list")
+      S.redirectTo(ApplicationPaths.instrumentsList.href)
     }
     
     val instrument = requestData.is
     "#instrumentSequence" #> requestData.is.sequence.asHtml &
     "#instrumentName" #> requestData.is.name.asHtml &
-    "#edit" #> SHtml.link("/instruments/edit", () => requestData(instrument), Text("Edit"))
+    "#edit" #> SHtml.link(ApplicationPaths.instrumentsList.href, () => requestData(instrument), Text("Edit"))
   }
   
   private def doSaveInstrument(predicate: (Instrument) => Unit) = {
@@ -81,7 +83,7 @@ class Instruments extends Loggable {
       case Nil => {
         predicate(requestData.is)
         S.notice("Instrument has been saved")
-        S.seeOther("/instruments/list")
+        S.seeOther(ApplicationPaths.instrumentsList.href)
       }
       case errors => S.error(errors)
     }
