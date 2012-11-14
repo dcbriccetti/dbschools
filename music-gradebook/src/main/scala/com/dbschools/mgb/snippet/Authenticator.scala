@@ -5,12 +5,13 @@ import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.http.{S, SessionVar, SHtml}
 import net.liftweb.util.Helpers._
 import net.liftweb.util.BCrypt
-import bootstrap.liftweb.RunState
+import bootstrap.liftweb.{Paths, RunState}
 import com.dbschools.mgb.schema.AppSchema
 
 class Authenticator {
   import Authenticator.{credentialsValid, userName}
   var password = ""
+  private val indexHref = Paths.home.loc.calcDefaultHref
 
   def authForm =
     "#userName"   #> SHtml.text(userName.is, name => userName(name.trim), "id" -> "userName") &
@@ -18,14 +19,14 @@ class Authenticator {
     "#submit"     #> SHtml.submit("Log In", () => {
       if (credentialsValid(password)) {
         RunState loggedIn true
-        S.redirectTo("/index")
+        S.redirectTo(indexHref)
       } else
         S.error("Login failed")
     }, "id" -> "submit")
 
   def logOut(content: NodeSeq): NodeSeq = {
     Authenticator.logOut()
-    S.redirectTo("index")
+    S.redirectTo(indexHref)
     content
   }
 }
