@@ -23,7 +23,6 @@ class Instruments extends Loggable {
       ".instrumentSequence *"   #> instrument.sequence.is &
       ".instrumentName *"       #> instrument.name.is &
       ".actions *"              #> {
-        SHtml.link(instrumentsView.href, () => requestData(instrument), Text("View")) ++ Text(" ") ++
         SHtml.link(instrumentsEdit.href, () => requestData(instrument), Text("Edit")) ++ Text(" ") ++
         SHtml.link(instrumentsDelete.href, () => requestData(instrument), Text("Delete"))
       }
@@ -62,18 +61,6 @@ class Instruments extends Loggable {
     "#instrumentSequence" #> SHtml.number(requestData.is.sequence.is, (sequence: Int) => requestData.is.sequence(sequence), 0, 200) &
     "#instrumentName" #> SHtml.text(requestData.is.name.is, name => requestData.is.name(name)) &
     "#submit" #> SHtml.onSubmitUnit(() => doSaveInstrument(doUpdateInstrument _))
-  }
-  
-  def view = {
-    if (!requestData.set_?) {
-      logger.info("View Instrument page has not been reached from Instrument List. Redirecting to List page.")
-      S.redirectTo(instrumentsList.href)
-    }
-    
-    val instrument = requestData.is
-    "#instrumentSequence" #> requestData.is.sequence.asHtml &
-    "#instrumentName" #> requestData.is.name.asHtml &
-    "#edit" #> SHtml.link(instrumentsEdit.href, () => requestData(instrument), Text("Edit"))
   }
   
   private def doSaveInstrument(predicate: (Instrument) => Unit) = {
