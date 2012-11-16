@@ -1,7 +1,7 @@
 package com.dbschools.mgb
 package snippet
 
-import scala.xml.Text
+import xml.{NodeSeq, Text}
 
 import org.squeryl.PrimitiveTypeMode._
 
@@ -19,13 +19,19 @@ class Instruments extends Loggable {
   object requestData extends RequestVar[Instrument](Instrument.createRecord)
   
   def list = {
+    val usedInstrumentIds = from(AppSchema.musicianGroups)(mg => select(mg.instrument_id)).distinct.toSet
     "#create [href]"    #> instrumentsCreate.href &
     ".row *"            #> from(AppSchema.instruments)(i => select(i) orderBy(i.sequence.is)).map(instrument => {
       ".instrumentSequence *"   #> instrument.sequence.is &
       ".instrumentName *"       #> instrument.name.is &
       ".actions *"              #> {
-        SHtml.link(instrumentsEdit.href, () => requestData(instrument), Text("Edit")) ++ Text(" ") ++
-        SHtml.link(instrumentsDelete.href, () => requestData(instrument), Text("Delete"))
+        SHtml.link(instrumentsEdit.href, () => requestData(instrument), Text("Edit")) ++
+        (
+          if (!usedInstrumentIds.contains(instrument.id))
+            Text(" ") ++ SHtml.link(instrumentsDelete.href, () => requestData(instrument), Text("Delete"))
+          else
+            NodeSeq.Empty
+        )
       }
     })
   }
