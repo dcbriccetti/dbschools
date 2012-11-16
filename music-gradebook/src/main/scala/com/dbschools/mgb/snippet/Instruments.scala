@@ -2,7 +2,7 @@ package com.dbschools.mgb.snippet
 
 import scala.xml.Text
 
-import org.squeryl.PrimitiveTypeMode.{__thisDsl, int2ScalarInt, view2QueryAll}
+import org.squeryl.PrimitiveTypeMode._
 
 import com.dbschools.mgb.schema.{AppSchema, Instrument}
 
@@ -19,7 +19,7 @@ class Instruments extends Loggable {
   
   def list = {
     "#create [href]"    #> instrumentsCreate.href &
-    ".row *"            #> AppSchema.instruments.map(instrument => {
+    ".row *"            #> from(AppSchema.instruments)(i => select(i) orderBy(i.sequence.is)).map(instrument => {
       ".instrumentSequence *"   #> instrument.sequence.is &
       ".instrumentName *"       #> instrument.name.is &
       ".actions *"              #> {
