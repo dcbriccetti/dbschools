@@ -111,7 +111,7 @@ class StudentDetails extends Loggable {
             }))
         } else Noop
       }) &
-    "#create" #> SHtml.ajaxButton("Create current year group assignment", () => {
+    "#create" #> SHtml.ajaxButton("Create %s group assignment".format(Terms.formatted(Terms.currentTerm)), () => {
       for {
         group      <- groups.find(_.doesTesting)
         instrument <- instruments.find(_.name.is == "Unassigned")
