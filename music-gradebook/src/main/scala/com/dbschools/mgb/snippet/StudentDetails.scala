@@ -15,7 +15,7 @@ import Helpers.asInt
 import js.JsCmds.Confirm
 import model._
 import schema.AppSchema
-import schema.IdGenerator._
+import schema.IdGenerator.genId
 import model.GroupAssignment
 import scala.Some
 import schema.Musician

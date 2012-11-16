@@ -1,15 +1,16 @@
-package com.dbschools.mgb.snippet
+package com.dbschools.mgb
+package snippet
 
 import scala.xml.Text
 
 import org.squeryl.PrimitiveTypeMode._
 
-import com.dbschools.mgb.schema.{AppSchema, Instrument}
-
 import bootstrap.liftweb.ApplicationPaths._
 import net.liftweb.common.Loggable
 import net.liftweb.http.{RequestVar, S, SHtml}
 import net.liftweb.util.strToCssBindPromoter
+
+import com.dbschools.mgb.schema.{AppSchema, Instrument}
 
 /** Snippet for Instrument CRUD operations. */
 class Instruments extends Loggable {
@@ -63,7 +64,7 @@ class Instruments extends Loggable {
     "#submit" #> SHtml.onSubmitUnit(() => doSaveInstrument(doUpdateInstrument _))
   }
   
-  private def doSaveInstrument(predicate: (Instrument) => Unit) = {
+  private def doSaveInstrument(predicate: (Instrument) => Unit) {
     requestData.is.validate match {
       case Nil => {
         predicate(requestData.is)
@@ -74,15 +75,15 @@ class Instruments extends Loggable {
     }
   }
   
-  private def doInsertInstrument(instrument: Instrument) = {
+  private def doInsertInstrument(instrument: Instrument) {
     AppSchema.instruments.insert(instrument)
   }
-  
-  private def doUpdateInstrument(instrument: Instrument) = {
+
+  private def doUpdateInstrument(instrument: Instrument) {
     AppSchema.instruments.update(instrument)
   }
 
-  private def doDeleteInstrument(instrument: Instrument) = {
+  private def doDeleteInstrument(instrument: Instrument) {
     AppSchema.instruments.deleteWhere(ins => ins.idField.is === instrument.idField.is)
   }
 }
