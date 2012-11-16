@@ -1,6 +1,6 @@
 package bootstrap.liftweb
 
-/** Convenient placeholder for all application paths. */
+/** These are used to build the site menu, and to create inter-page links. */
 object ApplicationPaths {
   val home              = new Path("Home", "index")
   
@@ -20,7 +20,4 @@ object ApplicationPaths {
   val stats             = new Path("Statistics", "stats")
   val students          = new Path("Students", "students")
   val studentDetails    = new Path("Details", "studentDetails")
-  
-  
-  
 }
