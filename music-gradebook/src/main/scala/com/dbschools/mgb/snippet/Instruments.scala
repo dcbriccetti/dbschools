@@ -9,6 +9,8 @@ import bootstrap.liftweb.ApplicationPaths._
 import net.liftweb.common.Loggable
 import net.liftweb.http.{RequestVar, S, SHtml}
 import net.liftweb.util.strToCssBindPromoter
+import net.liftweb.http
+import http.js.JsCmds.Noop
 
 import com.dbschools.mgb.schema.{AppSchema, Instrument}
 
@@ -23,19 +25,28 @@ class Instruments extends Loggable {
     "#create [href]"    #> instrumentsCreate.href &
     ".row *"            #> from(AppSchema.instruments)(i => select(i) orderBy(i.sequence.is)).map(instrument => {
       ".instrumentSequence *"   #> instrument.sequence.is &
-      ".instrumentName *"       #> instrument.name.is &
-      ".actions *"              #> {
-        SHtml.link(instrumentsEdit.href, () => requestData(instrument), Text("Edit")) ++
-        (
-          if (!usedInstrumentIds.contains(instrument.id))
-            Text(" ") ++ SHtml.link(instrumentsDelete.href, () => requestData(instrument), Text("Delete"))
-          else
-            NodeSeq.Empty
-        )
-      }
+      ".instrumentName *"       #> SHtml.swappable(<span>{instrument.name.is}</span>, instrumentNameText(instrument)) &
+      ".actions *"              #> actionsForInstrument(usedInstrumentIds, instrument)
     })
   }
-  
+
+  private def actionsForInstrument(usedInstrumentIds: Set[Int], instrument: Instrument) =
+    if (!usedInstrumentIds.contains(instrument.id))
+      Text(" ") ++ SHtml.link(instrumentsDelete.href, () => requestData(instrument), Text("Delete"))
+    else
+      NodeSeq.Empty
+
+  private def instrumentNameText(instrument: Instrument) =
+    SHtml.ajaxText(instrument.name.is,
+      v => {
+        if (v != instrument.name.is && v.trim.length > 0) { // TODO do this validation the right way?
+          instrument.name(v)
+          doSaveInstrument(doUpdateInstrument _, instrument, notifyOk = false)
+        }
+        Noop
+      }
+    )
+
   def create = {
     val instrument = requestData.is
     "#hidden"               #> SHtml.hidden(() => requestData(instrument)) &
@@ -43,7 +54,7 @@ class Instruments extends Loggable {
     "#instrumentName"       #> SHtml.text(requestData.is.name.is, name => requestData.is.name(name)) &
     "#submit"               #> SHtml.onSubmitUnit(() => doSaveInstrument(doInsertInstrument _))
   }
-  
+
   def delete = {
     if (!requestData.set_?) {
       logger.info("Delete Instrument page has not been reached from Instrument List page. Redirecting to List page.")
@@ -56,27 +67,14 @@ class Instruments extends Loggable {
     "#yes"              #> SHtml.link(instrumentsList.href, () => doDeleteInstrument(instrument), Text("Yes")) &
     "#no [href]"        #> instrumentsList.href
   }
-  
-  def edit = {
-    if (!requestData.set_?) {
-      logger.info("Edit Instrument page has not been reached from Instrument List or View Instrument page. Redirecting to List page.")
-      S.redirectTo(instrumentsList.href)
-    }
-    
-    val instrument = requestData.is
-    "#hidden" #> SHtml.hidden(() => requestData(instrument)) &
-    "#instrumentSequence" #> SHtml.number(requestData.is.sequence.is, (sequence: Int) => requestData.is.sequence(sequence), 0, 200) &
-    "#instrumentName" #> SHtml.text(requestData.is.name.is, name => requestData.is.name(name)) &
-    "#submit" #> SHtml.onSubmitUnit(() => doSaveInstrument(doUpdateInstrument _))
-  }
-  
-  private def doSaveInstrument(predicate: (Instrument) => Unit) {
-    requestData.is.validate match {
-      case Nil => {
-        predicate(requestData.is)
-        S.notice("Instrument has been saved")
+
+  private def doSaveInstrument(predicate: (Instrument) => Unit, instrument: Instrument = requestData.is,
+      notifyOk: Boolean = true) {
+    instrument.validate match {
+      case Nil =>
+        predicate(instrument)
+        if (notifyOk) S.notice("Instrument has been saved")
         S.seeOther(instrumentsList.href)
-      }
       case errors => S.error(errors)
     }
   }

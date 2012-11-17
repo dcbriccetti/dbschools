@@ -14,7 +14,9 @@ case class Instrument private() extends Record[Instrument] with KeyedRecord[Int]
   @Column("instrument_id")
   override val idField = new IntField(this)
   
-  val name = new StringField(this, "")
+  val name = new StringField(this, "") {
+    override def validations = valMinLen(1, "Name is required") _ :: super.validations
+  }
 
   val sequence = new IntField(this)
 }
