@@ -234,7 +234,7 @@ cindy""")
     var id = 10000 // Until we set up sequences
     lastNames.foreach(lastName => {
       val firstName = firstNames((random * firstNames.length).toInt)
-      val m = AppSchema.musicians.insert(Musician(id, id, firstName, lastName, 2013))
+      val m = AppSchema.musicians.insert(Musician(id, id, firstName, lastName, 2013, "M"))
       id += 1
 
       val groupIds = random match {

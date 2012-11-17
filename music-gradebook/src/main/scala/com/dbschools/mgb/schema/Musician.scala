@@ -5,7 +5,8 @@ case class Musician(
   student_id:      Int,
   first_name:      String,
   last_name:       String,
-  graduation_year: Int
+  graduation_year: Int,
+  sex:             String
 ) {
   def name = last_name + ", " + first_name
 }
