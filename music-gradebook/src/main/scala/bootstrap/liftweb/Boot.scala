@@ -32,6 +32,7 @@ class Boot {
       home.menu,
       logIn.menu                >> notLoggedIn,
       students.menu             >> loggedIn,
+      newStudent.menu           >> loggedIn >> Hidden,
       instrumentsList.menu      >> loggedIn,
       instrumentsCreate.menu    >> loggedIn >> Hidden,
       instrumentsDelete.menu    >> loggedIn >> Hidden,

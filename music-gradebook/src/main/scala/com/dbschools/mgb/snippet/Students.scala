@@ -9,8 +9,9 @@ import net.liftweb._
 import common.{Full, Loggable}
 import http.js.JsCmds._
 import http.js.JsCmds.Replace
-import http.{Templates, SHtml}
+import http.{S, Templates, SHtml}
 import util._
+import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
 import model.{LastPassFinder, Terms, GroupAssignments}
 
@@ -43,6 +44,26 @@ class Students extends Loggable {
       logger.error("Error loading template " + template)
       Noop
     }
+  }
+
+  def createNew = "#create [href]" #> ApplicationPaths.newStudent.href
+
+  def newStudent = {
+    var newId = 0
+    var grade = 6
+    var name = ""
+    var sex = "Male"
+
+    def saveStudent = {
+      logger.warn("Creating student %d %d %s %s".format(newId, grade, name, sex))
+      Noop
+    }
+
+    "#studentId" #> SHtml.text("", id => Helpers.asInt(id).foreach(intId => newId = intId)) &
+    "#grade"     #> SHtml.number(grade, grade = _, grade, 8) &
+    "#name"      #> SHtml.text("", name = _) &
+    "#sex"       #> SHtml.select(List(("Male", "Male"), ("Female", "Female")), Full(sex), sex = _) &
+    "#save"      #> SHtml.onSubmitUnit(() => saveStudent)
   }
 
   def inGroups = {
