@@ -11,7 +11,6 @@ case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
   @Column("musician_id")
   override val idField = new IntField(this) {
     override def shouldDisplay_? = false
-    override def required_? = true
   }
 
   def musician_id = idField
@@ -19,30 +18,25 @@ case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
   @Column("student_id")
   val student_id = new IntField(this) {
     override def displayName = "Student ID"
-    override def required_? = true
   }
 
   @Column("first_name")
   val first_name = new StringField(this, "") {
     override def displayName = "First Name"
-    override def required_? = true
   }
 
   @Column("last_name")
   val last_name = new StringField(this, "") {
     override def displayName = "Last Name"
-    override def required_? = true
   }
 
   @Column("graduation_year")
   val graduation_year = new IntField(this) {
     override def displayName = "Graduation Year"
-    override def required_? = true
   }
 
   val sex = new StringField(this, "") {
     override def displayName = "Sex"
-    override def required_? = true
   }
 
   def name = last_name.is + ", " + first_name.is
