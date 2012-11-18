@@ -1,6 +1,7 @@
 package com.dbschools.mgb.schema
 
 import org.squeryl.Schema
+import org.squeryl.PrimitiveTypeMode._
 
 object AppSchema extends Schema {
   val users           = table[User]         ("music_user")
@@ -12,4 +13,7 @@ object AppSchema extends Schema {
   val subinstruments  = table[Subinstrument]("subinstrument")
   val assessments     = table[Assessment]   ("assessment")
   val assessmentTags  = table[AssessmentTag]("assessment_tag")
+
+  private val hs = autoIncremented("hibernate_sequence")
+  Seq(musicians, instruments).foreach(table => on(table)(m => declare(m.id is hs)))
 }
