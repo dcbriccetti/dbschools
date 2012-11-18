@@ -48,20 +48,21 @@ class Students extends Loggable {
 
   def createNew = "#create [href]" #> ApplicationPaths.newStudent.href
 
-  def newStudent = {
     var newId = 0
     var grade = 6
     var name = ""
     var sex = "Male"
+  def newStudent = {
 
     def saveStudent = {
       logger.warn("Creating student %d %d %s %s".format(newId, grade, name, sex))
       Noop
     }
 
-    "#studentId" #> SHtml.text("", id => Helpers.asInt(id).foreach(intId => newId = intId)) &
+    "#studentId" #> SHtml.text(if (newId == 0) "" else newId.toString,
+                      id => Helpers.asInt(id).foreach(intId => newId = intId)) &
     "#grade"     #> SHtml.number(grade, grade = _, grade, 8) &
-    "#name"      #> SHtml.text("", name = _) &
+    "#name"      #> SHtml.text(name, name = _) &
     "#sex"       #> SHtml.select(List(("Male", "Male"), ("Female", "Female")), Full(sex), sex = _) &
     "#save"      #> SHtml.onSubmitUnit(() => saveStudent)
   }
