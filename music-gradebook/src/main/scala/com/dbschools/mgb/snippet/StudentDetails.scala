@@ -34,20 +34,20 @@ class StudentDetails extends Loggable {
     case class MusicianDetails(musician: Musician, groups: Iterable[GroupAssignment], assessments: Iterable[Assessment])
     opMusicianId = S.param("id").flatMap(asInt).toOption
     val matchingMusicians = opMusicianId.map(id => from(AppSchema.musicians)(musician =>
-      where(musician.musician_id === id)
+      where(musician.musician_id.is === id)
       select(musician)
-      orderBy(musician.last_name, musician.first_name)).toSeq) | Seq[Musician]()
+      orderBy(musician.last_name.is, musician.first_name.is)).toSeq) | Seq[Musician]()
 
     val musicianDetailsItems = matchingMusicians.map(musician =>
-      MusicianDetails(musician, GroupAssignments(Some(musician.musician_id)),
-      AppSchema.assessments.where(_.musician_id === musician.musician_id).toSeq))
+      MusicianDetails(musician, GroupAssignments(Some(musician.musician_id.is)),
+      AppSchema.assessments.where(_.musician_id === musician.musician_id.is).toSeq))
 
     def makeDetails(md: MusicianDetails) =
       ".name *"         #> md.musician.name &
-      ".grade *"        #> Terms.graduationYearAsGrade(md.musician.graduation_year) &
+      ".grade *"        #> Terms.graduationYearAsGrade(md.musician.graduation_year.is) &
       ".stuId *"        #> md.musician.student_id &
       ".mgbId *"        #> md.musician.musician_id &
-      ".lastPiece *"    #> new LastPassFinder().lastPassed(Some(md.musician.musician_id)).mkString(", ") &
+      ".lastPiece *"    #> new LastPassFinder().lastPassed(Some(md.musician.musician_id.is)).mkString(", ") &
       ".groups"         #>
         <table class="autoWidth noShade">
           <tr><th>Sel</th><th>Year</th><th>Group</th><th>Instrument</th></tr>

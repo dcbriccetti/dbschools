@@ -26,16 +26,16 @@ class Statistics {
   private type QueryGm = Query[GroupWithMeasures[PrimitiveTypeMode.StringType, PrimitiveTypeMode.LongType]]
 
   private def queryByGroup(pass: Boolean) = from(groups, musicianGroups, musicians, assessments)((g, mg, m, a) =>
-    where(g.group_id === mg.group_id and mg.musician_id === m.musician_id and mg.school_year === dtFrom.getYear
-      and m.musician_id === a.musician_id
+    where(g.group_id === mg.group_id and mg.musician_id === m.musician_id.is and mg.school_year === dtFrom.getYear
+      and m.musician_id.is === a.musician_id
       and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
     groupBy(g.name)
     compute(count(a.assessment_id))
   )
 
   private def queryByGrade(pass: Boolean) = from(musicians, assessments)((m, a) =>
-    where(m.musician_id === a.musician_id and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
-    groupBy(m.graduation_year.toString)
+    where(m.musician_id.is === a.musician_id and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
+    groupBy(m.graduation_year.is.toString)
     compute(count(a.assessment_id))
   )
 

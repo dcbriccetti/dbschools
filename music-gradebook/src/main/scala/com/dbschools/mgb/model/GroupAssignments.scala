@@ -17,8 +17,8 @@ object GroupAssignments extends Loggable {
     import AppSchema._
     val rows = from(musicians, groups, musicianGroups, instruments)((m, g, mg, i) =>
       where(
-        m.musician_id     === opId.? and
-        m.musician_id     === mg.musician_id and
+        m.musician_id.is  === opId.? and
+        m.musician_id.is  === mg.musician_id and
         mg.group_id       === opSelectedGroupId.? and
         mg.group_id       === g.group_id and
         mg.instrument_id  === opSelectedInstrumentId.? and
@@ -26,7 +26,7 @@ object GroupAssignments extends Loggable {
         mg.school_year    === opSelectedTerm.?
       )
       select(GroupAssignment(m, g, mg, i))
-      orderBy(mg.school_year desc, m.last_name, m.first_name, g.name)
+      orderBy(mg.school_year desc, m.last_name.is, m.first_name.is, g.name)
     )
     rows
   }

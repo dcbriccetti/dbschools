@@ -226,7 +226,7 @@ cindy""")
     AppSchema.musicianGroups  .deleteWhere(mg => mg.id === mg.id)
     AppSchema.assessmentTags  .deleteWhere(a => a.assessment_id === a.assessment_id)
     AppSchema.assessments     .deleteWhere(a => a.assessment_id === a.assessment_id)
-    AppSchema.musicians       .deleteWhere(m => m.musician_id === m.musician_id)
+    AppSchema.musicians       .deleteWhere(m => m.idField.is === m.idField.is)
   }
   
   private def createAndGroupStudents() {
@@ -234,7 +234,8 @@ cindy""")
     var id = 10000 // Until we set up sequences
     lastNames.foreach(lastName => {
       val firstName = firstNames((random * firstNames.length).toInt)
-      val m = AppSchema.musicians.insert(Musician(id, id, firstName, lastName, 2013, "M"))
+      val m = AppSchema.musicians.insert(Musician.createRecord.student_id(id).first_name(firstName).
+        last_name(lastName).graduation_year(2013).sex("M"))
       id += 1
 
       val groupIds = random match {
@@ -244,7 +245,7 @@ cindy""")
         case _            => GroupIds(1)
       }
       groupIds.foreach(groupId => {
-        AppSchema.musicianGroups.insert(MusicianGroup(id, m.musician_id, groupId,
+        AppSchema.musicianGroups.insert(MusicianGroup(id, m.musician_id.is, groupId,
           instrumentIds((random * instrumentIds.length).toInt), 2013))
         id += 1
       })
