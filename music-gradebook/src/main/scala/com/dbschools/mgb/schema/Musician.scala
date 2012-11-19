@@ -23,11 +23,13 @@ case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
   @Column("first_name")
   val first_name = new StringField(this, "") {
     override def displayName = "First Name"
+    override def validations = valMinLen(1, "May not be blank") _ :: super.validations
   }
 
   @Column("last_name")
   val last_name = new StringField(this, "") {
     override def displayName = "Last Name"
+    override def validations = valMinLen(1, "May not be blank") _ :: super.validations
   }
 
   @Column("graduation_year")
