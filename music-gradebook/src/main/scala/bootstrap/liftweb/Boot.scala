@@ -1,16 +1,16 @@
 package bootstrap.liftweb
 
+import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
 import util._
-
 import common._
 import http._
 import js.jquery.JQueryArtifacts
 import sitemap._
 import Loc._
-
+import net.liftmodules.widgets.flot.Flot
 import net.liftmodules.JQueryModule
-import org.squeryl.PrimitiveTypeMode._
+
 import com.dbschools.mgb.Db
 
 object RunState {
@@ -40,7 +40,7 @@ class Boot {
       instrumentsView.menu      >> loggedIn >> Hidden,
       noGroups.menu             >> loggedIn,
       studentDetails.menu       >> loggedIn >> Hidden,
-      problems.menu             >> loggedIn,
+      graphs.menu               >> loggedIn,
       stats.menu                >> loggedIn,
       logout.menu               >> loggedIn
     )
@@ -72,5 +72,7 @@ class Boot {
 
     Db.initialize()
     S.addAround(new LoanWrapper{override def apply[T](f: => T): T = {inTransaction {f}}})
+
+    Flot.init()
   }
 }

@@ -16,4 +16,9 @@ object MusicianGroup {
     from(AppSchema.musicianGroups, AppSchema.musicians)((mg, m) =>
     where(mg.musician_id === m.musician_id.is and mg.school_year === Terms.currentTerm)
     select(m))
+
+  def instrumentsInCurrentTerm =
+    from(AppSchema.musicianGroups, AppSchema.instruments)((mg, i) =>
+    where(mg.instrument_id === i.id and mg.school_year === Terms.currentTerm)
+    select(i))
 }
