@@ -7,36 +7,17 @@ import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
 import common.{Full, Loggable}
-import http.js.JsCmds._
-import http.js.JsCmds.Replace
-import http.{S, Templates, SHtml}
 import util._
+import net.liftweb.http.{Templates, SHtml}
+import net.liftweb.http.js.JsCmds._
+import net.liftweb.http.js.JsCmds.Replace
 import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
 import model.{LastPassFinder, Terms, GroupAssignments}
 
 class Students extends Loggable {
 
-  private val lastPassFinder = new LastPassFinder()
-  private var opSelectedTerm: Option[Int] = Some(Terms.currentTerm) // None means no specific term, therefore all
-  private var opSelectedGroupId = none[Int]                         // None means no specific group, therefore all
-  private var opSelectedInstId  = none[Int]                         // None means no specific instrument, therefore all
-
-  def yearSelector = selector(Terms.allTermsFormatted, opSelectedTerm, opSelectedTerm = _)
-
-  def groupSelector = selector(AppSchema.groups.toList.map(g => g.group_id.toString -> g.name),
-    opSelectedGroupId, opSelectedGroupId = _)
-
-  def instrumentSelector = selector(AppSchema.instruments.toList.map(i => i.id.toString -> i.name.is),
-    opSelectedInstId, opSelectedInstId = _)
-
-  private def selector(items: List[(String, String)], opId: Option[Int], fn: (Option[Int]) => Unit) = {
-    val All = "All"
-    SHtml.ajaxSelect((All, All) :: items, Full(opId.map(_.toString) | All), sel => {
-      fn(if (sel == All) None else Some(sel.toInt))
-      replaceContents
-    })
-  }
+  private val selectors = new Selectors(() => replaceContents)
 
   private def replaceContents = {
     val template = "_inGroupsTable"
@@ -46,12 +27,19 @@ class Students extends Loggable {
     }
   }
 
+  def yearSelector = selectors.yearSelector
+  def groupSelector = selectors.groupSelector
+  def instrumentSelector = selectors.instrumentSelector
+
+  private val lastPassFinder = new LastPassFinder()
+
   def createNew = "#create [href]" #> ApplicationPaths.newStudent.href
 
-    var newId = 0
-    var grade = 6
-    var name = ""
-    var sex = "Male"
+  var newId = 0
+  var grade = 6
+  var name = ""
+  var sex = "Male"
+
   def newStudent = {
 
     def saveStudent = {
@@ -69,10 +57,11 @@ class Students extends Loggable {
 
   def inGroups = {
     val lastPasses = lastPassFinder.lastPassed().groupBy(_.musicianId)
-    (if (opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
-    (if (opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
-    (if (opSelectedInstId .isDefined) ".instr"   #> none[String] else PassThru) andThen (
-    "#studentRow"   #> GroupAssignments(None, opSelectedTerm, opSelectedGroupId, opSelectedInstId).map(row =>
+    (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
+    (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
+    (if (selectors.opSelectedInstId .isDefined) ".instr"   #> none[String] else PassThru) andThen (
+    "#studentRow"   #> GroupAssignments(None, selectors.opSelectedTerm, selectors.opSelectedGroupId,
+                          selectors.opSelectedInstId).map(row =>
       ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
       ".stuName  *" #> studentLink(row.musician) &
       ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.is) &
