@@ -1,8 +1,6 @@
 package com.dbschools.mgb
 package snippet
 
-import java.sql.Timestamp
-import org.scala_tools.time.Imports._
 import org.squeryl.{PrimitiveTypeMode, Query}
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.GroupWithMeasures
@@ -11,6 +9,7 @@ import util.BindHelpers._
 import schema.AppSchema
 import AppSchema.{groups, musicianGroups, musicians, assessments, users}
 import model.Terms
+import model.Terms.toTs
 
 class Statistics {
 
@@ -20,8 +19,6 @@ class Statistics {
   def assessmentsByGrade  = createTable("Grade",  queryByGrade,
     (gradYear: String) => Terms.graduationYearAsGrade(gradYear.toInt).toString)
   def assessmentsByTester = createTable("Tester", queryByTester)
-
-  private def toTs(dt: DateTime) = new Timestamp(dt.millis)
 
   private type QueryGm = Query[GroupWithMeasures[PrimitiveTypeMode.StringType, PrimitiveTypeMode.LongType]]
 

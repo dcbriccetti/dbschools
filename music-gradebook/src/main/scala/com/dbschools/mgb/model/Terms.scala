@@ -1,9 +1,14 @@
 package com.dbschools.mgb.model
 
+import java.sql.Timestamp
 import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
 import com.dbschools.mgb.schema.AppSchema
 
+/**
+ * Functions for dealing with terms. A term is the year during which the term starts. For example,
+ * in the 2012–13 term, the value is 2012.
+ */
 object Terms {
   val yearEndMonth = 7
 
@@ -38,4 +43,8 @@ object Terms {
   }
 
   def allTerms = from(AppSchema.musicianGroups)(mg => select(mg.school_year) orderBy(mg.school_year desc)).distinct
+
+  def toTs(dt: DateTime) = new Timestamp(dt.millis)
+
+  def termEnd(term: Int) = new DateTime(term + 1, yearEndMonth, 1, 0, 0, 0, 0)
 }

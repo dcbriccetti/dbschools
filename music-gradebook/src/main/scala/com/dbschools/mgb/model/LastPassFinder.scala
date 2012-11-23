@@ -3,7 +3,9 @@ package com.dbschools.mgb.model
 import scalaz._
 import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
+import org.scala_tools.time.Imports._
 import com.dbschools.mgb.schema._
+import Terms.toTs
 
 class LastPassFinder {
   val instruments     = AppSchema.instruments   .map(i => i.id -> i.name.is).toMap
@@ -14,9 +16,9 @@ class LastPassFinder {
   val numPieces = pieces.size
   lazy val pieceIdToPosition = pieces.sortBy(_.testOrder.is).map(_.id).zipWithIndex.toMap
 
-  def lastPassed(musicianId: Option[Int] = None): Iterable[LastPass] = {
+  def lastPassed(musicianId: Option[Int] = None, upTo: Option[DateTime] = None): Iterable[LastPass] = {
     from(AppSchema.assessments, AppSchema.pieces)((a, p) =>
-      where(a.musician_id === musicianId.? and a.pieceId === p.id)
+      where(a.musician_id === musicianId.? and a.pieceId === p.id and a.assessment_time < upTo.map(toTs).?)
       groupBy(a.musician_id, a.instrument_id, a.subinstrument_id)
       compute(max(p.testOrder.is))
       orderBy(max(p.testOrder.is) desc)

@@ -1,5 +1,6 @@
 package com.dbschools.mgb.snippet
 
+import org.scala_tools.time.Imports._
 import net.liftmodules.widgets.flot.{FlotBarsOptions, FlotOptions, FlotSerie, Pie, Flot}
 import net.liftweb.http
 import http.js.JsCmds.{Replace, Noop}
@@ -49,7 +50,9 @@ class Graphs extends Loggable {
   private def createFlotSeries: FlotSerie = {
     val lpf = new LastPassFinder()
     val musicianIds = selectedMusicians.map(_.musician_id.is).toSet
-    val lastPassedByPieceId = lpf.lastPassed().filter(lp => musicianIds.contains(lp.musicianId)).groupBy(_.pieceId)
+    val opTermEnd = selectors.opSelectedTerm.map(Terms.termEnd)
+    val lastPassedByPieceId = lpf.lastPassed(upTo = opTermEnd).filter(lp =>
+      musicianIds.contains(lp.musicianId)).groupBy(_.pieceId)
     val d1 = lastPassedByPieceId.map {case (pieceId, value) => (pieceId.toDouble, value.size.toDouble)}.toList
 
     new FlotSerie() {
