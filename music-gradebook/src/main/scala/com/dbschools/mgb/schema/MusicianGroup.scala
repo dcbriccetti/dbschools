@@ -18,9 +18,13 @@ object MusicianGroup {
       mg.group_id === musicGroupId.? and mg.instrument_id === instrumentId.?)
     select(m))
 
-  def selectedInstruments(term: Option[Int] = None, musicGroupId: Option[Int] = None) =
+  def selectedInstruments(term: Option[Int] = None, musicGroupId: Option[Int] = None) = {
+    val instrumentsMap = AppSchema.instruments.map(i => i.id -> i).toMap
     from(AppSchema.musicianGroups, AppSchema.instruments)((mg, i) =>
-    where(mg.instrument_id === i.id and mg.school_year === term.? and
-      mg.group_id === musicGroupId.?)
-    select(i))
+      where(mg.instrument_id === i.id and mg.school_year === term.? and
+        mg.group_id === musicGroupId.?)
+      groupBy(i.id)
+      compute(count(i.name.is))
+    ).map(g => instrumentsMap(g.key) -> g.measures).toSeq.sortBy(_._1.sequence.is)
+  }
 }

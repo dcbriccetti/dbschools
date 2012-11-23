@@ -20,7 +20,7 @@ class Graphs extends Loggable {
     replacePie("_instrumentsPie", "instruments_graph_wrapper"),
     onlyTestingGroups = true)
 
-  def replacePie(template: String, elemId: String) =
+  private def replacePie(template: String, elemId: String) =
     Templates(List(template)).map(Replace(elemId, _)) openOr {
       logger.error("Error loading template " + template)
       Noop
@@ -35,11 +35,11 @@ class Graphs extends Loggable {
   }
 
   def instruments = {
-    val grouped = MusicianGroup.selectedInstruments(
-      selectors.opSelectedTerm, selectors.opSelectedGroupId).groupBy(_.name.is)
-    val sortedInstrumentNames = grouped.keys.toSeq.sorted.filter(_ != "Unassigned")
-    val portions = sortedInstrumentNames.map(grouped).map(_.size).toSeq
-    Flot.renderPie("instruments_graph", Pie(portions, Some(sortedInstrumentNames.toSeq)))
+    val sortedInstruments = MusicianGroup.selectedInstruments(
+      selectors.opSelectedTerm, selectors.opSelectedGroupId).filter(_._1.name.is != "Unassigned")
+    val names = sortedInstruments.map(_._1.name.is.toString)
+    val portions = sortedInstruments.map(_._2.toInt)
+    Flot.renderPie("instruments_graph", Pie(portions, Some(names)))
   }
 
   def progress = {
