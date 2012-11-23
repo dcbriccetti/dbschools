@@ -10,7 +10,9 @@ class LastPassFinder {
   val subinstruments  = AppSchema.subinstruments.map(i => i.id -> i.name.is).toMap
   val pieces = AppSchema.pieces.toSeq
   val pieceNames = pieces.map(p => p.id -> p.name.is).toMap
-  val piecesByOrder = pieces.map(p => p.testOrder.is -> p.id).toMap
+  val pieceOrderToId = pieces.map(p => p.testOrder.is -> p.id).toMap
+  val numPieces = pieces.size
+  lazy val pieceIdToPosition = pieces.sortBy(_.testOrder.is).map(_.id).zipWithIndex.toMap
 
   def lastPassed(musicianId: Option[Int] = None): Iterable[LastPass] = {
     from(AppSchema.assessments, AppSchema.pieces)((a, p) =>
@@ -20,7 +22,7 @@ class LastPassFinder {
       orderBy(max(p.testOrder.is) desc)
     ).map(group => {
       val testOrder = group.measures.get
-      LastPass(group.key._1, group.key._2, group.key._3, piecesByOrder(testOrder), testOrder)
+      LastPass(group.key._1, group.key._2, group.key._3, pieceOrderToId(testOrder), testOrder)
     })
   }
 
