@@ -2,17 +2,24 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
+
     <h2>Progress</h2>
+    School Years: <span><span data-lift="Graphs.yearSelector"/></span>
+    Groups: <span><span data-lift="Graphs.groupSelector"/></span>
+    Instruments: <span><span data-lift="Graphs.instrumentSelector"/></span>
+
     <div id="progress_graph" style="width:600px;height:200px"></div>
     <div><span data-lift="Graphs.progress"/></div>
 
     <h2>Grades</h2>
-    <div id="grades_graph" style="width:200px;height:100px"></div>
-    <div><span data-lift="Graphs.grades"/></div>
+    <div id="grades_graph_wrapper">
+        <lift:embed what="_gradesPie"/>
+    </div>
 
     <h2>Instruments</h2>
-    <div id="instruments_graph" style="width:400px;height:200px"></div>
-    <div><span data-lift="Graphs.instruments"/></div>
+    <div id="instruments_graph_wrapper">
+        <lift:embed what="_instrumentsPie"/>
+    </div>
 
 </div>
 </body>
