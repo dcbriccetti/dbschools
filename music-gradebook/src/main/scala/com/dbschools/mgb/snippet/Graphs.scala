@@ -48,15 +48,9 @@ class Graphs extends Loggable {
 
   private def createFlotSeries: FlotSerie = {
     val lpf = new LastPassFinder()
-    val termMusicianIds = selectedMusicians.map(_.musician_id.is).toSet
-    val lps = lpf.lastPassed().filter(lp => termMusicianIds.contains(lp.musicianId))
-    val buckets = Array.fill[Int](lpf.numPieces)(0)
-    lps.foreach(lp => {
-      buckets(lpf.pieceIdToPosition(lp.pieceId)) += 1
-    })
-    val d1 = buckets.toList.zipWithIndex.map {
-      case (numAtPos, pos) => (pos.toDouble, numAtPos.toDouble)
-    }
+    val musicianIds = selectedMusicians.map(_.musician_id.is).toSet
+    val lastPassedByPieceId = lpf.lastPassed().filter(lp => musicianIds.contains(lp.musicianId)).groupBy(_.pieceId)
+    val d1 = lastPassedByPieceId.map {case (pieceId, value) => (pieceId.toDouble, value.size.toDouble)}.toList
 
     new FlotSerie() {
       override val data = d1
