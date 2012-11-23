@@ -16,7 +16,7 @@ object MusicianGroup {
     from(AppSchema.musicianGroups, AppSchema.musicians)((mg, m) =>
     where(mg.musician_id === m.musician_id.is and mg.school_year === term.? and
       mg.group_id === musicGroupId.? and mg.instrument_id === instrumentId.?)
-    select(m))
+    select((m, mg)))
 
   def selectedInstruments(term: Option[Int] = None, musicGroupId: Option[Int] = None) = {
     val instrumentsMap = AppSchema.instruments.map(i => i.id -> i).toMap

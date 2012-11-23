@@ -28,9 +28,9 @@ class Graphs extends Loggable {
     }
 
   def grades = {
-    val grouped = selectedMusicians.groupBy(_.graduation_year.is)
-    val sortedYears = grouped.keys.toSeq.sorted.reverse
-    val labels = sortedYears.map(y => Terms.graduationYearAsGrade(y).toString)
+    val grouped = selectedMusicians.groupBy(t => Terms.graduationYearAsGrade(t._1.graduation_year.is, t._2.school_year))
+    val sortedYears = grouped.keys.toSeq.sorted
+    val labels = sortedYears.map(_.toString)
     val portions = sortedYears.map(grouped).map(_.size).toSeq
     Flot.renderPie("grades_graph", Pie(portions, Some(labels.toSeq)))
   }
@@ -49,7 +49,7 @@ class Graphs extends Loggable {
 
   private def createFlotSeries: FlotSerie = {
     val lpf = new LastPassFinder()
-    val musicianIds = selectedMusicians.map(_.musician_id.is).toSet
+    val musicianIds = selectedMusicians.map(_._1.musician_id.is).toSet
     val opTermEnd = selectors.opSelectedTerm.map(Terms.termEnd)
     val lastPassedByPieceId = lpf.lastPassed(upTo = opTermEnd).filter(lp =>
       musicianIds.contains(lp.musicianId)).groupBy(_.pieceId)
