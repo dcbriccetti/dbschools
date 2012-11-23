@@ -16,8 +16,8 @@ class Graphs {
 
   def instruments = {
     val grouped = MusicianGroup.instrumentsInCurrentTerm.groupBy(_.name.is)
-    val sortedInstruments = grouped.keys.toSeq.sorted
-    val portions = sortedInstruments.map(grouped).map(_.size).toSeq
-    Flot.renderPie("instruments_graph", Pie(portions, Some(sortedInstruments.toSeq)))
+    val sortedInstrumentNames = grouped.keys.toSeq.sorted.filter(_ != "Unassigned")
+    val portions = sortedInstrumentNames.map(grouped).map(_.size).toSeq
+    Flot.renderPie("instruments_graph", Pie(portions, Some(sortedInstrumentNames.toSeq)))
   }
 }
