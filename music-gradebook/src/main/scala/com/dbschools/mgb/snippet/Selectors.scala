@@ -7,7 +7,7 @@ import net.liftweb.common.Loggable
 import net.liftweb.http.SHtml
 import net.liftweb.common.Full
 import com.dbschools.mgb.model.Terms
-import com.dbschools.mgb.schema.AppSchema
+import com.dbschools.mgb.schema.{MusicianGroup, AppSchema}
 import net.liftweb.http.js.JsCmd
 
 class Selectors(changed: () => JsCmd, onlyTestingGroups: Boolean = false) extends Loggable {
@@ -36,4 +36,5 @@ class Selectors(changed: () => JsCmd, onlyTestingGroups: Boolean = false) extend
     })
   }
 
+  def musicianGroups = MusicianGroup.selectedMusicians(opSelectedTerm, opSelectedGroupId, opSelectedInstId)
 }

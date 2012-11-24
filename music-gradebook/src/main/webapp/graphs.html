@@ -8,8 +8,11 @@
     Groups: <span><span data-lift="Graphs.groupSelector"/></span>
     Instruments: <span><span data-lift="Graphs.instrumentSelector"/></span>
 
-    <div id="progress_graph" style="width:600px;height:200px"></div>
+    <div id="progress_graph" style="width:400px;height:150px"></div>
     <div><span data-lift="Graphs.progress"/></div>
+    <div id="progress_numbers_wrapper">
+        <lift:embed what="_progressNumbers"/>
+    </div>
 
     <h2>Grades</h2>
     <div id="grades_graph_wrapper">

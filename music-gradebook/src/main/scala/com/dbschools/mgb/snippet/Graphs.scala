@@ -1,37 +1,37 @@
 package com.dbschools.mgb.snippet
 
-import org.scala_tools.time.Imports._
+import org.squeryl.PrimitiveTypeMode._
 import net.liftmodules.widgets.flot.{FlotBarsOptions, FlotOptions, FlotSerie, Pie, Flot}
 import net.liftweb.http
-import http.js.JsCmds.{Replace, Noop}
+import http.js.JsCmds.{SetHtml, Noop}
 import http.Templates
-import net.liftweb.common.{Loggable, Full}
-import com.dbschools.mgb.model.{LastPassFinder, Terms}
-import com.dbschools.mgb.schema.MusicianGroup
+import net.liftweb._
+import common.{Full, Loggable}
+import util._
+import com.dbschools.mgb.model.{Stats, LastPassFinder, Terms}
+import com.dbschools.mgb.schema.{AppSchema, MusicianGroup}
 
 class Graphs extends Loggable {
+  val pieces = AppSchema.pieces.toSeq
 
   def yearSelector = selectors.yearSelector
   def groupSelector = selectors.groupSelector
   def instrumentSelector = selectors.instrumentSelector
 
-  private val selectors = new Selectors(() =>
-    Flot.renderJs("progress_graph", createFlotSeries :: Nil, new FlotOptions {}, Noop) &
-    replacePie("_gradesPie", "grades_graph_wrapper") &
-    replacePie("_instrumentsPie", "instruments_graph_wrapper"),
-    onlyTestingGroups = true)
+  private val selectors = new Selectors(updatePage, onlyTestingGroups = true)
 
-  private def replacePie(template: String, elemId: String) =
-    Templates(List(template)).map(Replace(elemId, _)) openOr {
-      logger.error("Error loading template " + template)
-      Noop
-    }
+  private def updatePage() =
+    Flot.renderJs("progress_graph", createFlotSeries :: Nil, new FlotOptions {}, Noop) &
+    updateElement("_progressNumbers", "progress_numbers_wrapper") &
+    updateElement("_gradesPie", "grades_graph_wrapper") &
+    updateElement("_instrumentsPie", "instruments_graph_wrapper")
 
   def grades = {
-    val grouped = selectedMusicians.groupBy(t => Terms.graduationYearAsGrade(t._1.graduation_year.is, t._2.school_year))
-    val sortedYears = grouped.keys.toSeq.sorted
+    val gradesToMgms = selectors.musicianGroups.groupBy(mgm =>
+      Terms.graduationYearAsGrade(mgm.m.graduation_year.is, mgm.mg.school_year))
+    val sortedYears = gradesToMgms.keys.toSeq.sorted
     val labels = sortedYears.map(_.toString)
-    val portions = sortedYears.map(grouped).map(_.size).toSeq
+    val portions = sortedYears.map(gradesToMgms).map(_.size).toSeq
     Flot.renderPie("grades_graph", Pie(portions, Some(labels.toSeq)))
   }
 
@@ -47,13 +47,22 @@ class Graphs extends Loggable {
     Flot.render("progress_graph", createFlotSeries :: Nil, new FlotOptions {}, Noop)
   }
 
+  def progressNums = {
+    val musicianPositions = lastPasses.map(_.position)
+    val sumHighest = musicianPositions.sum
+    val numMusicians = musicianPositions.size
+    val meanHighest = if (numMusicians == 0) 0 else sumHighest.toDouble / numMusicians
+    val stdevHighest = Stats.stdev(musicianPositions.map(_.toDouble), meanHighest)
+    val fmt = java.text.NumberFormat.getInstance
+
+    "#numStudents *" #> fmt.format(numMusicians) &
+    "#numPieces   *" #> fmt.format(pieces.size) &
+    "#meanLast    *" #> fmt.format(meanHighest) &
+    "#stdevLast   *" #> fmt.format(stdevHighest)
+  }
+
   private def createFlotSeries: FlotSerie = {
-    val lpf = new LastPassFinder()
-    val musicianIds = selectedMusicians.map(_._1.musician_id.is).toSet
-    val opTermEnd = selectors.opSelectedTerm.map(Terms.termEnd)
-    val lastPassedByPieceId = lpf.lastPassed(upTo = opTermEnd).filter(lp =>
-      musicianIds.contains(lp.musicianId)).groupBy(_.pieceId)
-    val d1 = lastPassedByPieceId.map {case (pieceId, value) => (pieceId.toDouble, value.size.toDouble)}.toList
+    val d1 = lastPasses.groupBy(_.pieceId).map {case (pieceId, value) => (pieceId.toDouble, value.size.toDouble)}.toList
 
     new FlotSerie() {
       override val data = d1
@@ -63,7 +72,22 @@ class Graphs extends Loggable {
     }
   }
 
-  private def selectedMusicians =
-    MusicianGroup.selectedMusicians(selectors.opSelectedTerm,
-      selectors.opSelectedGroupId, selectors.opSelectedInstId)
+  private def lastPasses: Iterable[LastPassFinder#LastPass] = {
+    val lpf = new LastPassFinder()
+    val musicianIds = selectors.musicianGroups.map(_.m.musician_id.is).toSet
+    logger.warn("%d musicianIds: %s".format(musicianIds.size, musicianIds))
+    val opTermEnd = selectors.opSelectedTerm.map(Terms.termEnd)
+    val lastPasses: Iterable[LastPassFinder#LastPass] = lpf.lastPassed(upTo = opTermEnd)
+    logger.warn("%d lastPasses".format(lastPasses.size))
+    val lastPassesForSelectedMusicians: Iterable[LastPassFinder#LastPass] = lastPasses.filter(lp =>
+      musicianIds.contains(lp.musicianId))
+    logger.warn("%d lastPassesForSelectedMusicians".format(lastPassesForSelectedMusicians.size))
+    lastPassesForSelectedMusicians
+  }
+
+  private def updateElement(template: String, elemId: String) =
+    Templates(List(template)).map(SetHtml(elemId, _)) openOr {
+      logger.error("Error loading template " + template)
+      Noop
+    }
 }

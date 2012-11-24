@@ -10,13 +10,15 @@ case class MusicianGroup(
   school_year:    Int
 )
 
+case class MusicianGroupMusician(mg: MusicianGroup, m: Musician)
+
 object MusicianGroup {
   def selectedMusicians(term: Option[Int] = None, musicGroupId: Option[Int] = None,
       instrumentId: Option[Int] = None) =
     from(AppSchema.musicianGroups, AppSchema.musicians)((mg, m) =>
     where(mg.musician_id === m.musician_id.is and mg.school_year === term.? and
       mg.group_id === musicGroupId.? and mg.instrument_id === instrumentId.?)
-    select((m, mg)))
+    select(MusicianGroupMusician(mg, m)))
 
   def selectedInstruments(term: Option[Int] = None, musicGroupId: Option[Int] = None) = {
     val instrumentsMap = AppSchema.instruments.map(i => i.id -> i).toMap
