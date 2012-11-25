@@ -118,12 +118,13 @@ class StudentDetails extends Loggable {
   def assessments =
     ".assessmentRow" #> opMusicianId.map(AssessmentRows.forMusician).flatten.map(fillAssRow)
 
-  private val dtf = DateTimeFormat.forStyle("MM")
+  private val dtf = DateTimeFormat.forStyle("SM")
 
   private def fillAssRow(ar: AssessmentRow) =
-    ".date       *" #> dtf.print(ar.date) &
-    ".tester     *" #> ar.tester &
-    ".piece      *" #> ar.piece &
-    ".instrument *" #> ar.instrument &
-    ".comments   *" #> ar.comments
+    ".date       *"   #> dtf.print(ar.date) &
+    ".tester     *"   #> ar.tester &
+    ".piece [class]"  #> (if (ar.pass) "pass" else "fail") &
+    ".piece      *"   #> ar.piece &
+    ".instrument *"   #> ar.instrument &
+    ".comments   *"   #> ar.notes
 }
