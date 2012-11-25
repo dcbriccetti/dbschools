@@ -24,16 +24,31 @@
                         <td><span class="lastPiece"/></td>
                     </tr>
                 </table>
-                <p class="groups"/>
+
+                <h3>Group Assignments</h3>
+
+                <table class="autoWidth noShade">
+                  <tr>
+                    <th>Sel</th> <th>Year</th> <th>Group</th> <th>Instrument</th>
+                  </tr>
+                  <tr class="assignmentRow">
+                    <td class="sel"></td>
+                    <td class="year"></td>
+                    <td class="group"></td>
+                    <td class="instrument"></td>
+                  </tr>
+                </table>
+
+                <div data-lift="StudentDetails.groupAssignments">
+                    <div><span id="create"/></div>
+                    <div><span id="delete" style="display: none;"/></div>
+                </div>
+
+                <br/>
+                <h3>Assessments</h3>
                 <p class="assessments"/>
             </div>
         </div>
-    </div>
-
-    <h3>Group Assignments</h3>
-    <div data-lift="StudentDetails.groupAssignments">
-        <div><span id="create"/></div>
-        <div><span id="delete" style="display: none;"/></div>
     </div>
 
 </div>

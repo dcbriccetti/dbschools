@@ -29,9 +29,10 @@ class StudentDetails extends Loggable {
   private val groups = AppSchema.groups.toSeq.sortBy(_.name)
   private val instruments = AppSchema.instruments.toSeq.sortBy(_.sequence.is)
 
+  case class MusicianDetails(musician: Musician, groups: Iterable[GroupAssignment], assessments: Iterable[Assessment])
+
   def render = {
 
-    case class MusicianDetails(musician: Musician, groups: Iterable[GroupAssignment], assessments: Iterable[Assessment])
     opMusicianId = S.param("id").flatMap(asInt).toOption
     val matchingMusicians = opMusicianId.map(id => from(AppSchema.musicians)(musician =>
       where(musician.musician_id.is === id)
@@ -43,38 +44,27 @@ class StudentDetails extends Loggable {
       AppSchema.assessments.where(_.musician_id === musician.musician_id.is).toSeq))
 
     def makeDetails(md: MusicianDetails) =
-      ".name *"         #> md.musician.name &
-      ".grade *"        #> Terms.graduationYearAsGrade(md.musician.graduation_year.is) &
-      ".stuId *"        #> md.musician.student_id &
-      ".mgbId *"        #> md.musician.musician_id &
-      ".lastPiece *"    #> new LastPassFinder().lastPassed(Some(md.musician.musician_id.is)).mkString(", ") &
-      ".groups"         #>
-        <table class="autoWidth noShade">
-          <tr><th>Sel</th><th>Year</th><th>Group</th><th>Instrument</th></tr>
-          {md.groups.map(ga => {
-          <tr>
-            <td>
-              {assignmentCheckbox(ga)}
-            </td>
-            <td>
-              {Terms.formatted(ga.musicianGroup.school_year)}
-            </td>
-            <td>
-              {groupSelector(ga)}
-            </td>
-            <td>
-              {instrumentSelector(ga)}
-            </td>
-          </tr>
-        })}
-        </table> &
-      ".assessments *"  #> {
-        val (pass, fail) = md.assessments.partition(_.pass)
-        "Assessments: pass: %d, fail: %d".format(pass.size, fail.size)
-      }
+      ".name *"           #> md.musician.name &
+      ".grade"            #> Terms.graduationYearAsGrade(md.musician.graduation_year.is) &
+      ".stuId"            #> md.musician.student_id &
+      ".mgbId"            #> md.musician.musician_id &
+      ".lastPiece"        #> new LastPassFinder().lastPassed(Some(md.musician.musician_id.is)).mkString(", ") &
+      ".assignmentRow *"  #> groupsTable(md.groups) &
+      ".assessments"      #>  {
+                                val (pass, fail) = md.assessments.partition(_.pass)
+                                "Passes: %d, failures: %d".format(pass.size, fail.size)
+                              }
 
     "#student" #> musicianDetailsItems.map(makeDetails)
   }
+
+  private def groupsTable(groups: Iterable[GroupAssignment]) =
+    groups.map(ga =>
+      ".sel *"        #> assignmentCheckbox(ga) &
+      ".year *"       #> Terms.formatted(ga.musicianGroup.school_year) &
+      ".group *"      #> groupSelector(ga) &
+      ".instrument *" #> instrumentSelector(ga)
+    )
 
   private def assignmentCheckbox(ga: GroupAssignment) =
     SHtml.ajaxCheckbox(false, checked => {
