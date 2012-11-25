@@ -4,6 +4,7 @@ package snippet
 import scalaz._
 import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
+import org.scala_tools.time.Imports._
 import net.liftweb._
 import common.{Full, Loggable}
 import util._
@@ -108,4 +109,16 @@ class StudentDetails extends Loggable {
       }
       reloadPage
     })
+
+  def assessments =
+    ".assessmentRow" #> opMusicianId.map(AssessmentRows.forMusician).flatten.map(fillAssRow)
+
+  private val dtf = DateTimeFormat.forStyle("MM")
+
+  private def fillAssRow(ar: AssessmentRow) =
+    ".date       *" #> dtf.print(ar.date) &
+    ".tester     *" #> ar.tester &
+    ".piece      *" #> ar.piece &
+    ".instrument *" #> ar.instrument &
+    ".comments   *" #> ar.comments
 }

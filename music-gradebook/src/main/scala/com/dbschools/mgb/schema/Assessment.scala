@@ -12,5 +12,6 @@ case class Assessment(
   user_id:          Int,
   @Column("piece_id")
   pieceId:          Int,
-  pass:             Boolean
+  pass:             Boolean,
+  notes:            String
 )
