@@ -75,14 +75,9 @@ class Graphs extends Loggable {
   private def lastPasses: Iterable[LastPassFinder#LastPass] = {
     val lpf = new LastPassFinder()
     val musicianIds = selectors.musicianGroups.map(_.m.musician_id.is).toSet
-    logger.warn("%d musicianIds: %s".format(musicianIds.size, musicianIds))
     val opTermEnd = selectors.opSelectedTerm.map(Terms.termEnd)
-    val lastPasses: Iterable[LastPassFinder#LastPass] = lpf.lastPassed(upTo = opTermEnd)
-    logger.warn("%d lastPasses".format(lastPasses.size))
-    val lastPassesForSelectedMusicians: Iterable[LastPassFinder#LastPass] = lastPasses.filter(lp =>
-      musicianIds.contains(lp.musicianId))
-    logger.warn("%d lastPassesForSelectedMusicians".format(lastPassesForSelectedMusicians.size))
-    lastPassesForSelectedMusicians
+    val lastPasses = lpf.lastPassed(upTo = opTermEnd)
+    lastPasses.filter(lp => musicianIds.contains(lp.musicianId))
   }
 
   private def updateElement(template: String, elemId: String) =
