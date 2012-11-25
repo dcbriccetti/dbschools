@@ -42,6 +42,7 @@ class Boot {
       studentDetails.menu       >> loggedIn >> Hidden,
       graphs.menu               >> loggedIn,
       stats.menu                >> loggedIn,
+      history.menu              >> loggedIn,
       logout.menu               >> loggedIn
     )
 
