@@ -86,19 +86,19 @@ class StudentDetails extends Loggable {
         Noop
       })
 
-  def groupAssignments =
-    "#delete" #>
-      SHtml.ajaxButton("Delete selected group assignments", () => {
-        if (! selectedMusicianGroups.isEmpty) {
-          Confirm("Are you sure you want to remove the %d selected group assignments?".format(selectedMusicianGroups.size),
-            SHtml.ajaxInvoke(() => {
-              AppSchema.musicianGroups.deleteWhere(_.id in selectedMusicianGroups.keys)
-              selectedMusicianGroups = selectedMusicianGroups.empty
-              reloadPage
-            }))
-        } else Noop
-      }) &
-    "#create" #> SHtml.ajaxButton("Create %s group assignment".format(Terms.formatted(Terms.currentTerm)), () => {
+  def groupAssignments = {
+    def delete() = {
+      if (! selectedMusicianGroups.isEmpty) {
+        Confirm(
+          "Are you sure you want to remove the %d selected group assignments?".format(selectedMusicianGroups.size),
+          SHtml.ajaxInvoke(() => {
+            AppSchema.musicianGroups.deleteWhere(_.id in selectedMusicianGroups.keys)
+            selectedMusicianGroups = selectedMusicianGroups.empty
+            reloadPage
+          }))
+      } else Noop
+    }
+    def create() = {
       for {
         group      <- groups.find(_.doesTesting)
         instrument <- instruments.find(_.name.is == "Unassigned")
@@ -108,7 +108,12 @@ class StudentDetails extends Loggable {
           Terms.currentTerm))
       }
       reloadPage
-    })
+    }
+
+    "#delete" #> SHtml.ajaxButton("Delete selected group assignments", () => delete) &
+    "#create" #> SHtml.ajaxButton("Create %s group assignment".
+                    format(Terms.formatted(Terms.currentTerm)), () => create)
+  }
 
   def assessments =
     ".assessmentRow" #> opMusicianId.map(AssessmentRows.forMusician).flatten.map(fillAssRow)
