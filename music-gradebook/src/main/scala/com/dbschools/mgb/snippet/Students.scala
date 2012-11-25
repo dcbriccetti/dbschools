@@ -1,7 +1,7 @@
 package com.dbschools.mgb
 package snippet
 
-import xml.Text
+import xml.{NodeSeq, Text}
 import scalaz._
 import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
@@ -56,7 +56,7 @@ class Students extends Loggable {
   }
 
   def inGroups = {
-    val lastPasses = lastPassFinder.lastPassed().groupBy(_.musicianId)
+    val lastPassesByMusician = lastPassFinder.lastPassed().groupBy(_.musicianId)
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedInstId .isDefined) ".instr"   #> none[String] else PassThru) andThen (
@@ -65,12 +65,15 @@ class Students extends Loggable {
       ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
       ".stuName  *" #> studentLink(row.musician) &
       ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.is) &
-      ".id       *" #> row.musician.musician_id.is &
-      ".stuId    *" #> row.musician.student_id.is &
       ".group    *" #> row.group.name &
       ".instr    *" #> row.instrument.name.get &
-      ".lastPass *" #> ~lastPasses.get(row.musician.musician_id.is).map(_.mkString(", "))
+      ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.musician_id.is))
     ))))
+  }
+
+  private def formatLastPasses(opLastPasses: Option[Iterable[LastPassFinder#LastPass]]): NodeSeq = {
+    val lastPasses = opLastPasses.flatten.map(lp => Text(lp.toString))
+    lastPasses.fold(NodeSeq.Empty)(_ ++ <br/> ++ _).drop(1)
   }
 
   def inNoGroups = {

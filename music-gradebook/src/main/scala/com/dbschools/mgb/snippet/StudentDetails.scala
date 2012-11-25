@@ -14,13 +14,9 @@ import js.JsCmds._
 import Helpers.asInt
 import js.JsCmds.Confirm
 import model._
-import schema.AppSchema
 import schema.IdGenerator.genId
 import model.GroupAssignment
-import scala.Some
-import schema.Musician
-import schema.Assessment
-import schema.MusicianGroup
+import schema.{AppSchema, Musician, Assessment, MusicianGroup}
 
 class StudentDetails extends Loggable {
   private var selectedMusicianGroups = Map[Int, MusicianGroup]()
