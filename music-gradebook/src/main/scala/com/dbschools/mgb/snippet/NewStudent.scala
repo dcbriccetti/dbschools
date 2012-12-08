@@ -14,7 +14,7 @@ object NewStudent extends LiftScreen with Loggable {
 
   def valUniqueStudentId(): Errors =
     AppSchema.musicians.where(_.student_id.is === musician.student_id.is).headOption match {
-      case Some(existing) => existing.name + "already has that student ID"
+      case Some(existing) => existing.name + " already has that student ID"
       case _              => Nil
     }
 
