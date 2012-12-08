@@ -216,6 +216,10 @@ cindy""")
 
   def main(args: Array[String]) {
     Db.initialize()
+    createTestData()
+  }
+
+  def createTestData() {
     transaction {
       deleteStudents()
       createAndGroupStudents()
@@ -272,7 +276,15 @@ cindy""")
     def prop(name: String) = Props.get(name).get
     transaction {
       try {
-        AppSchema.users.insert(User(1, prop("data.users.demo.login"), "", prop("data.users.demo.epassword"), prop("data.users.demo.name.first"), prop("data.users.demo.name.last"), true))
+        AppSchema.users.insert(
+          User(
+            1,
+            prop("data.users.demo.login"),
+            "",
+            prop("data.users.demo.epassword"),
+            prop("data.users.demo.name.first"),
+            prop("data.users.demo.name.last"),
+            enabled = true))
         logger.info("Added a demo user")
       }
       catch {
