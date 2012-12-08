@@ -1,11 +1,5 @@
 package com.dbschools.mgb
 
-import java.sql.DriverManager
-
-import org.squeryl.Session
-import org.squeryl.SessionFactory
-import org.squeryl.adapters.PostgreSqlAdapter
-
 import com.dbschools.mgb.schema.SchemaHelper
 
 import net.liftweb.http.S
@@ -19,20 +13,20 @@ object Db {
    * Initialize database processing for the webapp, and for standalone tests.
    */
   def initialize() {
-    val dbEngine = Props.get("db.engine", "h2");
+    val dbEngine = Props.get("db.engine", "h2")
     if (dbEngine == "h2") {
-      SchemaHelper.initH2
+      SchemaHelper.initH2()
     } else if (dbEngine == "postgres") {
-      SchemaHelper.initPostgres
+      SchemaHelper.initPostgres()
     }
 
-    if (Props.getBool("db.recreate", false)) {
-      SchemaHelper.recreateSchema
-      if (Props.getBool("db.development", false)) {
-        TestDataMaker.createDefaultUserData
+    if (Props.getBool("db.recreate", defVal = false)) {
+      SchemaHelper.recreateSchema()
+      if (Props.getBool("db.development", defVal = false)) {
+        TestDataMaker.createDefaultUserData()
       }
     } else {
-      SchemaHelper.touch
+      SchemaHelper.touch()
     }
 
     /* Make transaction wrap around the whole HTTP request */
