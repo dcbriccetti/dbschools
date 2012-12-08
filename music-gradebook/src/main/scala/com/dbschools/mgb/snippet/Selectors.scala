@@ -33,7 +33,7 @@ class Selectors(changed: () => JsCmd, onlyTestingGroups: Boolean = false) extend
 
   private def groupSelectValues: List[(String, String)] = {
     val groups = AppSchema.groups.toList
-    val opGroupIds = opSelectedTerm.map(schema.Group.groupsWithAssessmentsByTerm)
+    val opGroupIds = opSelectedTerm.flatMap(schema.Group.groupsWithAssessmentsByTerm.get)
     val filtered = opGroupIds.map(ids => groups.filter(g => ids.contains(g.group_id))) | groups
     filtered.sortBy(_.name).map(g => g.group_id.toString -> g.name)
   }
