@@ -1,0 +1,13 @@
+# The pieces that a student performs in a test.
+
+# Piece, tempo
+
+Red 7	88
+Red 12	86
+Red 14	112
+Red 17	108
+Red 22	100
+Red 23	110
+Blue 2	92
+Blue 5	100
+Blue 6	96

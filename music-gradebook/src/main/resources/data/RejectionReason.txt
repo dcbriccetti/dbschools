@@ -1,0 +1,8 @@
+# Reasons for rejecting a student from even taking a performance test
+
+No instrument
+Broken instrument
+No/Broken reed
+No mouthpiece
+Stuck valve
+No book

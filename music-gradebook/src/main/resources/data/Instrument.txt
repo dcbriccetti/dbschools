@@ -1,0 +1,21 @@
+# List of instrument names
+
+# "Instruments" such as percussion may have subinstruments, 
+# which are listed on the same line, separated from the 
+# instrument and each other by tabs.
+
+Unassigned
+Flute
+Oboe
+Clarinet
+Bass Clarinet
+Alto Saxophone
+Tenor Saxophone
+Baritone Saxophone
+Trumpet
+French Horn
+Trombone
+Baritone Horn
+Tuba
+String Bass
+Percussion	Mallots	Snare Drum
