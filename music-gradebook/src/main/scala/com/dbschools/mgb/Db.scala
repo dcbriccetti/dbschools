@@ -2,6 +2,7 @@ package com.dbschools.mgb
 
 import com.dbschools.mgb.schema.SchemaHelper
 
+import model.DefaultDataCreator
 import net.liftweb.http.S
 import net.liftweb.squerylrecord.RecordTypeMode.inTransaction
 import net.liftweb.util.LoanWrapper
@@ -24,6 +25,7 @@ object Db {
       SchemaHelper.recreateSchema()
       if (Props.getBool("db.development", defVal = false)) {
         TestDataMaker.createDefaultUserData()
+        DefaultDataCreator.createIfEmpty()
       }
     } else {
       SchemaHelper.touch()
