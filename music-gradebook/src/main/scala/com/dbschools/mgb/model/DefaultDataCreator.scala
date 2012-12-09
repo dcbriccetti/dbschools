@@ -2,60 +2,53 @@ package com.dbschools.mgb.model
 
 import io.Source
 import org.squeryl.PrimitiveTypeMode._
-import com.dbschools.mgb.schema.{Subinstrument, Instrument, AppSchema, PredefinedComment}
 import net.liftweb.common.Loggable
+import com.dbschools.mgb.schema.{User, Subinstrument, Instrument, AppSchema, PredefinedComment}
+import com.dbschools.mgb.convert.EncryptPasswords
 
 object DefaultDataCreator extends Loggable {
   def createIfEmpty() {
     transaction {
-    /*
-    createUser()
-    */
-    createInstruments()
-      /*
-    createGroups()
-    createPieces()
-    createRejectionReasons()
-    */
-    createPredefinedComments()
+      if (AppSchema.users.headOption.isEmpty) {
+        createUser()
+        createInstruments()
+          /*
+        createGroups()
+        createPieces()
+        createRejectionReasons()
+        */
+        createPredefinedComments()
+      }
     }
   }
 
-  def getLines(namePart: String) =
+  private def getLines(namePart: String) =
     Source.fromInputStream(classOf[PredefinedComment].getResourceAsStream("/data/%s.txt".format(namePart))).
       getLines().map(_.trim).filterNot(l => l.isEmpty || l.startsWith("#")).toList
 
   private def createPredefinedComments() {
     val comments = getLines("PredefinedComment").map(PredefinedComment(0, _, ""))
     AppSchema.predefinedComments.insert(comments)
-    logger.warn("Inserted %d comments".format(comments.size))
   }
-/*
+
   private def createUser() {
-    import scala.collection.JavaConversions._
-    for (line <- new FileLineProvider(DATA_PATH + "User.txt")) {
-      val fields: Array[String] = line.split(FIELD_DELIMITER)
-      if (fields.length == 4) {
-        session.save(new User(fields(0), fields(1), fields(2), fields(3)))
-      }
-      else {
-        throw new IllegalArgumentException("user line must contain four fields separated by spaces")
-      }
-    }
+    AppSchema.users.insert(getLines("User").map(line => {
+      val fields = line.split("\t")
+      User(0, fields(0), fields(1), EncryptPasswords.encrypt(fields(1)), fields(2), fields(3), enabled = true)
+    }))
   }
-*/
+
   private def createInstruments() {
-    var seq: Int = 10
+    var seq = 10
     getLines("Instrument").foreach(line => {
       val fields = line.split("\t")
       val inst = Instrument.createRecord.name(fields(0)).sequence(seq)
       AppSchema.instruments.insert(inst)
       seq += 10
       if (fields.length > 1) {
-        var subSeq: Int = 10
+        var subSeq = 10
         fields.toList.tail.foreach(field => {
-          val subinst = Subinstrument.createRecord.instrumentId(inst.id).sequence(subSeq).name(field)
-          AppSchema.subinstruments.insert(subinst)
+          AppSchema.subinstruments.insert(Subinstrument.createRecord.instrumentId(inst.id).sequence(subSeq).name(field))
           subSeq += 10
         })
       }

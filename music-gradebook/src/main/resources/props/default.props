@@ -13,10 +13,3 @@ db.driver=org.h2.Driver
 db.url=jdbc:h2:mem:dbschools;FILE_LOCK=NO;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=3000
 db.user=sa
 db.password=
-
-# Data for demo user
-data.users.demo.login=demo
-data.users.demo.epassword=$2a$10$rvyDSAv3D57BGJStAeviROTUSuqUij4t/kVC5oyKOCtZUIqoeuvwO
-# decrypted password= is "demo123"
-data.users.demo.name.first=Demo
-data.users.demo.name.last=Demo User

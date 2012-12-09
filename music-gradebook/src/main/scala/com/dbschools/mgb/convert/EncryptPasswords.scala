@@ -12,7 +12,9 @@ object EncryptPasswords extends Loggable {
     Db.initialize()
     transaction {
       val query = AppSchema.users.where(_.epassword === "")
-      val updatedUsers = query.map(u => u.copy(epassword = BCrypt.hashpw(u.password, BCrypt.gensalt())))
+      val updatedUsers = query.map(u => {
+        u.copy(epassword = encrypt(u.password))
+      })
       if (updatedUsers.isEmpty)
         logger.info("All passwords are already encrypted")
       else {
@@ -21,4 +23,6 @@ object EncryptPasswords extends Loggable {
       }
     }
   }
+
+  def encrypt(password: String) = BCrypt.hashpw(password, BCrypt.gensalt())
 }

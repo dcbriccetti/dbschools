@@ -23,10 +23,7 @@ object Db {
 
     if (Props.getBool("db.recreate", defVal = false)) {
       SchemaHelper.recreateSchema()
-      if (Props.getBool("db.development", defVal = false)) {
-        TestDataMaker.createDefaultUserData()
-        DefaultDataCreator.createIfEmpty()
-      }
+      DefaultDataCreator.createIfEmpty()
     } else {
       SchemaHelper.touch()
     }
