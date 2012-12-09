@@ -24,6 +24,9 @@ object Db {
     if (Props.getBool("db.recreate", defVal = false)) {
       SchemaHelper.recreateSchema()
       DefaultDataCreator.createIfEmpty()
+      if (Props.getBool("db.development", defVal = false)) {
+        TestDataMaker.createTestData()
+      }
     } else {
       SchemaHelper.touch()
     }

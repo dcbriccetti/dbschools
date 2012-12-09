@@ -23,7 +23,7 @@ class Statistics {
   private type QueryGm = Query[GroupWithMeasures[PrimitiveTypeMode.StringType, PrimitiveTypeMode.LongType]]
 
   private def queryByGroup(pass: Boolean) = from(groups, musicianGroups, musicians, assessments)((g, mg, m, a) =>
-    where(g.group_id === mg.group_id and mg.musician_id === m.musician_id.is and mg.school_year === dtFrom.getYear
+    where(g.id === mg.group_id and mg.musician_id === m.musician_id.is and mg.school_year === dtFrom.getYear
       and m.musician_id.is === a.musician_id
       and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
     groupBy(g.name)

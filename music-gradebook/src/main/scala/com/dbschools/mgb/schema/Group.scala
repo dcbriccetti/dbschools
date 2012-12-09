@@ -2,12 +2,13 @@ package com.dbschools.mgb.schema
 
 import org.squeryl.annotations.Column
 import org.squeryl.PrimitiveTypeMode._
+import org.squeryl.KeyedEntity
 
 case class Group(
-                          group_id:     Int,
+  @Column("group_id")     id:           Int,
                           name:         String,
   @Column("does_testing") doesTesting:  Boolean
-)
+) extends KeyedEntity[Int]
 
 object Group {
   /** TermGroupAssessments for all groups */

@@ -3,7 +3,7 @@ package com.dbschools.mgb.model
 import io.Source
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.common.Loggable
-import com.dbschools.mgb.schema.{User, Subinstrument, Instrument, AppSchema, PredefinedComment}
+import com.dbschools.mgb.schema.{Tempo, Piece, RejectionReason, Group, User, Subinstrument, Instrument, AppSchema, PredefinedComment}
 import com.dbschools.mgb.convert.EncryptPasswords
 
 object DefaultDataCreator extends Loggable {
@@ -12,11 +12,9 @@ object DefaultDataCreator extends Loggable {
       if (AppSchema.users.headOption.isEmpty) {
         createUser()
         createInstruments()
-          /*
         createGroups()
         createPieces()
         createRejectionReasons()
-        */
         createPredefinedComments()
       }
     }
@@ -54,34 +52,25 @@ object DefaultDataCreator extends Loggable {
       }
     })
   }
-/*
+
   private def createGroups() {
-    import scala.collection.JavaConversions._
-    for (line <- new FileLineProvider(DATA_PATH + "Group.txt")) {
-      session.save(new Group(line, 0, true))
-    }
+    AppSchema.groups.insert(getLines("Group").map(Group(0, _, doesTesting = true)))
   }
 
   private def createPieces() {
     var seq: Int = 1
-    import scala.collection.JavaConversions._
-    for (line <- new FileLineProvider(DATA_PATH + "Piece.txt")) {
-      val fields: Array[String] = line.split(FIELD_DELIMITER)
-      val piece: Piece = new Piece(({
-        seq += 1; seq - 1
-      }), fields(0))
-      session.save(piece)
+    getLines("Piece").foreach(line => {
+      val fields = line.split("\t")
+      val piece = Piece.createRecord.testOrder(seq).name(fields(0))
+      AppSchema.pieces.insert(piece)
+      seq += 1
       if (fields.length == 2) {
-        session.save(new Tempo(piece, Integer.parseInt(fields(1))))
+        AppSchema.tempos.insert(Tempo(0, piece.id, Integer.parseInt(fields(1)), None))
       }
-    }
+    })
   }
 
   private def createRejectionReasons() {
-    import scala.collection.JavaConversions._
-    for (line <- new FileLineProvider(DATA_PATH + "RejectionReason.txt")) {
-      session.save(new RejectionReason(line))
-    }
+    AppSchema.rejectionReasons.insert(getLines("RejectionReason").map(RejectionReason(0, _)))
   }
-*/
 }

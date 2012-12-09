@@ -71,7 +71,7 @@ class StudentDetails extends Loggable {
     })
 
   private def groupSelector(ga: GroupAssignment) =
-    SHtml.ajaxSelect(groups.map(g => (g.group_id.toString, g.name)).toSeq,
+    SHtml.ajaxSelect(groups.map(g => (g.id.toString, g.name)).toSeq,
       Full(ga.musicianGroup.group_id.toString), gid => {
         AppSchema.musicianGroups.update(mg => where(mg.id === ga.musicianGroup.id)
           set (mg.group_id := gid.toInt))
@@ -104,7 +104,7 @@ class StudentDetails extends Loggable {
         instrument <- instruments.find(_.name.is == "Unassigned")
         musicianId <- opMusicianId
       } {
-        AppSchema.musicianGroups.insert(MusicianGroup(genId(), musicianId, group.group_id, instrument.id,
+        AppSchema.musicianGroups.insert(MusicianGroup(genId(), musicianId, group.id, instrument.id,
           Terms.currentTerm))
       }
       reloadPage

@@ -14,7 +14,9 @@ object AppSchema extends Schema {
   val assessments         = table[Assessment]         ("assessment")
   val assessmentTags      = table[AssessmentTag]      ("assessment_tag")
   val predefinedComments  = table[PredefinedComment]  ("predefined_comment")
+  val rejectionReasons    = table[RejectionReason]    ("rejection_reason")
+  val tempos              = table[Tempo]              ("tempo")
 
   private val hs = autoIncremented("hibernate_sequence")
-  Seq(musicians, instruments).foreach(on(_)(t => declare(t.id is hs)))
+  Seq(musicians, instruments, groups).foreach(on(_)(t => declare(t.id is hs)))
 }

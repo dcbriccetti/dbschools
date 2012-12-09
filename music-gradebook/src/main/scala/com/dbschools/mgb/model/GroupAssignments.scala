@@ -20,7 +20,7 @@ object GroupAssignments extends Loggable {
         m.musician_id.is  === opId.? and
         m.musician_id.is  === mg.musician_id and
         mg.group_id       === opSelectedGroupId.? and
-        mg.group_id       === g.group_id and
+        mg.group_id       === g.id and
         mg.instrument_id  === opSelectedInstrumentId.? and
         mg.instrument_id  === i.idField.is and
         mg.school_year    === opSelectedTerm.?

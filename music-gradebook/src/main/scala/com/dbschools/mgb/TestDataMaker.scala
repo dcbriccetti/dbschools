@@ -256,7 +256,7 @@ cindy""")
   }
 
   private object GroupIds {
-    private val groupIds = AppSchema.groups.map(_.group_id).toArray
+    private val groupIds = AppSchema.groups.map(_.id).toArray
 
     /** Returns the requested number of unique, randomly-chosen group IDs */
     def apply(num: Int) = {
