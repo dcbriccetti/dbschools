@@ -236,8 +236,9 @@ cindy""")
     var id = 10000 // Until we set up sequences
     lastNames.foreach(lastName => {
       val firstName = firstNames((random * firstNames.length).toInt)
+      val grad_year = 2012
       val m = AppSchema.musicians.insert(Musician.createRecord.student_id(id).first_name(firstName).
-        last_name(lastName).graduation_year(2013).sex("M"))
+        last_name(lastName).graduation_year(grad_year).sex("M"))
       id += 1
 
       val groupIds = random match {
@@ -248,7 +249,7 @@ cindy""")
       }
       groupIds.foreach(groupId => {
         AppSchema.musicianGroups.insert(MusicianGroup(id, m.musician_id.is, groupId,
-          instrumentIds((random * instrumentIds.length).toInt), 2013))
+          instrumentIds((random * instrumentIds.length).toInt), grad_year))
         id += 1
       })
       logger.trace("Added %s, %s to %d groups".format(lastName, firstName, groupIds.size))
