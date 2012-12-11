@@ -18,5 +18,5 @@ object AppSchema extends Schema {
   val tempos              = table[Tempo]              ("tempo")
 
   private val hs = autoIncremented("hibernate_sequence")
-  Seq(musicians, instruments, groups).foreach(on(_)(t => declare(t.id is hs)))
+  //Seq(musicians, instruments, groups).foreach(on(_)(t => declare(t.id is hs)))
 }
