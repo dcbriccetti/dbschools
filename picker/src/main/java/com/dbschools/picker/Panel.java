@@ -277,12 +277,10 @@ public class Panel extends javax.swing.JPanel {
     }
 
     private class PickerListModel extends AbstractListModel {
-        @Override
         public int getSize() {
             return pickingHat.size();
         }
 
-        @Override
         public Object getElementAt(int rowIndex) {
             return pickingHat.get(rowIndex);
         }
@@ -306,5 +304,4 @@ public class Panel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JList namesJList;
     // End of variables declaration//GEN-END:variables
-
 }

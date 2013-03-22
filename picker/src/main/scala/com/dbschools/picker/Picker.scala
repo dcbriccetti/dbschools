@@ -9,20 +9,18 @@ import scala.util.Random
  * @author Dave Briccetti
  */
 class Picker {
-  private var names: java.util.List[String] = null
-  private var fanfare: Boolean = false
-  private var pickerListeners: List[Listener] = Nil
+  private var names = Iterable[String]()
+  private var fanfare = false
+  private var pickerListeners = List[Listener]()
   private val random = new Random
 
   def notifyListeners(result: Int, isFinal: Boolean) {
-    pickerListeners.foreach(l => l.itemSelected(result, isFinal))
+    pickerListeners.foreach(_.itemSelected(result, isFinal))
   }
   
-  def pick {
-    if (names == null) throw new IllegalStateException("must call setNames")
-        
+  def pick() {
     if (!fanfare || names.size == 1) {
-        notifyListeners(0, true)
+        notifyListeners(0, isFinal = true)
         return
     }
 
@@ -30,21 +28,20 @@ class Picker {
 
     var hatIndex = 0
     var delayMillis = random.nextInt(100)
-    var timer: Timer = null
-
-    timer = new Timer(delayMillis, new ActionListener() {
+    val timer = new Timer(delayMillis, null)
+    timer.addActionListener(new ActionListener() {
       def actionPerformed(event: ActionEvent) {
         if (delayMillis < 100) {
-          notifyListeners(hatIndex, false)
+          notifyListeners(hatIndex, isFinal = false)
           hatIndex = (hatIndex + 1) % names.size
           delayMillis += 5
           timer.setDelay(delayMillis)
         } else {
-          timer.stop
-          notifyListeners(hatIndex, true)
+          timer.stop()
+          notifyListeners(hatIndex, isFinal = true)
         }
       }})
-    timer.start
+    timer.start()
   }
   
   def setFanfare(fanfare: Boolean) {
@@ -52,7 +49,7 @@ class Picker {
   }
 
   def addListener(listener: Listener) {
-    pickerListeners = listener :: pickerListeners
+    pickerListeners ::= listener
   }
 
   def removeListener(listener: Listener) {
@@ -60,7 +57,6 @@ class Picker {
   }
 
   def setNames(names: java.util.List[String]) {
-    this.names = names
+    this.names = scala.collection.JavaConversions.asScalaIterable(names)
   }
-
 }
