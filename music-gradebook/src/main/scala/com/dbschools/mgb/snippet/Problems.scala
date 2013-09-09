@@ -3,12 +3,12 @@ package com.dbschools.mgb.snippet
 import scalaz._
 import Scalaz._
 import net.liftweb._
-import common.{Loggable}
+import common.Loggable
 import util._
 import http._
 import js._
 import js.JsCmds._
-import Helpers.asInt
+import Helpers._
 import com.dbschools.mgb.model.Combiner
 
 class Problems extends Loggable {

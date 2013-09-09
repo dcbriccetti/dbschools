@@ -12,7 +12,7 @@ import http._
 import js._
 import js.JE.JsRaw
 import js.JsCmds._
-import Helpers.asInt
+import Helpers._
 import js.JsCmds.Confirm
 import model._
 import schema.IdGenerator.genId
@@ -115,8 +115,10 @@ class StudentDetails extends Loggable {
                     format(Terms.formatted(Terms.currentTerm)), () => create)
   }
 
-  def assessments =
-    ".assessmentRow" #> opMusicianId.map(AssessmentRows.forMusician).flatten.map(fillAssRow)
+  def assessments = ".assessmentRow" #> {
+    val rows = opMusicianId.map(AssessmentRows.forMusician) getOrElse Seq[AssessmentRow]()
+    rows.map(fillAssRow)
+  }
 
   private val dtf = DateTimeFormat.forStyle("SM")
 

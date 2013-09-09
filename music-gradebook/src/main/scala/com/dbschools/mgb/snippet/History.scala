@@ -4,6 +4,7 @@ package snippet
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
 import util._
+import Helpers._
 import schema.{AppSchema, TermGroupAssessments}
 
 class History {

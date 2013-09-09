@@ -8,6 +8,7 @@ import http.Templates
 import net.liftweb._
 import common.{Full, Loggable}
 import util._
+import Helpers._
 import com.dbschools.mgb.model.{Stats, LastPassFinder, Terms}
 import com.dbschools.mgb.schema.{AppSchema, MusicianGroup}
 

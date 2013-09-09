@@ -8,9 +8,10 @@ import org.squeryl.PrimitiveTypeMode._
 import bootstrap.liftweb.ApplicationPaths._
 import net.liftweb.common.Loggable
 import net.liftweb.http.{RequestVar, S, SHtml}
-import net.liftweb.util.strToCssBindPromoter
 import net.liftweb.http
 import http.js.JsCmds.Noop
+import net.liftweb.util.Helpers
+import Helpers._
 
 import com.dbschools.mgb.schema.{AppSchema, Instrument}
 

@@ -8,6 +8,7 @@ import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
 import common.{Full, Loggable}
 import util._
+import Helpers._
 import net.liftweb.http.{Templates, SHtml}
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JsCmds.Replace
@@ -72,7 +73,7 @@ class Students extends Loggable {
   }
 
   private def formatLastPasses(opLastPasses: Option[Iterable[LastPassFinder#LastPass]]): NodeSeq = {
-    val lastPasses = opLastPasses.flatten.map(lp => Text(lp.toString))
+    val lastPasses = opLastPasses.getOrElse(Seq[LastPassFinder#LastPass]()).map(lp => Text(lp.toString))
     lastPasses.fold(NodeSeq.Empty)(_ ++ <br/> ++ _).drop(1)
   }
 
