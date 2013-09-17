@@ -59,8 +59,8 @@ class Statistics {
       passesMap: Map[String, Long], failuresMap: Map[String, Long]) =
     ".rowHeading *"   #> rowHeading &
     ".assessmentsRow" #> groupNames.toSeq.sorted.map(x => {
-      val passes = passesMap(x)
-      val failures = failuresMap(x)
+      val passes = passesMap.getOrElse(x, 0L)
+      val failures = failuresMap.getOrElse(x, 0L)
       val total = passes + failures
       ".rowName    *" #> x &
       ".asses      *" #> total &
