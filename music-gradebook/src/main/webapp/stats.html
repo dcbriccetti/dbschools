@@ -4,23 +4,9 @@
 <div id="main" class="lift:surround?with=default;at=content">
     <h2>Assessments</h2>
 
-    <h3>By Group</h3>
+    <div>School Years: <span data-lift="Statistics.yearSelector"/></div>
 
-    <div data-lift="Statistics.assessmentsByGroup?eager_eval=true">
-        <lift:embed what="_assmtTable" />
-    </div>
-
-    <h3>By Grade</h3>
-
-    <div data-lift="Statistics.assessmentsByGrade?eager_eval=true">
-        <lift:embed what="_assmtTable" />
-    </div>
-
-    <h3>By Tester</h3>
-
-    <div data-lift="Statistics.assessmentsByTester?eager_eval=true">
-        <lift:embed what="_assmtTable" />
-    </div>
+    <lift:embed what="_statsData" />
 </div>
 </body>
 </html>
