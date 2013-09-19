@@ -9,7 +9,6 @@ import net.liftweb.http.SHtml
 import net.liftweb.http.js.JsCmd
 import net.liftweb.http.js.JsCmds.ReplaceOptions
 import net.liftweb.http
-import http.js.JsCmds.Noop
 import com.dbschools.mgb.model.Terms
 import com.dbschools.mgb.schema.{MusicianGroup, AppSchema}
 
