@@ -61,7 +61,7 @@ class Students extends Loggable {
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedInstId .isDefined) ".instr"   #> none[String] else PassThru) andThen (
-    "#studentRow"   #> GroupAssignments(None, selectors.opSelectedTerm, selectors.opSelectedGroupId,
+    ".studentRow"   #> GroupAssignments(None, selectors.opSelectedTerm, selectors.opSelectedGroupId,
                           selectors.opSelectedInstId).map(row =>
       ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
       ".stuName  *" #> studentLink(row.musician) &
@@ -81,7 +81,7 @@ class Students extends Loggable {
     val musicians = join(AppSchema.musicians, AppSchema.musicianGroups.leftOuter)((m, mg) =>
       where(mg.map(_.id).isNull) select(m) on (m.musician_id.is === mg.map(_.musician_id)))
 
-    "#studentRow"   #> musicians.map(m =>
+    ".studentRow"   #> musicians.map(m =>
       ".stuName  *" #> studentLink(m) &
       ".id       *" #> m.musician_id.is &
       ".stuId    *" #> m.student_id.is &
