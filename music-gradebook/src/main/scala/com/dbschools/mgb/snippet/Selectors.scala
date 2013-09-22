@@ -8,7 +8,6 @@ import net.liftweb.common.{Empty, Loggable, Full}
 import net.liftweb.http.SHtml
 import net.liftweb.http.js.JsCmd
 import net.liftweb.http.js.JsCmds.ReplaceOptions
-import net.liftweb.http
 import com.dbschools.mgb.model.Terms
 import com.dbschools.mgb.schema.{MusicianGroup, AppSchema}
 
@@ -17,7 +16,10 @@ class Selectors(changed: () => JsCmd, onlyTestingGroups: Boolean = false) extend
   var opSelectedGroupId = none[Int]                         // None means no specific group, therefore all
   var opSelectedInstId  = none[Int]                         // None means no specific instrument, therefore all
 
-  val yearSelector = selector("yearSelector", Terms.allTermsFormatted, opSelectedTerm, updateTerm)
+  private val All = "All"
+  private val allItem = (All, All)
+
+  val yearSelector = selector("yearSelector", allItem :: Terms.allTermsFormatted, opSelectedTerm, updateTerm)
 
   private def updateTerm(opTerm: Option[Int]) = {
     opSelectedTerm = opTerm
@@ -34,16 +36,15 @@ class Selectors(changed: () => JsCmd, onlyTestingGroups: Boolean = false) extend
     val groups = AppSchema.groups.toList
     val opGroupIds = opSelectedTerm.flatMap(schema.Group.groupsWithAssessmentsByTerm.get)
     val filtered = opGroupIds.map(ids => groups.filter(g => ids.contains(g.id))) | groups
-    filtered.sortBy(_.name).map(g => g.id.toString -> g.name)
+    allItem :: filtered.sortBy(_.name).map(g => g.id.toString -> g.name)
   }
 
   val instrumentSelector = selector("instrumentSelector",
-    AppSchema.instruments.toList.map(i => i.id.toString -> i.name.is),
+    allItem :: AppSchema.instruments.toList.sortBy(_.sequence.is).map(i => i.id.toString -> i.name.is),
     opSelectedInstId, opSelectedInstId = _)
 
   private def selector(id: String, items: List[(String, String)], opId: Option[Int], fn: (Option[Int]) => JsCmd) = {
-    val All = "All"
-    SHtml.ajaxSelect((All, All) :: items, Full(opId.map(_.toString) | All), sel => {
+    SHtml.ajaxSelect(items, Full(opId.map(_.toString) | All), sel => {
       fn(if (sel == All) None else Some(sel.toInt)) &
       changed()
     }, "id" -> id)
