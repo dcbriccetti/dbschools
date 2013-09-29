@@ -8,7 +8,7 @@ import com.dbschools.mgb.schema.AppSchema
 
 /** Do a one-time encryption of the plaintext passwords in the users table */
 object EncryptPasswords extends Loggable {
-  def apply() {
+  def apply(): Unit = {
     Db.initialize()
     transaction {
       val query = AppSchema.users.where(_.epassword === "")

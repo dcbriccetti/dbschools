@@ -11,7 +11,7 @@ case class AssessmentRow(date: DateTime, tester: String, piece: String,
   instrument: String, subinstrument: Option[String], pass: Boolean, notes: Option[String])
 
 object AssessmentRows {
-  import schema.AppSchema.{assessments, pieces, instruments, subinstruments, users, predefinedComments, assessmentTags}
+  import schema.AppSchema.{assessments, pieces, instruments, users}
 
   case class RowAndId(id: Int, row: AssessmentRow)
   
@@ -21,7 +21,8 @@ object AssessmentRows {
     val rows = from(assessments, pieces, instruments, users)((a, p, i, u) =>
       where(a.musician_id === id and a.pieceId === p.id and a.instrument_id === i.id
         and a.user_id === u.id)
-      select(RowAndId(a.assessment_id, AssessmentRow(new DateTime(a.assessment_time.getTime), "%s, %s".format(u.last_name, u.first_name),
+      select(RowAndId(a.assessment_id, AssessmentRow(new DateTime(a.assessment_time.getTime),
+        s"${u.last_name}, ${u.first_name}",
         p.name.is, i.name.is, None, a.pass, opStr(a.notes))))
       orderBy(a.assessment_time desc)
     )

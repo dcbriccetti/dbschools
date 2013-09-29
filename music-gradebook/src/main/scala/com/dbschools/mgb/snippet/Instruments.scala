@@ -42,7 +42,7 @@ class Instruments extends Loggable {
       v => {
         if (v != instrument.name.is && v.trim.length > 0) { // TODO do this validation the right way?
           instrument.name(v)
-          doSaveInstrument(doUpdateInstrument _, instrument, notifyOk = false)
+          doSaveInstrument(doUpdateInstrument, instrument, notifyOk = false)
         }
         Noop
       }
@@ -53,7 +53,7 @@ class Instruments extends Loggable {
     "#hidden"               #> SHtml.hidden(() => requestData(instrument)) &
     "#instrumentSequence"   #> SHtml.number(requestData.is.sequence.is, (sequence: Int) => requestData.is.sequence(sequence), 0, 200) &
     "#instrumentName"       #> SHtml.text(requestData.is.name.is, name => requestData.is.name(name)) &
-    "#submit"               #> SHtml.onSubmitUnit(() => doSaveInstrument(doInsertInstrument _))
+    "#submit"               #> SHtml.onSubmitUnit(() => doSaveInstrument(doInsertInstrument))
   }
 
   def delete = {
@@ -70,7 +70,7 @@ class Instruments extends Loggable {
   }
 
   private def doSaveInstrument(predicate: (Instrument) => Unit, instrument: Instrument = requestData.is,
-      notifyOk: Boolean = true) {
+      notifyOk: Boolean = true): Unit = {
     instrument.validate match {
       case Nil =>
         predicate(instrument)
@@ -80,15 +80,15 @@ class Instruments extends Loggable {
     }
   }
   
-  private def doInsertInstrument(instrument: Instrument) {
+  private def doInsertInstrument(instrument: Instrument): Unit = {
     AppSchema.instruments.insert(instrument)
   }
 
-  private def doUpdateInstrument(instrument: Instrument) {
+  private def doUpdateInstrument(instrument: Instrument): Unit = {
     AppSchema.instruments.update(instrument)
   }
 
-  private def doDeleteInstrument(instrument: Instrument) {
+  private def doDeleteInstrument(instrument: Instrument): Unit = {
     AppSchema.instruments.deleteWhere(ins => ins.idField.is === instrument.idField.is)
   }
 }

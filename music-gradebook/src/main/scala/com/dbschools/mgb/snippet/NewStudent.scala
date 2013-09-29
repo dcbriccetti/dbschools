@@ -20,7 +20,5 @@ object NewStudent extends LiftScreen with Loggable {
 
   override def validations = valUniqueStudentId _ :: super.validations
 
-  def finish() {
-    AppSchema.musicians.insert(musician)
-  }
+  def finish(): Unit = AppSchema.musicians.insert(musician)
 }

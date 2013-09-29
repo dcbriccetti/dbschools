@@ -36,6 +36,6 @@ class LastPassFinder {
   case class LastPass(musicianId: Int, instrumentId: Int, opSubinstrumentId: Option[Int],
       pieceId: Int, testOrder: Int, position: Int) {
     override def toString = pieceNames(pieceId) + " on " + instruments(instrumentId) +
-      ~opSubinstrumentId.map(subinstruments).map(n => " (%s)".format(n))
+      ~opSubinstrumentId.map(subinstruments).map(n => s" (${n})")
   }
 }

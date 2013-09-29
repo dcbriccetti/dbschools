@@ -212,26 +212,26 @@ luis
 carol
 cindy""")
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     Db.initialize()
     createTestData()
   }
 
-  def createTestData() {
+  def createTestData(): Unit = {
     transaction {
       deleteStudents()
       createAndGroupStudents()
     }
   }
 
-  private def deleteStudents() {
+  private def deleteStudents(): Unit = {
     AppSchema.musicianGroups  .deleteWhere(mg => mg.id === mg.id)
     AppSchema.assessmentTags  .deleteWhere(a => a.assessmentId === a.assessmentId)
     AppSchema.assessments     .deleteWhere(a => a.assessment_id === a.assessment_id)
     AppSchema.musicians       .deleteWhere(m => m.idField.is === m.idField.is)
   }
   
-  private def createAndGroupStudents() {
+  private def createAndGroupStudents(): Unit = {
     val instrumentIds = AppSchema.instruments.map(_.idField.get).toArray
     var id = 10000 // Until we set up sequences
     lastNames.foreach(lastName => {
@@ -252,7 +252,7 @@ cindy""")
           instrumentIds((random * instrumentIds.length).toInt), grad_year))
         id += 1
       })
-      logger.trace("Added %s, %s to %d groups".format(lastName, firstName, groupIds.size))
+      logger.trace(s"Added $lastName, $firstName to ${groupIds.size} groups")
     })
   }
 

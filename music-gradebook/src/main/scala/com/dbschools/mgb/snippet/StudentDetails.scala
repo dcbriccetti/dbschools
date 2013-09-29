@@ -10,8 +10,6 @@ import net.liftweb._
 import common.{Full, Loggable}
 import util._
 import http._
-import js._
-import js.JE.JsRaw
 import js.JsCmds._
 import Helpers._
 import js.JsCmds.Confirm
@@ -23,7 +21,6 @@ import schema.{AppSchema, Musician, Assessment, MusicianGroup}
 
 class StudentDetails extends Loggable {
   private var selectedMusicianGroups = Map[Int, MusicianGroup]()
-  private val reloadPage: JsCmd = JsRaw("location.reload()")
   private var opMusician = none[Musician]
   private val groups = AppSchema.groups.toSeq.sortBy(_.name)
   private val instruments = AppSchema.instruments.toSeq.sortBy(_.sequence.is)
@@ -71,7 +68,7 @@ class StudentDetails extends Loggable {
       ".assignmentRow *"  #> groupsTable(md.groups) &
       ".assessments"      #>  {
                                 val (pass, fail) = md.assessments.partition(_.pass)
-                                "Passes: %d, failures: %d".format(pass.size, fail.size)
+                                s"Passes: ${pass.size}, failures: ${fail.size}"
                               }
 
     "#student" #> opMusicianDetails.map(makeDetails)
@@ -112,11 +109,11 @@ class StudentDetails extends Loggable {
     def delete() = {
       if (! selectedMusicianGroups.isEmpty) {
         Confirm(
-          "Are you sure you want to remove the %d selected group assignments?".format(selectedMusicianGroups.size),
+          s"Are you sure you want to remove the ${selectedMusicianGroups.size} selected group assignments?",
           SHtml.ajaxInvoke(() => {
             AppSchema.musicianGroups.deleteWhere(_.id in selectedMusicianGroups.keys)
             selectedMusicianGroups = selectedMusicianGroups.empty
-            reloadPage
+            Reload
           }))
       } else Noop
     }
@@ -129,12 +126,11 @@ class StudentDetails extends Loggable {
         AppSchema.musicianGroups.insert(MusicianGroup(genId(), musician.id, group.id, instrument.id,
           Terms.currentTerm))
       }
-      reloadPage
+      Reload
     }
 
     "#delete" #> SHtml.ajaxButton("Delete selected group assignments", () => delete) &
-    "#create" #> SHtml.ajaxButton("Create %s group assignment".
-                    format(Terms.formatted(Terms.currentTerm)), () => create)
+    "#create" #> SHtml.ajaxButton(s"Create ${Terms.formatted(Terms.currentTerm)} group assignment", () => create())
   }
 
   def assessments = ".assessmentRow" #> {

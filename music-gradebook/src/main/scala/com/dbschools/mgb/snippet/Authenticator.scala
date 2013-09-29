@@ -5,9 +5,9 @@ import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.http.{S, SessionVar, SHtml}
 import net.liftweb.util.Helpers._
 import net.liftweb.util.BCrypt
+import net.liftweb.http.js.JsCmds.FocusOnLoad
 import bootstrap.liftweb.RunState
 import com.dbschools.mgb.schema.AppSchema
-import net.liftweb.http.js.JsCmds.FocusOnLoad
 
 class Authenticator {
   import bootstrap.liftweb.ApplicationPaths._
@@ -36,7 +36,7 @@ class Authenticator {
 object Authenticator {
   object userName extends SessionVar("")
 
-  def logOut() {
+  def logOut(): Unit = {
     RunState loggedIn false
     userName("")
   }

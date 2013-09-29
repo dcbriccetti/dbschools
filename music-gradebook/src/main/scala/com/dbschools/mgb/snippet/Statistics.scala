@@ -1,6 +1,7 @@
 package com.dbschools.mgb
 package snippet
 
+import java.text.NumberFormat
 import scalaz._
 import Scalaz._
 import org.squeryl.{PrimitiveTypeMode, Query}
@@ -11,12 +12,11 @@ import util.BindHelpers._
 import net.liftweb.http.Templates
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JsCmds.Replace
+import net.liftweb.common.Loggable
 import schema.AppSchema
 import AppSchema.{groups, musicianGroups, musicians, assessments, users}
 import model.Terms
 import model.Terms.toTs
-import net.liftweb.common.Loggable
-import java.text.NumberFormat
 
 class Statistics extends Loggable {
 
@@ -85,7 +85,7 @@ class Statistics extends Loggable {
   }
 
   private val numf = NumberFormat.getNumberInstance
-  private def f[A](num: A) = numf.format(num)
+  private def fmt[A](num: A) = numf.format(num)
 
   private def css(rowHeading: String, groupNames: Iterable[String],
       passesMap: Map[String, Long], failuresMap: Map[String, Long]) =
@@ -95,9 +95,9 @@ class Statistics extends Loggable {
       val failures = failuresMap.getOrElse(x, 0L)
       val total = passes + failures
       ".rowName    *" #> x &
-      ".asses      *" #> f(total) &
-      ".pass       *" #> f(passes) &
-      ".fail       *" #> f(failures) &
-      ".pctPass    *" #> "%.2f".format(passes * 100.0 / total)
+      ".asses      *" #> fmt(total) &
+      ".pass       *" #> fmt(passes) &
+      ".fail       *" #> fmt(failures) &
+      ".pctPass    *" #> f"${passes * 100.0 / total}%.2f"
     })
 }

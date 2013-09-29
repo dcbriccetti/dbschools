@@ -13,7 +13,7 @@ object Db {
   /**
    * Initialize database processing for the webapp, and for standalone tests.
    */
-  def initialize() {
+  def initialize(): Unit = {
     val dbEngine = Props.get("db.engine", "h2")
     if (dbEngine == "h2") {
       SchemaHelper.initH2()

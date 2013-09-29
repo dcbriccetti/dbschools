@@ -44,7 +44,7 @@ class Students extends Loggable {
   def newStudent = {
 
     def saveStudent = {
-      logger.warn("Creating student %d %d %s %s".format(newId, grade, name, sex))
+      logger.warn(s"Creating student $newId $grade $name $sex")
       Noop
     }
 

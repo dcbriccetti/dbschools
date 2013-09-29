@@ -35,7 +35,7 @@ object GroupAssignments extends Loggable {
     val currentTerm = Terms.currentTerm
     if (!musicianGroups.isEmpty) {
       if (replaceExisting) {
-        logger.info("Move %s to %d %d".format(musicianGroups, groupId, instrumentId))
+        logger.info(s"Move $musicianGroups to $groupId $instrumentId")
         update(AppSchema.musicianGroups)(mg =>
           where(mg.id in musicianGroups)
           set(mg.group_id := groupId, mg.instrument_id := instrumentId))
