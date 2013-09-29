@@ -16,10 +16,10 @@ import js.JsCmds.Confirm
 import net.liftweb.http.js.JsCmds.SetHtml
 import model._
 import schema.IdGenerator.genId
-import model.GroupAssignment
+import model.{GroupAssignment, TagCounts}
 import schema.{AppSchema, Musician, Assessment, MusicianGroup}
 
-class StudentDetails extends Loggable {
+class StudentDetails extends TagCounts with Loggable {
   private var selectedMusicianGroups = Map[Int, MusicianGroup]()
   private var opMusician = none[Musician]
   private val groups = AppSchema.groups.toSeq.sortBy(_.name)
@@ -68,7 +68,11 @@ class StudentDetails extends Loggable {
       ".assignmentRow *"  #> groupsTable(md.groups) &
       ".assessments"      #>  {
                                 val (pass, fail) = md.assessments.partition(_.pass)
-                                s"Passes: ${pass.size}, failures: ${fail.size}"
+                                val tagCountsStr = tagCounts(md.musician.id) match {
+                                  case Nil => ""
+                                  case n => n.map(tc => s"${tc.tag}: ${tc.count}").mkString(", comments: ", ", ", "")
+                                }
+                                s"Passes: ${pass.size}, failures: ${fail.size}$tagCountsStr"
                               }
 
     "#student" #> opMusicianDetails.map(makeDetails)
