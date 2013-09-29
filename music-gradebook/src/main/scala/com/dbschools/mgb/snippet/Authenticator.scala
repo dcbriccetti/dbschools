@@ -7,6 +7,7 @@ import net.liftweb.util.Helpers._
 import net.liftweb.util.BCrypt
 import bootstrap.liftweb.RunState
 import com.dbschools.mgb.schema.AppSchema
+import net.liftweb.http.js.JsCmds.FocusOnLoad
 
 class Authenticator {
   import bootstrap.liftweb.ApplicationPaths._
@@ -15,7 +16,7 @@ class Authenticator {
   var password = ""
 
   def authForm =
-    "#userName"   #> SHtml.text(userName.is, name => userName(name.trim), "id" -> "userName") &
+    "#userName"   #> FocusOnLoad(SHtml.text(userName.is, name => userName(name.trim), "id" -> "userName")) &
     "#password"   #> SHtml.password("", password = _, "id" -> "password") &
     "#submit"     #> SHtml.submit("Log In", () => {
       if (credentialsValid(password)) {
