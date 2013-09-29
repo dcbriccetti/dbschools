@@ -60,7 +60,7 @@ class StudentDetails extends Loggable {
       ".lastName *"       #> SHtml.swappable(<span id="lastName">{md.musician.last_name.is}</span>,
                                 SHtml.ajaxText(md.musician.last_name.is,
                                 changeName(md.musician, md.musician.last_name, "lastName"))) &
-      ".firstName *"       #> SHtml.swappable(<span id="firstName">{md.musician.first_name.is}</span>,
+      ".firstName *"      #> SHtml.swappable(<span id="firstName">{md.musician.first_name.is}</span>,
                                 SHtml.ajaxText(md.musician.first_name.is,
                                 changeName(md.musician, md.musician.first_name, "firstName"))) &
       ".grade"            #> Terms.graduationYearAsGrade(md.musician.graduation_year.is) &
