@@ -5,11 +5,9 @@ import net.liftweb._
 import util._
 import common._
 import http._
-import js.jquery.JQueryArtifacts
 import sitemap._
 import Loc._
 import net.liftmodules.widgets.flot.Flot
-import net.liftmodules.JQueryModule
 
 import com.dbschools.mgb.Db
 
@@ -47,11 +45,6 @@ class Boot {
     )
 
     LiftRules.setSiteMap(sitemap)
-
-    //Init the jQuery module, see http://liftweb.net/jquery for more information.
-    LiftRules.jsArtifacts = JQueryArtifacts
-    JQueryModule.InitParam.JQuery=JQueryModule.JQuery172
-    JQueryModule.init()
 
     //Show the spinny image when an Ajax call starts
     LiftRules.ajaxStart =

@@ -1,7 +1,7 @@
 package com.dbschools.mgb.snippet
 
 import org.squeryl.PrimitiveTypeMode._
-import net.liftmodules.widgets.flot.{FlotBarsOptions, FlotOptions, FlotSerie, Pie, Flot}
+import net.liftmodules.widgets.flot.{FlotBarsOptions, FlotOptions, FlotSerie, /* todo Pie,*/ Flot}
 import net.liftweb.http
 import http.js.JsCmds.{SetHtml, Noop}
 import http.Templates
@@ -33,7 +33,7 @@ class Graphs extends Loggable {
     val sortedYears = gradesToMgms.keys.toSeq.sorted
     val labels = sortedYears.map(_.toString)
     val portions = sortedYears.map(gradesToMgms).map(_.size).toSeq
-    Flot.renderPie("grades_graph", Pie(portions, Some(labels.toSeq)))
+    Noop // todo Flot.renderPie("grades_graph", Pie(portions, Some(labels.toSeq)))
   }
 
   def instruments = {
@@ -41,7 +41,7 @@ class Graphs extends Loggable {
       selectors.opSelectedTerm, selectors.opSelectedGroupId).filter(_._1.name.is != "Unassigned")
     val names = sortedInstruments.map(_._1.name.is.toString)
     val portions = sortedInstruments.map(_._2.toInt)
-    Flot.renderPie("instruments_graph", Pie(portions, Some(names)))
+    Noop // todo Flot.renderPie("instruments_graph", Pie(portions, Some(names)))
   }
 
   def progress = {
