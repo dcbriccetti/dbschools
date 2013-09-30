@@ -4,6 +4,7 @@ package snippet
 import xml.{NodeSeq, Text}
 import scalaz._
 import Scalaz._
+import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
 import common.{Full, Loggable}
@@ -56,7 +57,13 @@ class Students extends Loggable {
     "#save"      #> SHtml.onSubmitUnit(() => saveStudent)
   }
 
+  private val lastAssTimeByMusician = (for {
+    gm <- from(AppSchema.assessments)(a => groupBy(a.musician_id) compute max(a.assessment_time))
+    m <- gm.measures
+  } yield gm.key -> new DateTime(m.getTime)).toMap
+
   def inGroups = {
+    val fmt = DateTimeFormat.forStyle("S-")
     val lastPassesByMusician = lastPassFinder.lastPassed().groupBy(_.musicianId)
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
@@ -68,6 +75,7 @@ class Students extends Loggable {
       ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.is) &
       ".group    *" #> row.group.name &
       ".instr    *" #> row.instrument.name.get &
+      ".lastAss  *" #> lastAssTimeByMusician.get(row.musician.musician_id.is).map(fmt.print).getOrElse("") &
       ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.musician_id.is))
     ))))
   }
