@@ -52,6 +52,15 @@ class StudentDetails extends TagCounts with Loggable {
         SetHtml("stuId", Text(newId.toString))
       }) getOrElse Noop
 
+    def assessmentsSummary(md: MusicianDetails) = {
+      val (pass, fail) = md.assessments.partition(_.pass)
+      val tagCountsStr = tagCounts(md.musician.id) match {
+        case Nil => ""
+        case n => n.map(tc => s"${tc.tag}: ${tc.count}").mkString(", comments: ", ", ", "")
+      }
+      s"Passes: ${pass.size}, failures: ${fail.size}$tagCountsStr"
+    }
+
     def makeDetails(md: MusicianDetails) =
       ".lastName *"       #> SHtml.swappable(<span id="lastName">{md.musician.last_name.is}</span>,
                                 SHtml.ajaxText(md.musician.last_name.is,
@@ -65,14 +74,7 @@ class StudentDetails extends TagCounts with Loggable {
       ".mgbId"            #> md.musician.musician_id &
       ".lastPiece"        #> new LastPassFinder().lastPassed(Some(md.musician.musician_id.is)).mkString(", ") &
       ".assignmentRow *"  #> groupsTable(md.groups) &
-      ".assessments"      #>  {
-                                val (pass, fail) = md.assessments.partition(_.pass)
-                                val tagCountsStr = tagCounts(md.musician.id) match {
-                                  case Nil => ""
-                                  case n => n.map(tc => s"${tc.tag}: ${tc.count}").mkString(", comments: ", ", ", "")
-                                }
-                                s"Passes: ${pass.size}, failures: ${fail.size}$tagCountsStr"
-                              }
+      ".assessments"      #> assessmentsSummary(md)
 
     "#student" #> opMusicianDetails.map(makeDetails)
   }
