@@ -74,7 +74,7 @@ class StudentDetails extends TagCounts with Loggable {
       ".mgbId"            #> md.musician.musician_id &
       ".lastPiece"        #> new LastPassFinder().lastPassed(Some(md.musician.musician_id.is)).mkString(", ") &
       ".assignmentRow *"  #> groupsTable(md.groups) &
-      ".assessments"      #> assessmentsSummary(md)
+      ".assessmentsSummary *" #> assessmentsSummary(md)
 
     "#student" #> opMusicianDetails.map(makeDetails)
   }
@@ -139,14 +139,15 @@ class StudentDetails extends TagCounts with Loggable {
   }
 
   def assessments = ".assessmentRow" #> {
-    val rows = opMusician.map(_.id).map(AssessmentRows.forMusician) getOrElse Seq[AssessmentRow]()
+    val rows = opMusician.map(_.id).map(AssessmentRows.forMusician) | Seq[AssessmentRow]()
     rows.map(fillAssRow)
   }
 
-  private val dtf = DateTimeFormat.forStyle("SM")
+  private val dtf = DateTimeFormat.forStyle("S-")
+  private val tmf = DateTimeFormat.forStyle("-M")
 
   private def fillAssRow(ar: AssessmentRow) =
-    ".date       *"   #> dtf.print(ar.date) &
+    ".date       *"   #> <span title={tmf.print(ar.date)}>{dtf.print(ar.date)}</span> &
     ".tester     *"   #> ar.tester &
     ".piece [class]"  #> (if (ar.pass) "pass" else "fail") &
     ".piece      *"   #> ar.piece &
