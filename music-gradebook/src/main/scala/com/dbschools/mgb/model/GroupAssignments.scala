@@ -3,7 +3,6 @@ package com.dbschools.mgb.model
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.common.Loggable
 import com.dbschools.mgb.schema._
-import com.dbschools.mgb.schema.IdGenerator._
 import com.dbschools.mgb.schema.Group
 import com.dbschools.mgb.schema.Musician
 import com.dbschools.mgb.schema.MusicianGroup
@@ -43,7 +42,7 @@ object GroupAssignments extends Loggable {
         AppSchema.musicianGroups.insert(
           from(AppSchema.musicianGroups)(mg =>
             where(mg.id in musicianGroups and not(mg.group_id === groupId and mg.school_year === currentTerm))
-              select (MusicianGroup(genId(), mg.musician_id, groupId, instrumentId, currentTerm))
+            select(MusicianGroup(0, mg.musician_id, groupId, instrumentId, currentTerm))
           ).toSeq
         )
       }

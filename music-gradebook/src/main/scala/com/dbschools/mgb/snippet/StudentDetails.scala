@@ -15,7 +15,6 @@ import Helpers._
 import js.JsCmds.Confirm
 import net.liftweb.http.js.JsCmds.SetHtml
 import model._
-import schema.IdGenerator.genId
 import model.{GroupAssignment, TagCounts}
 import schema.{AppSchema, Musician, Assessment, MusicianGroup}
 
@@ -127,7 +126,7 @@ class StudentDetails extends TagCounts with Loggable {
         instrument <- instruments.find(_.name.is == "Unassigned")
         musician   <- opMusician
       } {
-        AppSchema.musicianGroups.insert(MusicianGroup(genId(), musician.id, group.id, instrument.id,
+        AppSchema.musicianGroups.insert(MusicianGroup(0, musician.id, group.id, instrument.id,
           Terms.currentTerm))
       }
       Reload
