@@ -24,7 +24,7 @@ trait DbSettings {
  */
 class H2Settings extends DbSettings with Loggable {
   val adapter = new H2Adapter
-  logger.trace("H2Settings: setting up H2 Adapter. driver=%s url=%s user=%s".format(driver, url, user))
+  logger.trace(s"H2Settings: setting up H2 Adapter. driver=$driver url=$url user=$user")
 }
 
 /**
@@ -32,5 +32,5 @@ class H2Settings extends DbSettings with Loggable {
  */
 class PostgresSettings extends DbSettings with Loggable {
   val adapter = new PostgreSqlAdapter
-  logger.trace("PostgresSettings: setting up Posgtres Adapter. driver=%s url=%s user=%s".format(driver, url, user))
+  logger.trace(s"PostgresSettings: setting up Posgtres Adapter. driver=$driver url=$url user=$user")
 }
