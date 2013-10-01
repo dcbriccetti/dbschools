@@ -11,38 +11,14 @@
   color: red;
 }
 
-.sidebar ul {
-	margin:0;
-	padding:0;
-	border-bottom:1px solid #ccc;
-}
-	 
-
-.sidebar ul li {
-	margin:0;
-	padding:0;
-	list-style:none;
-	border:1px solid #ccc;
-	border-bottom:none;
+#navList ul li {
+    color: white;
+    display: inline;
+    list-style-type: none;
+    margin: 1px;
+    padding: 3px;
 }
 
-.sidebar ul li a {
-	display:block;
-	padding:3px;
-	text-indent:30px;
-	text-decoration:none;
-}
-
-.sidebar ul li span {
-	display:block;
-	padding:3px;
-	text-indent:30px;
-	text-decoration:none;
-}
-
-.sidebar ul li a:hover {
-	background-color: #eee;
-}
 
 .span-4 {
     width: 10em;
@@ -82,6 +58,10 @@ tr.studentRow td {
     vertical-align: top;
 }
 
+td {
+    padding-right: 1em;
+}
+
             /* ]]> */
   </style>
   </head>
@@ -93,7 +73,9 @@ tr.studentRow td {
 
       <hr>
 
-      <span class="lift:Menu.builder"></span>
+      <div id="navList">
+          <span data-lift="Menu.builder"></span>
+      </div>
       <div class="lift:Msgs?showAll=true"></div>
 
       <div id="content">The main content will get bound here</div>
