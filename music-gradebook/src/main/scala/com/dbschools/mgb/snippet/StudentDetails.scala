@@ -21,8 +21,6 @@ import schema.{AppSchema, Musician, Assessment, MusicianGroup}
 class StudentDetails extends TagCounts with Loggable {
   private var selectedMusicianGroups = Map[Int, MusicianGroup]()
   private var opMusician = none[Musician]
-  private val groups = AppSchema.groups.toSeq.sortBy(_.name)
-  private val instruments = AppSchema.instruments.toSeq.sortBy(_.sequence.is)
 
   case class MusicianDetails(musician: Musician, groups: Iterable[GroupAssignment], assessments: Iterable[Assessment])
 
@@ -95,7 +93,7 @@ class StudentDetails extends TagCounts with Loggable {
     })
 
   private def groupSelector(ga: GroupAssignment) =
-    SHtml.ajaxSelect(groups.map(g => (g.id.toString, g.name)).toSeq,
+    SHtml.ajaxSelect(Cache.groups.map(g => (g.id.toString, g.name)).toSeq,
       Full(ga.musicianGroup.group_id.toString), gid => {
         AppSchema.musicianGroups.update(mg => where(mg.id === ga.musicianGroup.id)
           set (mg.group_id := gid.toInt))
@@ -103,7 +101,7 @@ class StudentDetails extends TagCounts with Loggable {
       })
 
   private def instrumentSelector(ga: GroupAssignment) =
-    SHtml.ajaxSelect(instruments.map(i => (i.id.toString, i.name.is)).toSeq,
+    SHtml.ajaxSelect(Cache.instruments.map(i => (i.id.toString, i.name.is)).toSeq,
       Full(ga.musicianGroup.instrument_id.toString), iid => {
         AppSchema.musicianGroups.update(mg => where(mg.id === ga.musicianGroup.id)
           set (mg.instrument_id := iid.toInt))
@@ -124,8 +122,8 @@ class StudentDetails extends TagCounts with Loggable {
     }
     def create() = {
       for {
-        group      <- groups.find(_.doesTesting)
-        instrument <- instruments.find(_.name.is == "Unassigned")
+        group      <- Cache.groups.find(_.doesTesting)
+        instrument <- Cache.instruments.find(_.name.is == "Unassigned")
         musician   <- opMusician
       } {
         AppSchema.musicianGroups.insert(MusicianGroup(0, musician.id, group.id, instrument.id,
@@ -134,7 +132,7 @@ class StudentDetails extends TagCounts with Loggable {
       Reload
     }
 
-    "#delete" #> SHtml.ajaxButton("Delete selected group assignments", () => delete) &
+    "#delete" #> SHtml.ajaxButton("Delete selected group assignments", () => delete()) &
     "#create" #> SHtml.ajaxButton(s"Create ${Terms.formatted(Terms.currentTerm)} group assignment", () => create())
   }
 

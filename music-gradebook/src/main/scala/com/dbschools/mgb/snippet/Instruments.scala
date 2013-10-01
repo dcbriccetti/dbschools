@@ -14,6 +14,7 @@ import net.liftweb.util.Helpers
 import Helpers._
 
 import com.dbschools.mgb.schema.{AppSchema, Instrument}
+import com.dbschools.mgb.model.Cache
 
 /** Snippet for Instrument CRUD operations. */
 class Instruments extends Loggable {
@@ -24,7 +25,7 @@ class Instruments extends Loggable {
   def list = {
     val usedInstrumentIds = from(AppSchema.musicianGroups)(mg => select(mg.instrument_id)).distinct.toSet
     "#create [href]"    #> instrumentsCreate.href &
-    ".row *"            #> from(AppSchema.instruments)(i => select(i) orderBy(i.sequence.is)).map(instrument => {
+    ".row *"            #> from(AppSchema.instruments)(i => select(i) orderBy i.sequence.is).map(instrument => {
       ".instrumentSequence *"   #> instrument.sequence.is &
       ".instrumentName *"       #> SHtml.swappable(<span>{instrument.name.is}</span>, instrumentNameText(instrument)) &
       ".actions *"              #> actionsForInstrument(usedInstrumentIds, instrument)
@@ -74,9 +75,11 @@ class Instruments extends Loggable {
     instrument.validate match {
       case Nil =>
         predicate(instrument)
+        Cache.invalidateInstruments()
         if (notifyOk) S.notice("Instrument has been saved")
         S.seeOther(instrumentsList.href)
-      case errors => S.error(errors)
+      case errors =>
+        S.error(errors)
     }
   }
   

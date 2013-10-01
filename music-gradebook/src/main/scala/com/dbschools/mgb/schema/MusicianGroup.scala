@@ -1,6 +1,7 @@
 package com.dbschools.mgb.schema
 
 import org.squeryl.PrimitiveTypeMode._
+import com.dbschools.mgb.model.Cache
 
 case class MusicianGroup(
   id:             Int,
@@ -18,15 +19,15 @@ object MusicianGroup {
     from(AppSchema.musicianGroups, AppSchema.musicians)((mg, m) =>
     where(mg.musician_id === m.musician_id.is and mg.school_year === term.? and
       mg.group_id === musicGroupId.? and mg.instrument_id === instrumentId.?)
-    select(MusicianGroupMusician(mg, m)))
+    select MusicianGroupMusician(mg, m))
 
   def selectedInstruments(term: Option[Int] = None, musicGroupId: Option[Int] = None) = {
-    val instrumentsMap = AppSchema.instruments.map(i => i.id -> i).toMap
+    val instrumentsMap = Cache.instruments.map(i => i.id -> i).toMap
     from(AppSchema.musicianGroups, AppSchema.instruments)((mg, i) =>
       where(mg.instrument_id === i.id and mg.school_year === term.? and
         mg.group_id === musicGroupId.?)
-      groupBy(i.id)
-      compute(count(i.name.is))
+      groupBy i.id
+      compute count(i.name.is)
     ).map(g => instrumentsMap(g.key) -> g.measures).toSeq.sortBy(_._1.sequence.is)
   }
 }

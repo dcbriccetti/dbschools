@@ -8,7 +8,7 @@ import com.dbschools.mgb.schema._
 import Terms.toTs
 
 class LastPassFinder {
-  val instruments     = AppSchema.instruments   .map(i => i.id -> i.name.is).toMap
+  val instruments     = Cache.instruments       .map(i => i.id -> i.name.is).toMap
   val subinstruments  = AppSchema.subinstruments.map(i => i.id -> i.name.is).toMap
   val pieces = AppSchema.pieces.toSeq
   val pieceNames = pieces.map(p => p.id -> p.name.is).toMap
@@ -24,7 +24,7 @@ class LastPassFinder {
     from(AppSchema.assessments, AppSchema.pieces)((a, p) =>
       where(a.musician_id === musicianId.? and a.pieceId === p.id and a.assessment_time < upTo.map(toTs).?)
       groupBy(a.musician_id, a.instrument_id, a.subinstrument_id)
-      compute(max(p.testOrder.is))
+      compute max(p.testOrder.is)
       orderBy(max(p.testOrder.is) desc)
     ).map(group => {
       val testOrder = group.measures.get
@@ -36,6 +36,6 @@ class LastPassFinder {
   case class LastPass(musicianId: Int, instrumentId: Int, opSubinstrumentId: Option[Int],
       pieceId: Int, testOrder: Int, position: Int) {
     override def toString = pieceNames(pieceId) + " on " + instruments(instrumentId) +
-      ~opSubinstrumentId.map(subinstruments).map(n => s" (${n})")
+      ~opSubinstrumentId.map(subinstruments).map(n => s" ($n)")
   }
 }
