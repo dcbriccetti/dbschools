@@ -27,6 +27,7 @@ object DefaultDataCreator extends Loggable {
   private def createPredefinedComments(): Unit = {
     val comments = getLines("PredefinedComment").map(PredefinedComment(0, _, ""))
     AppSchema.predefinedComments.insert(comments)
+    Cache.invalidateTags()
   }
 
   private def createUser(): Unit = {

@@ -16,7 +16,7 @@ object AssessmentTag {
     val tagsWithCom = from(AppSchema.assessmentTags, AppSchema.predefinedComments)((t, c) =>
       where(t.commentId === c.id and (t.assessmentId in assIds))
       select((t.assessmentId, c.commentText))
-      orderBy(c.commentText)
+      orderBy c.commentText
     )
     (for {
       as <- tagsWithCom.groupBy(_._1).values

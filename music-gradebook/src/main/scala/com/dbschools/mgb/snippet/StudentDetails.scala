@@ -141,6 +141,14 @@ class StudentDetails extends TagCounts with Loggable {
     rows.map(fillAssRow)
   }
 
+  def newAssessment = {
+    val sels = scala.collection.mutable.Map(Cache.tags.map(t => t.id -> false): _*)
+    "#checkboxes" #>
+      <ul>{Cache.tags.map(tag => {
+        <span>{SHtml.checkbox(false, (checked: Boolean) => sels(tag.id) = checked)} {tag.commentText}</span>
+      })}</ul>
+  }
+
   private val dtf = DateTimeFormat.forStyle("S-")
   private val tmf = DateTimeFormat.forStyle("-M")
 
