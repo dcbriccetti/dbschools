@@ -10,7 +10,7 @@ import Terms.toTs
 class LastPassFinder {
   val instruments     = Cache.instruments       .map(i => i.id -> i.name.is).toMap
   val subinstruments  = AppSchema.subinstruments.map(i => i.id -> i.name.is).toMap
-  val pieces = AppSchema.pieces.toSeq
+  val pieces = Cache.pieces
   val pieceNames = pieces.map(p => p.id -> p.name.is).toMap
   val pieceOrderToId = pieces.map(p => p.testOrder.is -> p.id).toMap
   val numPieces = pieces.size
@@ -38,4 +38,6 @@ class LastPassFinder {
     override def toString = pieceNames(pieceId) + " on " + instruments(instrumentId) +
       ~opSubinstrumentId.map(subinstruments).map(n => s" ($n)")
   }
+
+  def next(piece: Piece) = Cache.pieces.find(_.testOrder.is.compareTo(piece.testOrder.is) > 0) | Cache.pieces.head
 }

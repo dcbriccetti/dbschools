@@ -16,7 +16,7 @@ import js.JsCmds.Confirm
 import net.liftweb.http.js.JsCmds.SetHtml
 import model._
 import model.{GroupAssignment, TagCounts}
-import schema.{AppSchema, Musician, Assessment, MusicianGroup}
+import schema.{AppSchema, Musician, Assessment, MusicianGroup, Piece}
 
 class StudentDetails extends TagCounts with Loggable {
   private var selectedMusicianGroups = Map[Int, MusicianGroup]()
@@ -142,28 +142,49 @@ class StudentDetails extends TagCounts with Loggable {
   }
 
   def newAssessment = {
+    val lastPassFinder = new LastPassFinder()
+
+    case class Pi(piece: Piece, instId: Int, opSubInstId: Option[Int])
+
+    val opNextPi = for {
+      musician  <- opMusician
+      lastPass  <- lastPassFinder.lastPassed(Some(musician.musician_id.is)).headOption
+      piece     <- Cache.pieces.find(_.id == lastPass.pieceId)
+      nextPiece =  lastPassFinder.next(piece)
+    } yield Pi(nextPiece, lastPass.instrumentId, lastPass.opSubinstrumentId)
+
     val sels = scala.collection.mutable.Map(Cache.tags.map(_.id -> false): _*)
-    def show(): Unit = {
-      println(sels)
-    }
-    var selInstId = none[Int]
-    var selSubinstId = none[Int]
-    "#instrument" #> SHtml.ajaxSelect(Cache.instruments.map(p => p.id.toString -> p.name.is), Empty, (p) => {
-      selInstId = Some(p.toInt)
-      Noop
+    var opSelInstId = opNextPi.map(_.instId)
+    var opSelSubinstId = opNextPi.flatMap(_.opSubInstId)
+    var opSelPieceId = opNextPi.map(_.piece.id)
+
+    def findTempo = opSelPieceId.flatMap(selPieceId =>
+        // First look for a tempo for the specific instrument
+        Cache.tempos.find(t => t.instrumentId == opSelInstId && t.pieceId == selPieceId) orElse
+        Cache.tempos.find(_.pieceId == selPieceId))
+
+    "#instrument" #> SHtml.ajaxSelect(Cache.instruments.map(p => p.id.toString -> p.name.is),
+      opSelInstId.map(i => Full(i.toString)) getOrElse Empty, (p) => {
+        opSelInstId = Some(p.toInt)
+        Noop
     }) &
     "#subinstrument" #> SHtml.ajaxSelect(Seq[(String, String)](), Empty, (p) => {
-      selSubinstId = Some(p.toInt)
+      opSelSubinstId = Some(p.toInt)
       Noop
     }) &
-    "#piece"      #> SHtml.ajaxSelect(Cache.pieces.map(p => p.id.toString -> p.name.is), Empty,
-      (p) => SetHtml("tempo", Text(~Cache.tempos.find(t => t.instrumentId == selInstId).map(_.tempo.toString)))) &
+    "#piece"      #> SHtml.ajaxSelect(Cache.pieces.map(p => p.id.toString -> p.name.is),
+      opSelPieceId.map(p => Full(p.id.toString)) getOrElse Empty,
+      (p) => {
+        opSelPieceId = Some(p.toInt)
+        SetHtml("tempo", Text(~findTempo.map(_.tempo.toString)))
+      }) &
+    "#tempo *"    #> ~findTempo.map(_.tempo.toString) &
     "#checkbox *" #> Cache.tags.map(tag =>
       <span>{SHtml.checkbox(false, (checked: Boolean) => sels(tag.id) = checked)} {tag.commentText}</span>) &
     "#commentText" #> SHtml.textarea("", (s: String) => Noop,
       "id" -> "commentText", "rows" -> {sels.values.size.toString}) &
-    "#passButton" #> SHtml.ajaxSubmit("Pass", () => { show(); Noop }) &
-    "#failButton" #> SHtml.ajaxSubmit("Fail", () => { show(); Noop })
+    "#passButton" #> SHtml.ajaxSubmit("Pass", () => { Noop }) &
+    "#failButton" #> SHtml.ajaxSubmit("Fail", () => { Noop })
   }
 
   private val dtf = DateTimeFormat.forStyle("S-")
