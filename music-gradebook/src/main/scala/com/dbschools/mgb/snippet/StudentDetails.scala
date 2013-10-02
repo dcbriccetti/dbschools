@@ -7,7 +7,7 @@ import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
 import org.scala_tools.time.Imports._
 import net.liftweb._
-import common.{Full, Loggable}
+import net.liftweb.common.{Empty, Full, Loggable}
 import util._
 import http._
 import js.JsCmds._
@@ -142,11 +142,28 @@ class StudentDetails extends TagCounts with Loggable {
   }
 
   def newAssessment = {
-    val sels = scala.collection.mutable.Map(Cache.tags.map(t => t.id -> false): _*)
-    "#checkboxes" #>
-      <ul>{Cache.tags.map(tag => {
-        <span>{SHtml.checkbox(false, (checked: Boolean) => sels(tag.id) = checked)} {tag.commentText}</span>
-      })}</ul>
+    val sels = scala.collection.mutable.Map(Cache.tags.map(_.id -> false): _*)
+    def show(): Unit = {
+      println(sels)
+    }
+    var selInstId = none[Int]
+    var selSubinstId = none[Int]
+    "#instrument" #> SHtml.ajaxSelect(Cache.instruments.map(p => p.id.toString -> p.name.is), Empty, (p) => {
+      selInstId = Some(p.toInt)
+      Noop
+    }) &
+    "#subinstrument" #> SHtml.ajaxSelect(Seq[(String, String)](), Empty, (p) => {
+      selSubinstId = Some(p.toInt)
+      Noop
+    }) &
+    "#piece"      #> SHtml.ajaxSelect(Cache.pieces.map(p => p.id.toString -> p.name.is), Empty,
+      (p) => SetHtml("tempo", Text(~Cache.tempos.find(t => t.instrumentId == selInstId).map(_.tempo.toString)))) &
+    "#checkbox *" #> Cache.tags.map(tag =>
+      <span>{SHtml.checkbox(false, (checked: Boolean) => sels(tag.id) = checked)} {tag.commentText}</span>) &
+    "#commentText" #> SHtml.textarea("", (s: String) => Noop,
+      "id" -> "commentText", "rows" -> {sels.values.size.toString}) &
+    "#passButton" #> SHtml.ajaxSubmit("Pass", () => { show(); Noop }) &
+    "#failButton" #> SHtml.ajaxSubmit("Fail", () => { show(); Noop })
   }
 
   private val dtf = DateTimeFormat.forStyle("S-")

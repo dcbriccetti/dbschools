@@ -10,13 +10,14 @@ import Loc._
 import net.liftmodules.widgets.flot.Flot
 
 import com.dbschools.mgb.Db
+import com.dbschools.mgb.model.Cache
 
 object RunState {
   object loggedIn extends SessionVar[Boolean] (false)
 }
 
 class Boot {
-  def boot {
+  def boot: Unit = {
     import bootstrap.liftweb.ApplicationPaths._
     
     // where to search snippet
@@ -67,6 +68,7 @@ class Boot {
     Db.initialize()
     S.addAround(new LoanWrapper{override def apply[T](f: => T): T = {inTransaction {f}}})
 
+    Cache.init()
     Flot.init()
   }
 }

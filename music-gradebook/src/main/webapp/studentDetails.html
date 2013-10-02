@@ -50,9 +50,24 @@
 
                 <div data-lift="StudentDetails.newAssessment">
                     <h4>New Assessment</h4>
-                    <ul id="checkboxes">
-                        <li><span id="checkbox"/></li>
-                    </ul>
+                    <form data-lift="form.ajax">
+                        <div>
+                            <span id="instrument"></span><span id="subinstrument"></span><span id="piece"></span>
+                            Tempo: <span id="tempo"></span>
+                        </div>
+                        <h5>Comments</h5>
+                        <div>
+                            <div id="commentCheckboxesDiv">
+                                <ul id="checkboxes" class="simpleUl">
+                                    <li id="checkbox"></li>
+                                </ul>
+                            </div>
+                            <div id="commentTextDiv">
+                                <span id="commentText"/>
+                            </div>
+                        </div>
+                        <span><span id="passButton"></span><span id="failButton"/></span>
+                    </form>
                 </div>
 
                 <div data-lift="StudentDetails.assessments">
