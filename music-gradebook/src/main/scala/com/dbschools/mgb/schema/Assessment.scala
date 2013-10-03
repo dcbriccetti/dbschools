@@ -2,6 +2,7 @@ package com.dbschools.mgb.schema
 
 import java.sql.Timestamp
 import org.squeryl.annotations.Column
+import org.squeryl.KeyedEntity
 
 case class Assessment(
   assessment_id:    Int,
@@ -14,4 +15,6 @@ case class Assessment(
   pieceId:          Int,
   pass:             Boolean,
   notes:            String
-)
+) extends KeyedEntity[Int] {
+  def id = assessment_id
+}

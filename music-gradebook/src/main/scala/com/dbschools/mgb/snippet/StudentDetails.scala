@@ -1,6 +1,7 @@
 package com.dbschools.mgb
 package snippet
 
+import java.sql.Timestamp
 import xml.Text
 import scalaz._
 import Scalaz._
@@ -157,11 +158,34 @@ class StudentDetails extends TagCounts with Loggable {
     var opSelInstId = opNextPi.map(_.instId)
     var opSelSubinstId = opNextPi.flatMap(_.opSubInstId)
     var opSelPieceId = opNextPi.map(_.piece.id)
+    var notes = ""
 
     def findTempo = opSelPieceId.flatMap(selPieceId =>
         // First look for a tempo for the specific instrument
         Cache.tempos.find(t => t.instrumentId == opSelInstId && t.pieceId == selPieceId) orElse
         Cache.tempos.find(_.pieceId == selPieceId))
+
+    def recordAss(pass: Boolean): Unit = {
+      for {
+        musician  <- opMusician
+        iid       <- opSelInstId
+        pid       <- opSelPieceId
+        user      <- AppSchema.users.find(_.login == Authenticator.userName.is)
+      } {
+        val newAss = Assessment(
+          assessment_id     = 0, // todo Need to create sequences
+          assessment_time   = new Timestamp(DateTime.now.getMillis),
+          musician_id       = musician.musician_id.is,
+          instrument_id     = iid,
+          subinstrument_id  = opSelSubinstId,
+          user_id           = user.id,
+          pieceId           = pid,
+          pass              = pass,
+          notes             = notes
+        )
+        AppSchema.assessments.insert(newAss)
+      }
+    }
 
     "#instrument" #> SHtml.ajaxSelect(Cache.instruments.map(p => p.id.toString -> p.name.is),
       opSelInstId.map(i => Full(i.toString)) getOrElse Empty, (p) => {
@@ -181,10 +205,10 @@ class StudentDetails extends TagCounts with Loggable {
     "#tempo *"    #> ~findTempo.map(_.tempo.toString) &
     "#checkbox *" #> Cache.tags.map(tag =>
       <span>{SHtml.checkbox(false, (checked: Boolean) => sels(tag.id) = checked)} {tag.commentText}</span>) &
-    "#commentText" #> SHtml.textarea("", (s: String) => Noop,
+    "#commentText" #> SHtml.textarea("", (s: String) => {notes = s; Noop},
       "id" -> "commentText", "rows" -> {sels.values.size.toString}) &
-    "#passButton" #> SHtml.ajaxSubmit("Pass", () => { Noop }) &
-    "#failButton" #> SHtml.ajaxSubmit("Fail", () => { Noop })
+    "#passButton" #> SHtml.ajaxSubmit("Pass", () => { recordAss(true); Noop }) &
+    "#failButton" #> SHtml.ajaxSubmit("Fail", () => { recordAss(false); Noop })
   }
 
   private val dtf = DateTimeFormat.forStyle("S-")
