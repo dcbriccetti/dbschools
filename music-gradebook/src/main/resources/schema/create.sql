@@ -12,3 +12,5 @@ create sequence "s_instrument_instrument_id";
 select setval('s_instrument_instrument_id', max(instrument_id)) from instrument;
 create sequence "s_subinstrument_subinstrument_id";
 select setval('s_subinstrument_subinstrument_id', max(subinstrument_id)) from subinstrument;
+create sequence "s_musician_group_id";
+select setval('s_musician_musician_id', max(id)) from musician_group;

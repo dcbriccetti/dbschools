@@ -8,7 +8,7 @@ import net.liftweb.record.field.{StringField, IntField}
 case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
   override def meta = Musician
 
-  @Column("musician_id")
+  @Column("id")
   override val idField = new IntField(this) {
     override def shouldDisplay_? = false
   }

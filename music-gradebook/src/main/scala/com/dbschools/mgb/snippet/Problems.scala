@@ -17,9 +17,9 @@ class Problems extends Loggable {
     var opCurrentId = none[Int]
 
     def process(): JsCmd = {
-      opOldId <|*|> opCurrentId foreach {
+      opOldId tuple opCurrentId foreach {
         case (o, c) =>
-          logger.warn("process %d and %s".format(o, c))
+          logger.warn(s"process $o and $c")
           Combiner.combine(o, c)
       }
       Noop

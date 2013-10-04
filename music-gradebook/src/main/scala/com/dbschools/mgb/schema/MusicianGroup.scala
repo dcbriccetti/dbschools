@@ -2,6 +2,7 @@ package com.dbschools.mgb.schema
 
 import org.squeryl.PrimitiveTypeMode._
 import com.dbschools.mgb.model.Cache
+import org.squeryl.KeyedEntity
 
 case class MusicianGroup(
   id:             Int,
@@ -9,7 +10,7 @@ case class MusicianGroup(
   group_id:       Int,
   instrument_id:  Int,
   school_year:    Int
-)
+) extends KeyedEntity[Int]
 
 case class MusicianGroupMusician(mg: MusicianGroup, m: Musician)
 

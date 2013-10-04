@@ -11,7 +11,7 @@ import net.liftweb.squerylrecord.KeyedRecord
 case class Instrument private() extends Record[Instrument] with KeyedRecord[Int]{
   override def meta = Instrument
   
-  @Column("instrument_id")
+  @Column("id")
   override val idField = new IntField(this)
   
   val name = new StringField(this, "") {

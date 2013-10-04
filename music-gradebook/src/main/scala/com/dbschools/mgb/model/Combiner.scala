@@ -9,8 +9,8 @@ import com.dbschools.mgb.schema.AppSchema
 object Combiner extends Loggable {
   /** Combines data for a student that has an old and current student ID */
   def combine(oldId: Int, currentId: Int): Unit = {
-    (AppSchema.musicians.where(_.student_id.is === oldId    ).headOption <|*|>
-     AppSchema.musicians.where(_.student_id.is === currentId).headOption) match {
+    AppSchema.musicians.where(_.student_id.is === oldId).headOption tuple
+      AppSchema.musicians.where(_.student_id.is === currentId).headOption match {
       case Some((old, cur)) =>
         update(AppSchema.assessments)(a =>
           where(a.musician_id === old.musician_id.is)

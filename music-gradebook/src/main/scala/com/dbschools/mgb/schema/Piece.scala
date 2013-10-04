@@ -11,7 +11,7 @@ import net.liftweb.squerylrecord.KeyedRecord
 case class Piece() extends Record[Piece] with KeyedRecord[Int] {
   override def meta = Piece
   
-  @Column("piece_id")
+  @Column("id")
   override val idField = new IntField(this)
 
   @Column("test_order")
