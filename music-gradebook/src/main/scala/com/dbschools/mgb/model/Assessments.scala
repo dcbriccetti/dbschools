@@ -21,7 +21,7 @@ object AssessmentRows {
     val rows = from(assessments, pieces, instruments, users)((a, p, i, u) =>
       where(a.musician_id === id and a.pieceId === p.id and a.instrument_id === i.id
         and a.user_id === u.id)
-      select RowAndId(a.assessment_id, AssessmentRow(
+      select RowAndId(a.id, AssessmentRow(
         new DateTime(a.assessment_time.getTime), u.last_name, p.name.is, i.name.is, None, a.pass, opStr(a.notes)))
       orderBy(a.assessment_time desc)
     )

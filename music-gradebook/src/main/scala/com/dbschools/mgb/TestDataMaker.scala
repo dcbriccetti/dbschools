@@ -227,7 +227,7 @@ cindy""")
   private def deleteStudents(): Unit = {
     AppSchema.musicianGroups  .deleteWhere(mg => mg.id === mg.id)
     AppSchema.assessmentTags  .deleteWhere(a => a.assessmentId === a.assessmentId)
-    AppSchema.assessments     .deleteWhere(a => a.assessment_id === a.assessment_id)
+    AppSchema.assessments     .deleteWhere(a => a.id === a.id)
     AppSchema.musicians       .deleteWhere(m => m.idField.is === m.idField.is)
   }
   

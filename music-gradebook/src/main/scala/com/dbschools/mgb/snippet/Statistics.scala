@@ -49,7 +49,7 @@ class Statistics extends Loggable {
         and m.musician_id.is === a.musician_id
         and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
         groupBy(g.name)
-        compute(count(a.assessment_id))
+        compute(count(a.id))
     )
   }
 
@@ -58,7 +58,7 @@ class Statistics extends Loggable {
     from(musicians, assessments)((m, a) =>
       where(m.musician_id.is === a.musician_id and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
         groupBy(m.graduation_year.is.toString)
-        compute(count(a.assessment_id))
+        compute(count(a.id))
     )
   }
 
@@ -67,7 +67,7 @@ class Statistics extends Loggable {
     from(users, assessments)((u, a) =>
       where(u.id === a.user_id and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
         groupBy(u.last_name)
-        compute(count(a.assessment_id))
+        compute(count(a.id))
     )
   }
 

@@ -7,7 +7,7 @@ trait TagCounts {
   private lazy val predefCommentsById = Cache.tags.map(pc => pc.id -> pc.commentText).toMap
 
   def tagCounts(musicianId: Int) = {
-    val q = from(AppSchema.assessments)(a => where(a.musician_id === musicianId) select a.assessment_id)
+    val q = from(AppSchema.assessments)(a => where(a.musician_id === musicianId) select a.id)
     case class TagCount(tag: String, count: Long)
     from(AppSchema.assessmentTags)(t =>
       where(t.assessmentId in q)

@@ -15,7 +15,7 @@ object Group {
   lazy val groupsWithAssessments = from(AppSchema.assessments, AppSchema.musicianGroups)((a, mg) =>
     where(a.musician_id === mg.musician_id)
       groupBy(mg.school_year, mg.group_id)
-      compute (count(a.assessment_id))
+      compute (count(a.id))
   ).map(g => TermGroupAssessments(g.key._1, g.key._2, g.measures.toInt))
 
   /** A map from terms to TermGroupAssessments */

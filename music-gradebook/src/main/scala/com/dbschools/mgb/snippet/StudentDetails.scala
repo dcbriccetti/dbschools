@@ -17,7 +17,7 @@ import js.JsCmds.Confirm
 import net.liftweb.http.js.JsCmds.SetHtml
 import model._
 import model.{GroupAssignment, TagCounts}
-import schema.{AppSchema, Musician, Assessment, MusicianGroup, Piece}
+import com.dbschools.mgb.schema.{AssessmentTag, AppSchema, Musician, Assessment, MusicianGroup, Piece}
 
 class StudentDetails extends TagCounts with Loggable {
   private var selectedMusicianGroups = Map[Int, MusicianGroup]()
@@ -173,7 +173,7 @@ class StudentDetails extends TagCounts with Loggable {
         user      <- AppSchema.users.find(_.login == Authenticator.userName.is)
       } {
         val newAss = Assessment(
-          assessment_id     = 0, // todo Need to create sequences
+          id                = 0,
           assessment_time   = new Timestamp(DateTime.now.getMillis),
           musician_id       = musician.musician_id.is,
           instrument_id     = iid,
@@ -184,6 +184,12 @@ class StudentDetails extends TagCounts with Loggable {
           notes             = notes
         )
         AppSchema.assessments.insert(newAss)
+        AppSchema.assessmentTags.insert(
+          for {
+            (commentId, selected) <- sels
+            if selected
+          } yield AssessmentTag(newAss.id, commentId)
+        )
       }
     }
 

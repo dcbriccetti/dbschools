@@ -5,7 +5,7 @@ import org.squeryl.annotations.Column
 import org.squeryl.KeyedEntity
 
 case class Assessment(
-  assessment_id:    Int,
+  id:               Int,
   assessment_time:  Timestamp,
   musician_id:      Int,
   instrument_id:    Int,
@@ -15,6 +15,4 @@ case class Assessment(
   pieceId:          Int,
   pass:             Boolean,
   notes:            String
-) extends KeyedEntity[Int] {
-  def id = assessment_id
-}
+) extends KeyedEntity[Int]
