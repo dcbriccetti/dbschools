@@ -87,7 +87,7 @@ class Students extends Loggable {
 
   def inNoGroups = {
     val musicians = join(AppSchema.musicians, AppSchema.musicianGroups.leftOuter)((m, mg) =>
-      where(mg.map(_.id).isNull) select(m) on (m.musician_id.is === mg.map(_.musician_id)))
+      where(mg.map(_.id).isNull) select m on (m.musician_id.is === mg.map(_.musician_id)))
 
     ".studentRow"   #> musicians.map(m =>
       ".stuName  *" #> studentLink(m) &
@@ -97,5 +97,9 @@ class Students extends Loggable {
     )
   }
 
-  private def studentLink(m: Musician) = SHtml.link("studentDetails?id=" + m.musician_id.is, () => {}, Text(m.name))
+  private def studentLink(m: Musician) = SHtml.link(Students.urlToDetails(m), () => {}, Text(m.name))
+}
+
+object Students {
+  def urlToDetails(m: Musician) = "studentDetails?id=" + m.musician_id.is
 }

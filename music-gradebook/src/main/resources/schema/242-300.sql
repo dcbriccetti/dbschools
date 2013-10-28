@@ -10,3 +10,5 @@ alter table piece rename column piece_id to id;
 alter table predefined_comment rename column comment_id to id;
 alter table rejection_reason rename column rejection_reason_id to id;
 alter table tempo rename column tempo_id to id;
+
+alter table musician drop column sex;

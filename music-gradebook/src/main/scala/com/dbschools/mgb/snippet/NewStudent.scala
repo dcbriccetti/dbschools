@@ -1,24 +1,30 @@
 package com.dbschools.mgb.snippet
 
-import scalaz._
-import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
-import common.Loggable
+import net.liftweb.common.Loggable
 import http._
+import net.liftweb.util.FieldError
 import com.dbschools.mgb.schema.{Musician, AppSchema}
+import com.dbschools.mgb.model.Terms
 
-object NewStudent extends LiftScreen with Loggable {
-  val musician = Musician.createRecord
-  addFields(() => musician)
+class NewStudent extends LiftScreen with Loggable {
+  private val musician = Musician.createRecord
 
-  def valUniqueStudentId(): Errors =
-    AppSchema.musicians.where(_.student_id.is === musician.student_id.is).headOption match {
-      case Some(existing) => existing.name + " already has that student ID"
-      case _              => Nil
-    }
+  private val grade = field(s"Grade in ${Terms.formatted(Terms.currentTerm)}", 0, minVal(1, "Invalid value"))
+
+  override def screenFields = List(musician.last_name, musician.first_name, musician.student_id, grade)
+
+  def valUniqueStudentId(): Errors = {
+    val opExisting = AppSchema.musicians.where(_.student_id.is === musician.student_id.is).headOption
+    opExisting.map(existing => FieldError(musician.student_id, existing.name + " already has that student ID")).toList
+  }
 
   override def validations = valUniqueStudentId _ :: super.validations
 
-  def finish(): Unit = AppSchema.musicians.insert(musician)
+  def finish(): Unit = {
+    musician.graduation_year.set(Terms.gradeAsGraduationYear(grade.get))
+    AppSchema.musicians.insert(musician)
+    S.redirectTo(Students.urlToDetails(musician))
+  }
 }
