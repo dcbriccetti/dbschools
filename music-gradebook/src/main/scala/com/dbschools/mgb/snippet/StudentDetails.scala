@@ -17,7 +17,14 @@ import js.JsCmds.Confirm
 import net.liftweb.http.js.JsCmds.SetHtml
 import model._
 import model.{GroupAssignment, TagCounts}
-import com.dbschools.mgb.schema.{AssessmentTag, AppSchema, Musician, Assessment, MusicianGroup, Piece}
+import com.dbschools.mgb.schema._
+import com.dbschools.mgb.model.GroupAssignment
+import scala.Some
+import net.liftweb.http.js.JsCmds.Confirm
+import com.dbschools.mgb.schema.Assessment
+import net.liftweb.http.js.JsCmds.SetHtml
+import net.liftweb.common.Full
+import com.dbschools.mgb.model.AssessmentRow
 
 class StudentDetails extends TagCounts with Loggable {
   private var selectedMusicianGroups = Map[Int, MusicianGroup]()
@@ -60,7 +67,7 @@ class StudentDetails extends TagCounts with Loggable {
       s"Passes: ${pass.size}, failures: ${fail.size}$tagCountsStr"
     }
 
-    def makeDetails(md: MusicianDetails) =
+    def makeDetails(lastPassFinder: LastPassFinder)(md: MusicianDetails) =
       ".lastName *"       #> SHtml.swappable(<span id="lastName">{md.musician.last_name.is}</span>,
                                 SHtml.ajaxText(md.musician.last_name.is,
                                 changeName(md.musician, md.musician.last_name, "lastName"))) &
@@ -70,11 +77,11 @@ class StudentDetails extends TagCounts with Loggable {
       ".grade"            #> Terms.graduationYearAsGrade(md.musician.graduation_year.is) &
       ".stuId"            #> SHtml.swappable(<span id="stuId">{md.musician.student_id.toString}</span>,
                                 SHtml.ajaxText(md.musician.student_id.toString, changeStuId(md.musician))) &
-      "#lastPiece"        #> new LastPassFinder().lastPassed(Some(md.musician.musician_id.is)).mkString(", ") &
+      "#lastPiece"        #> lastPassFinder.lastPassed(Some(md.musician.musician_id.is)).mkString(", ") &
       ".assignmentRow *"  #> groupsTable(md.groups) &
       ".assessmentsSummary *" #> assessmentsSummary(md)
 
-    "#student" #> opMusicianDetails.map(makeDetails)
+    "#student" #> opMusicianDetails.map(makeDetails(new LastPassFinder()))
   }
 
   private def groupsTable(groups: Iterable[GroupAssignment]) =
@@ -251,6 +258,6 @@ class StudentDetails extends TagCounts with Loggable {
     ".tester     *"   #> ar.tester &
     ".piece [class]"  #> (if (ar.pass) "pass" else "fail") &
     ".piece      *"   #> ar.piece &
-    ".instrument *"   #> ar.instrument &
+    ".instrument *"   #> (ar.instrument + ~ar.subinstrument.map(Subinstrument.suffix)) &
     ".comments   *"   #> ar.notes
 }
