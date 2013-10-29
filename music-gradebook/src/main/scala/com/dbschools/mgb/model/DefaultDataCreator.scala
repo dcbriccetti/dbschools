@@ -66,7 +66,7 @@ object DefaultDataCreator extends Loggable {
       AppSchema.pieces.insert(piece)
       seq += 1
       if (fields.length == 2) {
-        AppSchema.tempos.insert(Tempo(0, piece.id, Integer.parseInt(fields(1)), None))
+        AppSchema.tempos.insert(Tempo(0, piece.id, None, Integer.parseInt(fields(1))))
       }
     })
   }
