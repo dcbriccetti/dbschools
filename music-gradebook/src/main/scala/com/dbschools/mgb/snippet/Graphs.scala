@@ -33,7 +33,7 @@ class Graphs extends Loggable {
     val sortedYears = gradesToMgms.keys.toSeq.sorted
     val labels = sortedYears.map(_.toString)
     val portions = sortedYears.map(gradesToMgms).map(_.size).toSeq
-    Noop // todo Flot.renderPie("grades_graph", Pie(portions, Some(labels.toSeq)))
+    PassThru // todo Flot.renderPie("grades_graph", Pie(portions, Some(labels.toSeq)))
   }
 
   def instruments = {
@@ -41,7 +41,7 @@ class Graphs extends Loggable {
       selectors.opSelectedTerm, selectors.opSelectedGroupId).filter(_._1.name.is != "Unassigned")
     val names = sortedInstruments.map(_._1.name.is.toString)
     val portions = sortedInstruments.map(_._2.toInt)
-    Noop // todo Flot.renderPie("instruments_graph", Pie(portions, Some(names)))
+    PassThru // todo Flot.renderPie("instruments_graph", Pie(portions, Some(names)))
   }
 
   def progress = {
