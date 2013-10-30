@@ -53,7 +53,6 @@ class Students extends Loggable {
                       id => Helpers.asInt(id).foreach(intId => newId = intId)) &
     "#grade"     #> SHtml.number(grade, grade = _, grade, 8) &
     "#name"      #> SHtml.text(name, name = _) &
-    "#sex"       #> SHtml.select(List(("Male", "Male"), ("Female", "Female")), Full(sex), sex = _) &
     "#save"      #> SHtml.onSubmitUnit(() => saveStudent)
   }
 
