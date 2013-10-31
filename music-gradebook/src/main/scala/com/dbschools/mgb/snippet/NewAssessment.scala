@@ -32,7 +32,7 @@ class NewAssessment extends MusicianFromReq {
         Pi(Cache.pieces.head, ga.instrument.id))
     }
 
-    val sels = scala.collection.mutable.Map(Cache.tags.map(_.id -> false): _*)
+    val commentTagSelections = scala.collection.mutable.Map(Cache.tags.map(_.id -> false): _*)
     var opSelInstId = opNextPi.map(_.instId)
     var opSelSubinstId = opNextPi.flatMap(_.opSubInstId)
     var opSelPieceId = opNextPi.map(_.piece.id)
@@ -64,7 +64,7 @@ class NewAssessment extends MusicianFromReq {
         AppSchema.assessments.insert(newAss)
         AppSchema.assessmentTags.insert(
           for {
-            (commentId, selected) <- sels
+            (commentId, selected) <- commentTagSelections
             if selected
           } yield AssessmentTag(newAss.id, commentId)
         )
@@ -99,13 +99,13 @@ class NewAssessment extends MusicianFromReq {
     def checkboxes: Seq[Elem] =
       Cache.tags.map(tag =>
         <span>
-          {SHtml.checkbox(false, (checked) => sels(tag.id) = checked)}{tag.commentText}
+          {SHtml.checkbox(false, (checked) => commentTagSelections(tag.id) = checked)}{tag.commentText}
         </span>)
 
     def commentText = SHtml.textarea("", (s) => {
       notes = s
       Noop
-    }, "id" -> "commentText", "rows" -> {sels.values.size.toString})
+    }, "id" -> "commentText", "rows" -> "3")
 
     "#instrument"     #> selInst &
     "#subinstrument"  #> selSubinst &
