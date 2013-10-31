@@ -53,24 +53,25 @@
                             Tempo: <span id="tempo"></span>
                         </div>
                         <h5>Comments</h5>
-                        <div>
-                            <div id="commentCheckboxesDiv">
+                        <div class="row">
+                            <div id="commentCheckboxesDiv" class="col-md-2">
                                 <ul id="checkboxes" class="simpleUl">
                                     <li id="checkbox"></li>
                                 </ul>
                             </div>
-                            <div id="commentTextDiv">
+                            <div id="commentTextDiv" class="col-md-10">
                                 <span id="commentText"/>
                             </div>
                         </div>
-                        <span><span id="passButton"></span><span id="failButton"/></span>
+                        <div><span id="passButton"></span><span id="failButton"/></div>
                     </form>
                 </div>
 
                 <div data-lift="Assessments">
-                    <table class="autoWidth">
+                    <h4>Past Assessments</h4>
+                    <table class="table">
                       <tr>
-                        <th>Date</th> <th>Tester</th> <th>Piece</th> <th>Instrument</th> <th>Comments</th>
+                        <th>Date</th> <th>Tester</th> <th>Piece</th> <th>Instrument</th> <th width="50%">Comments</th>
                       </tr>
                       <tr class="assessmentRow">
                         <td class="date"></td>
