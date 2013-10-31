@@ -1,47 +1,28 @@
 package com.dbschools.mgb
 package snippet
 
-import java.sql.Timestamp
-import scala.xml.{Elem, Text}
-import scalaz._
-import Scalaz._
+import scala.xml.Text
 import org.squeryl.PrimitiveTypeMode._
-import org.scala_tools.time.Imports._
 import net.liftweb._
-import net.liftweb.common.{Empty, Full, Loggable}
+import net.liftweb.common.{Full, Loggable}
 import util._
 import http._
 import js.JsCmds._
 import Helpers._
-import js.JsCmds.Confirm
-import net.liftweb.http.js.JsCmds.SetHtml
-import model._
-import model.{GroupAssignment, TagCounts}
-import com.dbschools.mgb.schema._
-import com.dbschools.mgb.model.GroupAssignment
-import scala.Some
-import net.liftweb.http.js.JsCmds.Confirm
-import com.dbschools.mgb.schema.Assessment
-import net.liftweb.http.js.JsCmds.SetHtml
-import net.liftweb.common.Full
-import com.dbschools.mgb.model.AssessmentRow
+import net.liftweb.http.js.JsCmds.{Confirm, SetHtml}
+import model.{Cache, GroupAssignment, GroupAssignments, LastPassFinder, TagCounts, Terms}
+import schema.{Assessment, AppSchema, Musician, MusicianGroup}
 
-class StudentDetails extends TagCounts with Loggable {
+class StudentDetails extends TagCounts with MusicianFromReq with Loggable {
   private var selectedMusicianGroups = Map[Int, MusicianGroup]()
-  private var opMusician = none[Musician]
 
   case class MusicianDetails(musician: Musician, groups: Iterable[GroupAssignment], assessments: Iterable[Assessment])
 
   def render = {
 
-    opMusician = for {
-      musicianId  <- S.param("id").flatMap(asInt).toOption
-      musician    <- AppSchema.musicians.lookup(musicianId)
-    } yield musician
-
     val opMusicianDetails = opMusician.map(musician =>
-      MusicianDetails(musician, GroupAssignments(Some(musician.musician_id.is)),
-      AppSchema.assessments.where(_.musician_id === musician.musician_id.is).toSeq))
+      MusicianDetails(musician, GroupAssignments(Some(musician.musician_id.get)),
+      AppSchema.assessments.where(_.musician_id === musician.musician_id.get).toSeq))
 
     def changeName(musician: Musician, field: record.field.StringField[Musician], id: String)(t: String) = {
       field(t)
@@ -68,16 +49,16 @@ class StudentDetails extends TagCounts with Loggable {
     }
 
     def makeDetails(lastPassFinder: LastPassFinder)(md: MusicianDetails) =
-      ".lastName *"       #> SHtml.swappable(<span id="lastName">{md.musician.last_name.is}</span>,
-                                SHtml.ajaxText(md.musician.last_name.is,
+      ".lastName *"       #> SHtml.swappable(<span id="lastName">{md.musician.last_name.get}</span>,
+                                SHtml.ajaxText(md.musician.last_name.get,
                                 changeName(md.musician, md.musician.last_name, "lastName"))) &
-      ".firstName *"      #> SHtml.swappable(<span id="firstName">{md.musician.first_name.is}</span>,
-                                SHtml.ajaxText(md.musician.first_name.is,
+      ".firstName *"      #> SHtml.swappable(<span id="firstName">{md.musician.first_name.get}</span>,
+                                SHtml.ajaxText(md.musician.first_name.get,
                                 changeName(md.musician, md.musician.first_name, "firstName"))) &
-      ".grade"            #> Terms.graduationYearAsGrade(md.musician.graduation_year.is) &
+      ".grade"            #> Terms.graduationYearAsGrade(md.musician.graduation_year.get) &
       ".stuId"            #> SHtml.swappable(<span id="stuId">{md.musician.student_id.toString}</span>,
                                 SHtml.ajaxText(md.musician.student_id.toString, changeStuId(md.musician))) &
-      "#lastPiece"        #> lastPassFinder.lastPassed(Some(md.musician.musician_id.is)).mkString(", ") &
+      "#lastPiece"        #> lastPassFinder.lastPassed(Some(md.musician.musician_id.get)).mkString(", ") &
       ".assignmentRow *"  #> groupsTable(md.groups) &
       ".assessmentsSummary *" #> assessmentsSummary(md)
 
@@ -108,7 +89,7 @@ class StudentDetails extends TagCounts with Loggable {
       })
 
   private def instrumentSelector(ga: GroupAssignment) =
-    SHtml.ajaxSelect(Cache.instruments.map(i => (i.id.toString, i.name.is)).toSeq,
+    SHtml.ajaxSelect(Cache.instruments.map(i => (i.id.toString, i.name.get)).toSeq,
       Full(ga.musicianGroup.instrument_id.toString), iid => {
         AppSchema.musicianGroups.update(mg => where(mg.id === ga.musicianGroup.id)
           set (mg.instrument_id := iid.toInt))
@@ -117,7 +98,7 @@ class StudentDetails extends TagCounts with Loggable {
 
   def groupAssignments = {
     def delete() = {
-      if (! selectedMusicianGroups.isEmpty) {
+      if (selectedMusicianGroups.nonEmpty) {
         Confirm(
           s"Are you sure you want to remove the ${selectedMusicianGroups.size} selected group assignments?",
           SHtml.ajaxInvoke(() => {
@@ -130,7 +111,7 @@ class StudentDetails extends TagCounts with Loggable {
     def create() = {
       for {
         group      <- Cache.groups.find(_.doesTesting)
-        instrument <- Cache.instruments.find(_.name.is == "Unassigned")
+        instrument <- Cache.instruments.find(_.name.get == "Unassigned")
         musician   <- opMusician
       } {
         AppSchema.musicianGroups.insert(MusicianGroup(0, musician.id, group.id, instrument.id,
@@ -142,122 +123,4 @@ class StudentDetails extends TagCounts with Loggable {
     "#delete" #> SHtml.ajaxButton("Delete selected group assignments", () => delete()) &
     "#create" #> SHtml.ajaxButton(s"Create ${Terms.formatted(Terms.currentTerm)} group assignment", () => create())
   }
-
-  def assessments = ".assessmentRow" #> {
-    val rows = opMusician.map(_.id).map(AssessmentRows.forMusician) | Seq[AssessmentRow]()
-    rows.map(fillAssRow)
-  }
-
-  def newAssessment = {
-    val lastPassFinder = new LastPassFinder()
-
-    case class Pi(piece: Piece, instId: Int, opSubInstId: Option[Int] = None)
-
-    val opNextPi = {
-      val pi = for {
-        musician  <- opMusician
-        lastPass  <- lastPassFinder.lastPassed(Some(musician.musician_id.is)).headOption
-        piece     <- Cache.pieces.find(_.id == lastPass.pieceId)
-        nextPiece =  lastPassFinder.next(piece)
-      } yield Pi(nextPiece, lastPass.instrumentId, lastPass.opSubinstrumentId)
-
-      pi orElse GroupAssignments(opMusician.map(_.id), opSelectedTerm = Some(Terms.currentTerm)).headOption.map(ga =>
-        Pi(Cache.pieces.head, ga.instrument.id))
-    }
-
-    val sels = scala.collection.mutable.Map(Cache.tags.map(_.id -> false): _*)
-    var opSelInstId = opNextPi.map(_.instId)
-    var opSelSubinstId = opNextPi.flatMap(_.opSubInstId)
-    var opSelPieceId = opNextPi.map(_.piece.id)
-    var notes = ""
-
-    def findTempo = opSelPieceId.flatMap(selPieceId =>
-      // First look for a tempo for the specific instrument
-      Cache.tempos.find(t => t.instrumentId == opSelInstId && t.pieceId == selPieceId) orElse
-      Cache.tempos.find(_.pieceId == selPieceId))
-
-    def recordAss(pass: Boolean): Unit = {
-      for {
-        musician  <- opMusician
-        iid       <- opSelInstId
-        pid       <- opSelPieceId
-        user      <- AppSchema.users.find(_.login == Authenticator.userName.is)
-      } {
-        val newAss = Assessment(
-          id                = 0,
-          assessment_time   = new Timestamp(DateTime.now.getMillis),
-          musician_id       = musician.musician_id.is,
-          instrument_id     = iid,
-          subinstrument_id  = opSelSubinstId,
-          user_id           = user.id,
-          pieceId           = pid,
-          pass              = pass,
-          notes             = notes
-        )
-        AppSchema.assessments.insert(newAss)
-        AppSchema.assessmentTags.insert(
-          for {
-            (commentId, selected) <- sels
-            if selected
-          } yield AssessmentTag(newAss.id, commentId)
-        )
-      }
-    }
-
-    def selInst = {
-      val initialSel = opSelInstId.map(i => Full(i.toString)) getOrElse Empty
-      SHtml.ajaxSelect(Cache.instruments.map(p => p.id.toString -> p.name.is),
-        initialSel, (p) => {
-          opSelInstId = Some(p.toInt)
-          Noop
-        })
-    }
-
-    def selSubinst = {
-      SHtml.ajaxSelect(Seq[(String, String)](), Empty, (p) => {
-        opSelSubinstId = Some(p.toInt)
-        Noop
-      })
-    }
-
-    def selPiece = {
-      val initialSel = opSelPieceId.map(p => Full(p.toString)) getOrElse Empty
-      SHtml.ajaxSelect(Cache.pieces.map(p => p.id.toString -> p.name.is),
-        initialSel, (p) => {
-          opSelPieceId = Some(p.toInt)
-          SetHtml("tempo", Text(~findTempo.map(_.tempo.toString)))
-        })
-    }
-
-    def checkboxes: Seq[Elem] =
-      Cache.tags.map(tag =>
-        <span>
-          {SHtml.checkbox(false, (checked) => sels(tag.id) = checked)}{tag.commentText}
-        </span>)
-
-    def commentText = SHtml.textarea("", (s) => {
-      notes = s
-      Noop
-    }, "id" -> "commentText", "rows" -> {sels.values.size.toString})
-
-    "#instrument"     #> selInst &
-    "#subinstrument"  #> selSubinst &
-    "#piece"          #> selPiece &
-    "#tempo *"        #> ~findTempo.map(_.tempo.toString) &
-    "#checkbox *"     #> checkboxes &
-    "#commentText"    #> commentText &
-    "#passButton"     #> SHtml.ajaxSubmit("Pass", () => { recordAss(pass = true ); Reload }) &
-    "#failButton"     #> SHtml.ajaxSubmit("Fail", () => { recordAss(pass = false); Reload })
-  }
-
-  private val dtf = DateTimeFormat.forStyle("S-")
-  private val tmf = DateTimeFormat.forStyle("-M")
-
-  private def fillAssRow(ar: AssessmentRow) =
-    ".date       *"   #> <span title={tmf.print(ar.date)}>{dtf.print(ar.date)}</span> &
-    ".tester     *"   #> ar.tester &
-    ".piece [class]"  #> (if (ar.pass) "pass" else "fail") &
-    ".piece      *"   #> ar.piece &
-    ".instrument *"   #> (ar.instrument + ~ar.subinstrument.map(Subinstrument.suffix)) &
-    ".comments   *"   #> ar.notes
 }
