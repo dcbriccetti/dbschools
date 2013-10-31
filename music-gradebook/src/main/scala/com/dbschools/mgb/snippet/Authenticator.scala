@@ -21,14 +21,14 @@ class Authenticator {
     "#submit"     #> SHtml.submit("Log In", () => {
       if (credentialsValid(password)) {
         RunState loggedIn true
-        S.redirectTo(home.href)
+        S.redirectTo(students.href)
       } else
         S.error("Login failed")
     }, "id" -> "submit")
 
   def logOut(content: NodeSeq): NodeSeq = {
     Authenticator.logOut()
-    S.redirectTo(home.href)
+    S.redirectTo(students.href)
     content
   }
 }
