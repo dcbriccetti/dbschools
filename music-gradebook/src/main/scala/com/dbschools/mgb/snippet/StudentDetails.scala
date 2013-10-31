@@ -4,7 +4,7 @@ package snippet
 import scala.xml.Text
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
-import net.liftweb.common.{Full, Loggable}
+import net.liftweb.common.{Empty, Full, Loggable}
 import util._
 import http._
 import js.JsCmds._
@@ -15,14 +15,15 @@ import schema.{Assessment, AppSchema, Musician, MusicianGroup}
 
 class StudentDetails extends TagCounts with MusicianFromReq with Loggable {
   private var selectedMusicianGroups = Map[Int, MusicianGroup]()
+  private val groupSelectorValues = Cache.groups.map(g => (g.id.toString, g.name)).toSeq
+  private var newAssignmentGroupId = groupSelectorValues(0)._1.toInt
+  private val opMusicianDetails = opMusician.map(musician =>
+    MusicianDetails(musician, GroupAssignments(Some(musician.musician_id.get)),
+    AppSchema.assessments.where(_.musician_id === musician.musician_id.get).toSeq))
 
   case class MusicianDetails(musician: Musician, groups: Iterable[GroupAssignment], assessments: Iterable[Assessment])
 
   def render = {
-
-    val opMusicianDetails = opMusician.map(musician =>
-      MusicianDetails(musician, GroupAssignments(Some(musician.musician_id.get)),
-      AppSchema.assessments.where(_.musician_id === musician.musician_id.get).toSeq))
 
     def changeName(musician: Musician, field: record.field.StringField[Musician], id: String)(t: String) = {
       field(t)
@@ -38,6 +39,14 @@ class StudentDetails extends TagCounts with MusicianFromReq with Loggable {
         AppSchema.musicians.update(musician)
         SetHtml("stuId", Text(newId.toString))
       }) getOrElse Noop
+
+    def groupsTable(groups: Iterable[GroupAssignment]) =
+      groups.map(ga =>
+        ".sel *"        #> assignmentCheckbox(ga) &
+        ".year *"       #> Terms.formatted(ga.musicianGroup.school_year) &
+        ".group *"      #> groupSelector(ga) &
+        ".instrument *" #> instrumentSelector(ga)
+      )
 
     def assessmentsSummary(md: MusicianDetails) = {
       val (pass, fail) = md.assessments.partition(_.pass)
@@ -65,14 +74,6 @@ class StudentDetails extends TagCounts with MusicianFromReq with Loggable {
     "#student" #> opMusicianDetails.map(makeDetails(new LastPassFinder()))
   }
 
-  private def groupsTable(groups: Iterable[GroupAssignment]) =
-    groups.map(ga =>
-      ".sel *"        #> assignmentCheckbox(ga) &
-      ".year *"       #> Terms.formatted(ga.musicianGroup.school_year) &
-      ".group *"      #> groupSelector(ga) &
-      ".instrument *" #> instrumentSelector(ga)
-    )
-
   private def assignmentCheckbox(ga: GroupAssignment) =
     SHtml.ajaxCheckbox(false, checked => {
       if (checked) selectedMusicianGroups += ga.musicianGroup.id -> ga.musicianGroup
@@ -81,12 +82,11 @@ class StudentDetails extends TagCounts with MusicianFromReq with Loggable {
     })
 
   private def groupSelector(ga: GroupAssignment) =
-    SHtml.ajaxSelect(Cache.groups.map(g => (g.id.toString, g.name)).toSeq,
-      Full(ga.musicianGroup.group_id.toString), gid => {
-        AppSchema.musicianGroups.update(mg => where(mg.id === ga.musicianGroup.id)
-          set (mg.group_id := gid.toInt))
-        Noop
-      })
+    SHtml.ajaxSelect(groupSelectorValues, Full(ga.musicianGroup.group_id.toString), gid => {
+      AppSchema.musicianGroups.update(mg => where(mg.id === ga.musicianGroup.id)
+        set (mg.group_id := gid.toInt))
+      Noop
+    })
 
   private def instrumentSelector(ga: GroupAssignment) =
     SHtml.ajaxSelect(Cache.instruments.map(i => (i.id.toString, i.name.get)).toSeq,
@@ -108,19 +108,35 @@ class StudentDetails extends TagCounts with MusicianFromReq with Loggable {
           }))
       } else Noop
     }
+
     def create() = {
+      def opSoleAssignedInstrumentId: Option[Int] = {
+        for {
+          md <- opMusicianDetails
+          gps = md.groups.map(_.instrument.id).toSet.toSeq
+          if gps.size == 1
+        } yield gps(0)
+      }
+
       for {
-        group      <- Cache.groups.find(_.doesTesting)
-        instrument <- Cache.instruments.find(_.name.get == "Unassigned")
-        musician   <- opMusician
+        instrumentId <- opSoleAssignedInstrumentId orElse Cache.instruments.find(_.name.get == "Unassigned").map(_.id)
+        musician     <- opMusician
       } {
-        AppSchema.musicianGroups.insert(MusicianGroup(0, musician.id, group.id, instrument.id,
+        AppSchema.musicianGroups.insert(MusicianGroup(0, musician.id, newAssignmentGroupId, instrumentId,
           Terms.currentTerm))
       }
       Reload
     }
 
-    "#delete" #> SHtml.ajaxButton("Delete selected group assignments", () => delete()) &
-    "#create" #> SHtml.ajaxButton(s"Create ${Terms.formatted(Terms.currentTerm)} group assignment", () => create())
+    def nextSel = {
+      SHtml.ajaxSelect(groupSelectorValues, Empty, gid => {
+        newAssignmentGroupId = gid.toInt
+        Noop
+      })
+    }
+
+    "#delete"   #> SHtml.ajaxButton("Delete selected group assignments", () => delete()) &
+    "#create"   #> SHtml.ajaxButton(s"Create ${Terms.formatted(Terms.currentTerm)} group assignment", () => create()) &
+    "#nextSel"  #> nextSel
   }
 }
