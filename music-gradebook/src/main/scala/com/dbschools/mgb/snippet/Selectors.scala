@@ -8,7 +8,7 @@ import net.liftweb.http.SHtml
 import net.liftweb.http.js.JsCmd
 import net.liftweb.http.js.JsCmds.ReplaceOptions
 import com.dbschools.mgb.model.{Cache, Terms}
-import com.dbschools.mgb.schema.{MusicianGroup}
+import com.dbschools.mgb.schema.MusicianGroup
 
 class Selectors(changed: () => JsCmd, onlyTestingGroups: Boolean = false) extends Loggable {
   var opSelectedTerm: Option[Int] = Some(Terms.currentTerm) // None means no specific term, therefore all
@@ -31,15 +31,11 @@ class Selectors(changed: () => JsCmd, onlyTestingGroups: Boolean = false) extend
   val groupSelector =
     selector(groupSelectorId, groupSelectValues, opSelectedGroupId, opSelectedGroupId = _)
 
-  private def groupSelectValues: List[(String, String)] = {
-    val groups = Cache.groups.toList
-    val opGroupIds = opSelectedTerm.flatMap(schema.Group.groupsWithAssessmentsByTerm.get)
-    val filtered = opGroupIds.map(ids => groups.filter(g => ids.contains(g.id))) | groups
-    allItem :: filtered.sortBy(_.name).map(g => g.id.toString -> g.name)
-  }
+  private def groupSelectValues: List[(String, String)] =
+    allItem :: Cache.groups.toList.sortBy(_.name).map(g => g.id.toString -> g.name)
 
   val instrumentSelector = selector("instrumentSelector",
-    allItem :: Cache.instruments.toList.sortBy(_.sequence.is).map(i => i.id.toString -> i.name.is),
+    allItem :: Cache.instruments.toList.sortBy(_.sequence.get).map(i => i.id.toString -> i.name.get),
     opSelectedInstId, opSelectedInstId = _)
 
   private def selector(id: String, items: List[(String, String)], opId: Option[Int], fn: (Option[Int]) => JsCmd) = {
