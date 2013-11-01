@@ -136,7 +136,7 @@ class StudentDetails extends TagCounts with MusicianFromReq with Loggable {
     }
 
     "#delete"   #> SHtml.ajaxButton("Delete selected group assignments", () => delete()) &
-    "#create"   #> SHtml.ajaxButton(s"Create ${Terms.formatted(Terms.currentTerm)} group assignment", () => create()) &
+    "#create"   #> SHtml.ajaxButton(s"Assign to group", () => create()) &
     "#nextSel"  #> nextSel
   }
 }
