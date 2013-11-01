@@ -105,7 +105,7 @@ class NewAssessment extends MusicianFromReq {
     def commentText = SHtml.textarea("", (s) => {
       notes = s
       Noop
-    }, "id" -> "commentText", "rows" -> "3")
+    }, "id" -> "commentText", "rows" -> "3", "style" -> "width: 30em;")
 
     "#instrument"     #> selInst &
     "#subinstrument"  #> selSubinst &
