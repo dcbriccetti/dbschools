@@ -12,10 +12,10 @@ object Cache {
   var tempos = readTempos
 
   private def readGroups      = inTransaction {AppSchema.groups.toSeq.sortBy(_.name)}
-  private def readInstruments = inTransaction {AppSchema.instruments.toSeq.sortBy(_.sequence.is)}
-  private def readSubinstruments = inTransaction {AppSchema.subinstruments.groupBy(_.instrumentId.is)}
+  private def readInstruments = inTransaction {AppSchema.instruments.toSeq.sortBy(_.sequence.get)}
+  private def readSubinstruments = inTransaction {AppSchema.subinstruments.groupBy(_.instrumentId.get)}
   private def readTags        = inTransaction {AppSchema.predefinedComments.toSeq.sortBy(_.commentText)}
-  private def readPieces      = inTransaction {AppSchema.pieces.toSeq.sortBy(_.testOrder.is)}
+  private def readPieces      = inTransaction {AppSchema.pieces.toSeq.sortBy(_.testOrder.get)}
   private def readTempos      = inTransaction {AppSchema.tempos.toSeq.sortBy(_.instrumentId)}
 
   def init(): Unit = {}

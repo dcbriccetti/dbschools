@@ -7,7 +7,7 @@ import Scalaz._
 import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
-import common.{Full, Loggable}
+import common.Loggable
 import util._
 import Helpers._
 import net.liftweb.http.{Templates, SHtml}
@@ -71,11 +71,11 @@ class Students extends Loggable {
                           selectors.opSelectedInstId).map(row =>
       ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
       ".stuName  *" #> studentLink(row.musician) &
-      ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.is) &
+      ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.get) &
       ".group    *" #> row.group.name &
       ".instr    *" #> row.instrument.name.get &
-      ".lastAss  *" #> lastAssTimeByMusician.get(row.musician.musician_id.is).map(fmt.print).getOrElse("") &
-      ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.musician_id.is))
+      ".lastAss  *" #> ~lastAssTimeByMusician.get(row.musician.musician_id.get).map(fmt.print) &
+      ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.musician_id.get))
     ))))
   }
 
@@ -86,13 +86,13 @@ class Students extends Loggable {
 
   def inNoGroups = {
     val musicians = join(AppSchema.musicians, AppSchema.musicianGroups.leftOuter)((m, mg) =>
-      where(mg.map(_.id).isNull) select m on (m.musician_id.is === mg.map(_.musician_id)))
+      where(mg.map(_.id).isNull) select m on (m.musician_id.get === mg.map(_.musician_id)))
 
     ".studentRow"   #> musicians.map(m =>
       ".stuName  *" #> studentLink(m) &
-      ".id       *" #> m.musician_id.is &
-      ".stuId    *" #> m.student_id.is &
-      ".grade    *" #> Terms.graduationYearAsGrade(m.graduation_year.is)
+      ".id       *" #> m.musician_id.get &
+      ".stuId    *" #> m.student_id.get &
+      ".grade    *" #> Terms.graduationYearAsGrade(m.graduation_year.get)
     )
   }
 
@@ -100,5 +100,5 @@ class Students extends Loggable {
 }
 
 object Students {
-  def urlToDetails(m: Musician) = "studentDetails?id=" + m.musician_id.is
+  def urlToDetails(m: Musician) = "studentDetails?id=" + m.musician_id.get
 }
