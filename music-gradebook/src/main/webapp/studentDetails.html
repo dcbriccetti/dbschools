@@ -2,6 +2,31 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
+    <div data-lift="NewAssessment">
+        <script language="JavaScript">
+            var go = true;
+            var tempoBpm = 60;
+            function metro() {
+                if (document.getElementById('metronome').checked) {
+                    go = true;
+                    beep();
+                } else {
+                    go = false;
+                }
+            }
+            function beep() {
+                if (go) {
+                    var startTime = new Date().getTime();
+                    document.getElementById('beepOne').play();
+                    var elapsed = new Date().getTime() - startTime;
+                    var bps = tempoBpm == 0 ? 1 : tempoBpm / 60.0;
+                    var msDelay = 1000 / bps;
+                    setTimeout("beep()", msDelay - elapsed);
+                }
+            }
+        </script>
+        <span id="setTempo"/>
+    </div>
     <div data-lift="StudentDetails">
         <div id="student">
             <div>
@@ -50,7 +75,8 @@
                     <form data-lift="form.ajax">
                         <div>
                             <span id="instrument"></span> <span id="subinstrument"></span> <span id="piece"></span>
-                            Tempo: <span id="tempo"></span>
+                            Tempo: <span id="tempo"></span> <input id="metronome" type="checkbox"
+                                onclick="metro()"> Metronome</input>
                         </div>
                         <h5>Comments</h5>
                         <div class="row">
@@ -85,7 +111,7 @@
             </div>
         </div>
     </div>
-
+    <audio id="beepOne" src="assets/audio/woodblock.wav" preload="auto">Please use a standards-compliant browser.</audio>
 </div>
 </body>
 </html>

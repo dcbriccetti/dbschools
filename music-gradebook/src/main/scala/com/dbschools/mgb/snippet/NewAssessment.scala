@@ -10,7 +10,8 @@ import org.scala_tools.time.Imports._
 import net.liftweb.util.Helpers._
 import net.liftweb.http.SHtml
 import net.liftweb.common.{Empty, Full}
-import net.liftweb.http.js.JsCmds.{SetHtml, Noop, Reload, ReplaceOptions}
+import net.liftweb.http.js.JsCmds.{SetHtml, Noop, Reload, ReplaceOptions, Script}
+import net.liftweb.http.js.JE.JsRaw
 import model.{Cache, GroupAssignments, LastPassFinder, Terms}
 import schema.{Assessment, AssessmentTag, AppSchema, Piece}
 
@@ -92,12 +93,15 @@ class NewAssessment extends MusicianFromReq {
       SHtml.select(opts, Empty, setSubinstId)
     }
 
+    def setJsTempo(t: Option[Int]) = JsRaw(s"tempoBpm = ${~t}").cmd
+
     def selPiece = {
       val initialSel = opSelPieceId.map(p => Full(p.toString)) getOrElse Empty
       SHtml.ajaxSelect(Cache.pieces.map(p => p.id.toString -> p.name.get),
         initialSel, (p) => {
           opSelPieceId = Some(p.toInt)
-          SetHtml("tempo", Text(~findTempo.map(_.tempo.toString)))
+          val t = findTempo.map(_.tempo)
+          SetHtml("tempo", Text(~t.map(_.toString))) & setJsTempo(t)
         })
     }
 
@@ -116,6 +120,7 @@ class NewAssessment extends MusicianFromReq {
     s"#$subinstId"  #> selSubinst &
     "#piece"          #> selPiece &
     "#tempo *"        #> ~findTempo.map(_.tempo.toString) &
+    "#setTempo"       #> Script(setJsTempo(findTempo.map(_.tempo))) &
     "#checkbox *"     #> checkboxes &
     "#commentText"    #> commentText &
     "#passButton"     #> SHtml.ajaxSubmit("Pass", () => { recordAss(pass = true ); Reload }) &
