@@ -10,7 +10,7 @@ import org.scala_tools.time.Imports._
 import net.liftweb.util.Helpers._
 import net.liftweb.http.SHtml
 import net.liftweb.common.{Empty, Full}
-import net.liftweb.http.js.JsCmds.{SetHtml, Noop, Reload}
+import net.liftweb.http.js.JsCmds.{SetHtml, Noop, Reload, ReplaceOptions}
 import model.{Cache, GroupAssignments, LastPassFinder, Terms}
 import schema.{Assessment, AssessmentTag, AppSchema, Piece}
 
@@ -71,20 +71,25 @@ class NewAssessment extends MusicianFromReq {
       }
     }
 
-    def selInst = {
-      val initialSel = opSelInstId.map(i => Full(i.toString)) getOrElse Empty
-      SHtml.ajaxSelect(Cache.instruments.map(p => p.id.toString -> p.name.get),
-        initialSel, (p) => {
-          opSelInstId = Some(p.toInt)
-          Noop
-        })
-    }
+    val subinstId = "subinstrument"
+    val initialInstrumentSel = opSelInstId.map(i => Full(i.toString)) getOrElse Empty
+
+    def subinstSels(instId: Int): List[(String, String)] =
+      Cache.subinstruments.get(instId).toList.flatten.map(si => si.id.toString -> si.name.get)
+
+    def selInst = SHtml.ajaxSelect(Cache.instruments.map(i => i.id.toString -> i.name.get), initialInstrumentSel, (p) => {
+      val instId = p.toInt
+      opSelInstId = Some(instId)
+      val sels = subinstSels(instId)
+      sels.headOption.foreach(sel => opSelSubinstId = Some(sel._1.toInt))
+      ReplaceOptions(subinstId, sels, Empty)
+    })
 
     def selSubinst = {
-      SHtml.ajaxSelect(Seq[(String, String)](), Empty, (p) => {
-        opSelSubinstId = Some(p.toInt)
-        Noop
-      })
+      val opts = opSelInstId.map(subinstSels) getOrElse Seq[(String, String)]()
+      def setSubinstId(idString: String) { opSelSubinstId = Some(idString.toInt) }
+      opts.headOption.foreach(sel => setSubinstId(sel._1))
+      SHtml.select(opts, Empty, setSubinstId)
     }
 
     def selPiece = {
@@ -108,7 +113,7 @@ class NewAssessment extends MusicianFromReq {
     }, "id" -> "commentText", "rows" -> "3", "style" -> "width: 30em;")
 
     "#instrument"     #> selInst &
-    "#subinstrument"  #> selSubinst &
+    s"#$subinstId"  #> selSubinst &
     "#piece"          #> selPiece &
     "#tempo *"        #> ~findTempo.map(_.tempo.toString) &
     "#checkbox *"     #> checkboxes &
