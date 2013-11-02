@@ -1,6 +1,8 @@
 package com.dbschools.mgb.snippet
 
 import xml.NodeSeq
+import scalaz._
+import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.http.{S, SessionVar, SHtml}
 import net.liftweb.util.Helpers._
@@ -24,7 +26,7 @@ class Authenticator {
       if (credentialsValid(password)) {
         RunState loggedIn true
         log.info(s"${userName.is} logged in")
-        //S.redirectTo(students.href)
+        S.redirectTo(students.href)
       } else {
         log.info(s"${userName.is} failed to log in")
         S.error("Login failed")
