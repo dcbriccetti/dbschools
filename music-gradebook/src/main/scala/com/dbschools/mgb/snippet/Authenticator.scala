@@ -8,8 +8,10 @@ import net.liftweb.util.BCrypt
 import net.liftweb.http.js.JsCmds.FocusOnLoad
 import bootstrap.liftweb.RunState
 import com.dbschools.mgb.schema.AppSchema
+import org.apache.log4j.Logger
 
 class Authenticator {
+  val log = Logger.getLogger(getClass)
   import bootstrap.liftweb.ApplicationPaths._
   import Authenticator.{credentialsValid, userName}
   
@@ -21,9 +23,12 @@ class Authenticator {
     "#submit"     #> SHtml.submit("Log In", () => {
       if (credentialsValid(password)) {
         RunState loggedIn true
-        S.redirectTo(students.href)
-      } else
+        log.info(s"${userName.is} logged in")
+        //S.redirectTo(students.href)
+      } else {
+        log.info(s"${userName.is} failed to log in")
         S.error("Login failed")
+      }
     }, "id" -> "submit")
 
   def logOut(content: NodeSeq): NodeSeq = {

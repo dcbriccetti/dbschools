@@ -29,6 +29,7 @@ class Boot {
 
     // Build SiteMap
     def sitemap = SiteMap(
+      home.menu,
       logIn.menu                >> notLoggedIn,
       students.menu             >> loggedIn,
       newStudent.menu           >> loggedIn >> Hidden,

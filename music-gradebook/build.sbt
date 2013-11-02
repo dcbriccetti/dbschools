@@ -27,6 +27,7 @@ libraryDependencies ++= {
     "net.liftmodules"   %% "fobo_2.6"           % "1.1-SNAPSHOT"     % "compile",
     "org.eclipse.jetty" %  "jetty-webapp"       % "8.1.7.v20120910"  % "container,test",
     "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "container,test" artifacts Artifact("javax.servlet", "jar", "jar"),
+    "log4j"             %  "log4j"              % "1.2.17",
     "ch.qos.logback"    %  "logback-classic"    % "1.0.13",
     "org.specs2"        %  "specs2_2.10"        % "2.2" % "test",
     "com.h2database"    %  "h2"                 % "1.3.173",
