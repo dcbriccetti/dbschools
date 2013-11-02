@@ -3,8 +3,9 @@ package snippet
 
 import scala.xml.Text
 import org.squeryl.PrimitiveTypeMode._
+import org.apache.log4j.Logger
 import net.liftweb._
-import net.liftweb.common.{Empty, Full, Loggable}
+import net.liftweb.common.{Empty, Full}
 import util._
 import http._
 import js.JsCmds._
@@ -13,7 +14,8 @@ import net.liftweb.http.js.JsCmds.{Confirm, SetHtml}
 import model.{Cache, GroupAssignment, GroupAssignments, LastPassFinder, TagCounts, Terms}
 import schema.{Assessment, AppSchema, Musician, MusicianGroup}
 
-class StudentDetails extends TagCounts with MusicianFromReq with Loggable {
+class StudentDetails extends TagCounts with MusicianFromReq {
+  private val log = Logger.getLogger(getClass)
   private var selectedMusicianGroups = Map[Int, MusicianGroup]()
   private val groupSelectorValues = Cache.groups.map(g => (g.id.toString, g.name)).toSeq
   private var newAssignmentGroupId = groupSelectorValues(0)._1.toInt
@@ -102,7 +104,9 @@ class StudentDetails extends TagCounts with MusicianFromReq with Loggable {
         Confirm(
           s"Are you sure you want to remove the ${selectedMusicianGroups.size} selected group assignments?",
           SHtml.ajaxInvoke(() => {
-            AppSchema.musicianGroups.deleteWhere(_.id in selectedMusicianGroups.keys)
+            val ids = selectedMusicianGroups.keys
+            AppSchema.musicianGroups.deleteWhere(_.id in ids)
+            log.info("Deleted group assignment(s): " + ids)
             selectedMusicianGroups = selectedMusicianGroups.empty
             Reload
           }))
@@ -122,8 +126,10 @@ class StudentDetails extends TagCounts with MusicianFromReq with Loggable {
         instrumentId <- opSoleAssignedInstrumentId orElse Cache.instruments.find(_.name.get == "Unassigned").map(_.id)
         musician     <- opMusician
       } {
-        AppSchema.musicianGroups.insert(MusicianGroup(0, musician.id, newAssignmentGroupId, instrumentId,
-          Terms.currentTerm))
+        val musicianGroup = MusicianGroup(0, musician.id, newAssignmentGroupId, instrumentId,
+          Terms.currentTerm)
+        AppSchema.musicianGroups.insert(musicianGroup)
+        log.info("Made musician assignment: " + musicianGroup)
       }
       Reload
     }

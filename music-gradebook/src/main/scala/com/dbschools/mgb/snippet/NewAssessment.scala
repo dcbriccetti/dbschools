@@ -3,6 +3,7 @@ package snippet
 
 import java.sql.Timestamp
 import scala.xml.{Elem, Text}
+import org.apache.log4j.Logger
 import scalaz._
 import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
@@ -16,6 +17,8 @@ import model.{Cache, GroupAssignments, LastPassFinder, Terms}
 import schema.{Assessment, AssessmentTag, AppSchema, Piece}
 
 class NewAssessment extends MusicianFromReq {
+  private val log = Logger.getLogger(getClass)
+
   def render = {
     val lastPassFinder = new LastPassFinder()
 
@@ -63,12 +66,12 @@ class NewAssessment extends MusicianFromReq {
           notes             = notes
         )
         AppSchema.assessments.insert(newAss)
-        AppSchema.assessmentTags.insert(
-          for {
-            (commentId, selected) <- commentTagSelections
-            if selected
-          } yield AssessmentTag(newAss.id, commentId)
-        )
+        val tags = for {
+          (commentId, selected) <- commentTagSelections
+          if selected
+        } yield AssessmentTag(newAss.id, commentId)
+        AppSchema.assessmentTags.insert(tags)
+        log.info(s"Assessment: $newAss, $tags")
       }
     }
 

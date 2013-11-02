@@ -2,13 +2,14 @@ package com.dbschools.mgb.snippet
 
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
-import net.liftweb.common.Loggable
 import http._
 import net.liftweb.util.FieldError
 import com.dbschools.mgb.schema.{Musician, AppSchema}
 import com.dbschools.mgb.model.Terms
+import org.apache.log4j.Logger
 
-class NewStudent extends LiftScreen with Loggable {
+class NewStudent extends LiftScreen {
+  private val log = Logger.getLogger(getClass)
   private val musician = Musician.createRecord
 
   private val grade = field(s"Grade in ${Terms.formatted(Terms.currentTerm)}", 0, minVal(1, "Invalid value"))
@@ -25,6 +26,7 @@ class NewStudent extends LiftScreen with Loggable {
   def finish(): Unit = {
     musician.graduation_year.set(Terms.gradeAsGraduationYear(grade.get))
     AppSchema.musicians.insert(musician)
+    log.info("Created musician " + musician)
     S.redirectTo(Students.urlToDetails(musician))
   }
 }
