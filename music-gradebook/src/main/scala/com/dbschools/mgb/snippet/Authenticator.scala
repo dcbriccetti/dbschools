@@ -1,16 +1,16 @@
 package com.dbschools.mgb.snippet
 
-import xml.NodeSeq
+import scala.xml.Text
+import org.apache.log4j.Logger
 import scalaz._
 import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.http.{S, SessionVar, SHtml}
 import net.liftweb.util.Helpers._
-import net.liftweb.util.BCrypt
+import net.liftweb.util.{PassThru, ClearNodes, Props, BCrypt}
 import net.liftweb.http.js.JsCmds.FocusOnLoad
 import bootstrap.liftweb.RunState
 import com.dbschools.mgb.schema.AppSchema
-import org.apache.log4j.Logger
 
 class Authenticator {
   val log = Logger.getLogger(getClass)
@@ -33,22 +33,31 @@ class Authenticator {
       }
     }, "id" -> "submit")
 
-  def logOut(content: NodeSeq): NodeSeq = {
+  def demoMsg = if (Authenticator.isDemo) PassThru else ClearNodes
+
+  def organization = if (Authenticator.isDemo) ClearNodes else "#organization" #> Text(Authenticator.org)
+
+  def logOut = {
     Authenticator.logOut()
     S.redirectTo(students.href)
-    content
+    PassThru
   }
 }
 
 object Authenticator {
-  object userName extends SessionVar("")
+  private val startingUserName = if (Authenticator.isDemo) "jdoe" else ""
+
+  object userName extends SessionVar(startingUserName)
 
   def logOut(): Unit = {
     RunState loggedIn false
-    userName("")
+    userName(startingUserName)
   }
 
   private def credentialsValid(password: String) =
     AppSchema.users.where(user => user.login === userName.is and user.enabled === true).exists(user =>
       BCrypt.checkpw(password, user.epassword))
+
+  val org = ~Props.get("organization").toOption
+  val isDemo = org == "demo"
 }

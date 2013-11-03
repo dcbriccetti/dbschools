@@ -7,7 +7,7 @@ import Scalaz._
 import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
-import common.Loggable
+import common.{Empty, Full, Loggable}
 import util._
 import Helpers._
 import net.liftweb.http.{Templates, SHtml}
@@ -37,15 +37,24 @@ class Students extends Loggable {
 
   def createNew = "#create [href]" #> ApplicationPaths.newStudent.href
 
+  object SortBy extends Enumeration {
+    type SortBy = Value
+    val Name = Value("Name")
+    val LastAssessment = Value("Last Assessment")
+  }
+  import SortBy._
+  var sortingBy = Name
+  def sortBy = SHtml.ajaxRadio[SortBy](Seq(Name, LastAssessment), Full(sortingBy),
+    (s) => {sortingBy = s; replaceContents}).flatMap(c => <span>{c.xhtml} {c.key.toString} </span>)
+
   var newId = 0
   var grade = 6
   var name = ""
-  var sex = "Male"
 
   def newStudent = {
 
     def saveStudent = {
-      logger.warn(s"Creating student $newId $grade $name $sex")
+      logger.warn(s"Creating student $newId $grade $name")
       Noop
     }
 
@@ -67,16 +76,24 @@ class Students extends Loggable {
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedInstId .isDefined) ".instr"   #> none[String] else PassThru) andThen (
-    ".studentRow"   #> GroupAssignments(None, selectors.opSelectedTerm, selectors.opSelectedGroupId,
-                          selectors.opSelectedInstId).map(row =>
-      ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
-      ".stuName  *" #> studentLink(row.musician) &
-      ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.get) &
-      ".group    *" #> row.group.name &
-      ".instr    *" #> row.instrument.name.get &
-      ".lastAss  *" #> ~lastAssTimeByMusician.get(row.musician.musician_id.get).map(fmt.print) &
-      ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.musician_id.get))
-    ))))
+    ".studentRow"   #> {
+      val longAgo = new DateTime("1000-01-01").toDate
+      val byYear = GroupAssignments(None, selectors.opSelectedTerm, selectors.opSelectedGroupId,
+        selectors.opSelectedInstId).toSeq.sortBy(_.musicianGroup.school_year)
+      val fullySorted = if (sortingBy == SortBy.Name)
+        byYear.sortBy(_.musician.name)
+      else
+        byYear.sortBy(ga => lastAssTimeByMusician.get(ga.musician.musician_id.get).map(_.toDate) | longAgo)
+      fullySorted.map(row =>
+        ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
+          ".stuName  *" #> studentLink(row.musician) &
+          ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.get) &
+          ".group    *" #> row.group.name &
+          ".instr    *" #> row.instrument.name.get &
+          ".lastAss  *" #> ~lastAssTimeByMusician.get(row.musician.musician_id.get).map(fmt.print) &
+          ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.musician_id.get))
+      )
+    })))
   }
 
   private def formatLastPasses(opLastPasses: Option[Iterable[LastPassFinder#LastPass]]): NodeSeq = {

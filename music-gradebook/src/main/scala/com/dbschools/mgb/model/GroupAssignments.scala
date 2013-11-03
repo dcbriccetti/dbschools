@@ -20,23 +20,22 @@ object GroupAssignments extends Loggable {
     import AppSchema._
     val rows = from(musicians, groups, musicianGroups, instruments)((m, g, mg, i) =>
       where(
-        m.musician_id.is  === opMusicianId.? and
-        m.musician_id.is  === mg.musician_id and
+        m.musician_id.get === opMusicianId.? and
+        m.musician_id.get === mg.musician_id and
         mg.group_id       === opSelectedGroupId.? and
         mg.group_id       === g.id and
         mg.instrument_id  === opSelectedInstrumentId.? and
-        mg.instrument_id  === i.idField.is and
+        mg.instrument_id  === i.idField.get and
         mg.school_year    === opSelectedTerm.?
       )
       select GroupAssignment(m, g, mg, i)
-      orderBy(mg.school_year.desc, m.last_name.is, m.first_name.is, g.name)
     )
     rows
   }
 
   def create(musicianGroups: Iterable[Int], replaceExisting: Boolean, groupId: Int, instrumentId: Int): AnyVal = {
     val currentTerm = Terms.currentTerm
-    if (!musicianGroups.isEmpty) {
+    if (musicianGroups.nonEmpty) {
       if (replaceExisting) {
         logger.info(s"Move $musicianGroups to $groupId $instrumentId")
         update(AppSchema.musicianGroups)(mg =>
