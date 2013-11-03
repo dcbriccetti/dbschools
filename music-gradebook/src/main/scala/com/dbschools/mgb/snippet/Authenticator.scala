@@ -45,6 +45,8 @@ class Authenticator {
 }
 
 object Authenticator {
+  val org = ~Props.get("organization").toOption
+  val isDemo = org == "demo"
   private val startingUserName = if (Authenticator.isDemo) "jdoe" else ""
 
   object userName extends SessionVar(startingUserName)
@@ -57,7 +59,4 @@ object Authenticator {
   private def credentialsValid(password: String) =
     AppSchema.users.where(user => user.login === userName.is and user.enabled === true).exists(user =>
       BCrypt.checkpw(password, user.epassword))
-
-  val org = ~Props.get("organization").toOption
-  val isDemo = org == "demo"
 }
