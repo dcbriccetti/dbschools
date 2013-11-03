@@ -45,28 +45,34 @@
                         <td><span id="lastPiece"/></td>
                     </tr>
                 </table>
+                <p/>
 
-                <h3>Group Assignments</h3>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Group Assignments</h3>
+                    </div>
+                    <div class="panel-body">
 
-                <table class="autoWidth noShade">
-                  <tr>
-                    <th>Sel</th> <th>Year</th> <th>Group</th> <th>Instrument</th>
-                  </tr>
-                  <tr class="assignmentRow">
-                    <td class="sel"></td>
-                    <td class="year"></td>
-                    <td class="group"></td>
-                    <td class="instrument"></td>
-                  </tr>
-                </table>
-                <br/>
+                        <table class="autoWidth noShade">
+                          <tr>
+                            <th>Sel</th> <th>Year</th> <th>Group</th> <th>Instrument</th>
+                          </tr>
+                          <tr class="assignmentRow">
+                            <td class="sel"></td>
+                            <td class="year"></td>
+                            <td class="group"></td>
+                            <td class="instrument"></td>
+                          </tr>
+                        </table>
+                        <br/>
 
-                <div data-lift="StudentDetails.groupAssignments">
-                    <div><span id="delete" style="display: none;"/></div>
-                    <div><span id="create"></span> <span id="nextSel"/></div>
+                        <div data-lift="StudentDetails.groupAssignments">
+                            <div><span id="delete" style="display: none;"/></div>
+                            <div><span id="create"></span> <span id="nextSel"/></div>
+                        </div>
+                    </div>
                 </div>
 
-                <br/>
                 <h3>Assessments</h3>
                 <p class="assessmentsSummary"/>
 
@@ -78,15 +84,23 @@
                             Tempo: <span id="tempo"></span> <input id="metronome" type="checkbox"
                                 onclick="metro()"> Metronome</input>
                         </div>
-                        <h5>Comments</h5>
-                        <div class="row">
-                            <div id="commentCheckboxesDiv" class="col-md-2">
-                                <ul id="checkboxes" class="simpleUl">
-                                    <li id="checkbox"></li>
-                                </ul>
+                        <p/>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h5 class="panel-title">Comments</h5>
                             </div>
-                            <div id="commentTextDiv" class="col-md-10">
-                                <span id="commentText"/>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div id="commentCheckboxesDiv" class="col-md-2">
+                                        <ul id="checkboxes" class="simpleUl">
+                                            <li id="checkbox"></li>
+                                        </ul>
+                                    </div>
+                                    <div id="commentTextDiv" class="col-md-10">
+                                        <span id="commentText"/>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div><span id="passButton"></span> <span id="failButton"/></div>
