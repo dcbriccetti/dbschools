@@ -5,3 +5,5 @@ db.driver=org.postgresql.Driver
 db.url=jdbc:postgresql://localhost:5432/dbsmusic
 db.user=dbschools
 db.password=dbschools
+
+organization=Stanley Middle School Music Department
