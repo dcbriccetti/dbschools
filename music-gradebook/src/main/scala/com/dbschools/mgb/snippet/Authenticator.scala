@@ -1,6 +1,6 @@
 package com.dbschools.mgb.snippet
 
-import scala.xml.Text
+import scala.xml.{NodeSeq, Text}
 import org.apache.log4j.Logger
 import scalaz._
 import Scalaz._
@@ -12,17 +12,22 @@ import net.liftweb.http.js.JsCmds.FocusOnLoad
 import bootstrap.liftweb.RunState
 import com.dbschools.mgb.schema.AppSchema
 
-class Authenticator {
+class Authenticator extends FormHelper {
   val log = Logger.getLogger(getClass)
   import bootstrap.liftweb.ApplicationPaths._
   import Authenticator.{credentialsValid, userName}
   
   var password = ""
 
+  def userText(id: String, label: String) =
+    FocusOnLoad(SHtml.text(userName.is, name => userName(name.trim), attrs(id, label): _*))
+  def passwordText(id: String, label: String) =
+    SHtml.password("", password = _, attrs(id, label): _*)
+
   def authForm =
-    "#userName"   #> FocusOnLoad(SHtml.text(userName.is, name => userName(name.trim), "id" -> "userName")) &
-    "#password"   #> SHtml.password("", password = _, "id" -> "password") &
-    "#submit"     #> SHtml.submit("Log In", () => {
+    "#userFormGroup"      #> addFormGroup("userName", "User Name", userText) &
+    "#passwordFormGroup"  #> addFormGroup("password", "Password", passwordText) &
+    "#submit"             #> SHtml.submit("Log In", () => {
       if (credentialsValid(password)) {
         RunState loggedIn true
         log.info(s"${userName.is} logged in")
@@ -31,7 +36,8 @@ class Authenticator {
         log.info(s"${userName.is} failed to log in")
         S.error("Login failed")
       }
-    }, "id" -> "submit")
+    }, "id" -> "submit", "class" -> "btn btn-default")
+
 
   def demoMsg = if (Authenticator.isDemo) PassThru else ClearNodes
 

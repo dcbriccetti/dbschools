@@ -3,28 +3,25 @@
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
     <h2>Log In</h2>
+
     <div data-lift="Authenticator.demoMsg">
         <p>This is a demo system. Use “jdoe” for the User Name and “password” for the password.</p>
+
         <p/>
     </div>
     <div data-lift="Authenticator.organization">
         <span id="organization"></span>
+
         <p/>
     </div>
-    <form data-lift="Authenticator.authForm" method="post">
-        <table class="autoWidth noShade">
-            <tr>
-                <td class="rightAlign"><label>User Name</label>:</td>
-                <td><span id="userName"/></td>
-            </tr>
-            <tr>
-                <td class="rightAlign"><label>Password</label>:</td>
-                <td><span id="password"/></td>
-            </tr>
-            <tr>
-                <td class="rightAlign" colspan="2"><span id="submit"/></td>
-            </tr>
-        </table>
+    <form data-lift="Authenticator.authForm" method="post" class="form-horizontal" role='form'>
+        <div id="userFormGroup"></div>
+        <div id="passwordFormGroup"></div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <span id="submit"/>
+            </div>
+          </div>
     </form>
 </div>
 </body>

@@ -110,9 +110,11 @@ class NewAssessment extends MusicianFromReq {
 
     def checkboxes: Seq[Elem] =
       Cache.tags.map(tag =>
-        <span>
-          {SHtml.checkbox(false, (checked) => commentTagSelections(tag.id) = checked)}{tag.commentText}
-        </span>)
+        <div class="checkbox">
+          <label>
+            {SHtml.checkbox(false, (checked) => commentTagSelections(tag.id) = checked)}{tag.commentText}
+          </label>
+        </div>)
 
     def commentText = SHtml.textarea("", (s) => {
       notes = s
