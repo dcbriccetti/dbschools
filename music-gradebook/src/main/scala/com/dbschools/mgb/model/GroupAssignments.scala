@@ -29,6 +29,7 @@ object GroupAssignments extends Loggable {
         mg.school_year    === opSelectedTerm.?
       )
       select GroupAssignment(m, g, mg, i)
+      orderBy(mg.school_year.desc, m.last_name.get, m.first_name.get, g.name)
     )
     rows
   }
