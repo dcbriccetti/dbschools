@@ -22,6 +22,7 @@ object SortBy extends Enumeration {
   type SortBy = Value
   val Name = Value("Name")
   val LastAssessment = Value("Last Assessment")
+  val LastPiece = Value("Last Piece")
 }
 object sortingBy extends SessionVar[SortBy.Value](SortBy.Name)
 
@@ -44,7 +45,7 @@ class Students extends Loggable {
 
   def createNew = "#create [href]" #> ApplicationPaths.newStudent.href
 
-  def sortBy = SHtml.ajaxRadio[SortBy.Value](Seq(SortBy.Name, SortBy.LastAssessment), Full(sortingBy.is),
+  def sortBy = SHtml.ajaxRadio[SortBy.Value](Seq(SortBy.Name, SortBy.LastAssessment, SortBy.LastPiece), Full(sortingBy.is),
     (s) => {sortingBy(s); replaceContents}).flatMap(c => <span>{c.xhtml} {c.key.toString} </span>)
 
   var newId = 0
@@ -78,12 +79,21 @@ class Students extends Loggable {
     (if (selectors.opSelectedInstId .isDefined) ".instr"   #> none[String] else PassThru) andThen (
     ".studentRow"   #> {
       val longAgo = new DateTime("1000-01-01").toDate
+
       val byYear = GroupAssignments(None, svSelectors.opSelectedTerm, svSelectors.opSelectedGroupId,
         svSelectors.opSelectedInstId).toSeq.sortBy(_.musicianGroup.school_year)
-      val fullySorted = if (sortingBy.is == SortBy.Name)
-        byYear.sortBy(_.musician.name)
-      else
-        byYear.sortBy(ga => lastAssTimeByMusician.get(ga.musician.musician_id.get).map(_.toDate) | longAgo)
+
+      val fullySorted = sortingBy.is match {
+        case SortBy.Name =>
+          byYear.sortBy(_.musician.name)
+        case SortBy.LastAssessment =>
+          byYear.sortBy(ga => lastAssTimeByMusician.get(ga.musician.id).map(_.toDate) | longAgo)
+        case SortBy.LastPiece =>
+          def pos(id: Int) =
+            lastPassesByMusician.get(id).toList.flatten.sortBy(-_.testOrder).lastOption.map(_.testOrder) | 0
+          byYear.sortBy(ga => -pos(ga.musician.id))
+      }
+
       fullySorted.map(row =>
         ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
           ".stuName  *" #> studentLink(row.musician) &
