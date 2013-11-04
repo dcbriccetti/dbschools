@@ -19,7 +19,7 @@ class Graphs extends Loggable {
   def groupSelector = selectors.groupSelector
   def instrumentSelector = selectors.instrumentSelector
 
-  private val selectors = new Selectors(updatePage, onlyTestingGroups = true)
+  private val selectors = new Selectors(Some(updatePage), onlyTestingGroups = true)
 
   private def updatePage() =
     Flot.renderJs("progress_graph", createFlotSeries :: Nil, new FlotOptions {}, Noop) &

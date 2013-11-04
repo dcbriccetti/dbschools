@@ -1,8 +1,10 @@
-package com.dbschools.mgb.snippet
+package com.dbschools.mgb
+package snippet
 
 import scala.xml.NodeSeq
 import net.liftweb.http.S
 import net.liftweb.util.Helpers._
+import model.BoxOpener._
 
 trait FormHelper {
 
@@ -11,7 +13,7 @@ trait FormHelper {
       "label [for]" #> id &
       "label *"     #> label &
       "#controlId"  #> control(id, label)
-    }).openOrThrowException("")
+    }).open
   }
 
   def attrs(id: String, label: String) = Seq(

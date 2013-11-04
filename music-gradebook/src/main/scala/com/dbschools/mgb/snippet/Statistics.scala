@@ -20,7 +20,7 @@ import model.Terms.toTs
 
 class Statistics extends Loggable {
 
-  private val selectors = new Selectors(() => replaceContents)
+  private val selectors = new Selectors(Some(() => replaceContents))
 
   private def replaceContents = {
     val template = "_statsData"

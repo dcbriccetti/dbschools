@@ -7,28 +7,35 @@ import Scalaz._
 import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
-import common.{Empty, Full, Loggable}
+import common.{Full, Loggable}
 import util._
 import Helpers._
-import net.liftweb.http.{Templates, SHtml}
+import net.liftweb.http.{SessionVar, Templates, SHtml}
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JsCmds.Replace
 import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
 import model.{LastPassFinder, Terms, GroupAssignments}
+import model.BoxOpener._
+
+object SortBy extends Enumeration {
+  type SortBy = Value
+  val Name = Value("Name")
+  val LastAssessment = Value("Last Assessment")
+}
+object sortingBy extends SessionVar[SortBy.Value](SortBy.Name)
+
+object svSelectors extends SessionVar[Selectors](new Selectors())
 
 class Students extends Loggable {
-
-  private val selectors = new Selectors(() => replaceContents)
+  private val selectors = svSelectors.is
 
   private def replaceContents = {
     val template = "_inGroupsTable"
-    Templates(List(template)).map(Replace("inGroups", _)) openOr {
-      logger.error("Error loading template " + template)
-      Noop
-    }
+    Templates(List(template)).map(Replace("inGroups", _)).open
   }
 
+  selectors.opCallback = Some(() => replaceContents)
   def yearSelector = selectors.yearSelector
   def groupSelector = selectors.groupSelector
   def instrumentSelector = selectors.instrumentSelector
@@ -37,15 +44,8 @@ class Students extends Loggable {
 
   def createNew = "#create [href]" #> ApplicationPaths.newStudent.href
 
-  object SortBy extends Enumeration {
-    type SortBy = Value
-    val Name = Value("Name")
-    val LastAssessment = Value("Last Assessment")
-  }
-  import SortBy._
-  var sortingBy = Name
-  def sortBy = SHtml.ajaxRadio[SortBy](Seq(Name, LastAssessment), Full(sortingBy),
-    (s) => {sortingBy = s; replaceContents}).flatMap(c => <span>{c.xhtml} {c.key.toString} </span>)
+  def sortBy = SHtml.ajaxRadio[SortBy.Value](Seq(SortBy.Name, SortBy.LastAssessment), Full(sortingBy.is),
+    (s) => {sortingBy(s); replaceContents}).flatMap(c => <span>{c.xhtml} {c.key.toString} </span>)
 
   var newId = 0
   var grade = 6
@@ -78,9 +78,9 @@ class Students extends Loggable {
     (if (selectors.opSelectedInstId .isDefined) ".instr"   #> none[String] else PassThru) andThen (
     ".studentRow"   #> {
       val longAgo = new DateTime("1000-01-01").toDate
-      val byYear = GroupAssignments(None, selectors.opSelectedTerm, selectors.opSelectedGroupId,
-        selectors.opSelectedInstId).toSeq.sortBy(_.musicianGroup.school_year)
-      val fullySorted = if (sortingBy == SortBy.Name)
+      val byYear = GroupAssignments(None, svSelectors.opSelectedTerm, svSelectors.opSelectedGroupId,
+        svSelectors.opSelectedInstId).toSeq.sortBy(_.musicianGroup.school_year)
+      val fullySorted = if (sortingBy.is == SortBy.Name)
         byYear.sortBy(_.musician.name)
       else
         byYear.sortBy(ga => lastAssTimeByMusician.get(ga.musician.musician_id.get).map(_.toDate) | longAgo)
