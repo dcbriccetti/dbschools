@@ -2,7 +2,7 @@ package com.dbschools.mgb
 package snippet
 
 import java.sql.Timestamp
-import scala.xml.{Elem, Text}
+import scala.xml.Elem
 import org.apache.log4j.Logger
 import scalaz._
 import Scalaz._
@@ -11,7 +11,7 @@ import org.scala_tools.time.Imports._
 import net.liftweb.util.Helpers._
 import net.liftweb.http.SHtml
 import net.liftweb.common.{Empty, Full}
-import net.liftweb.http.js.JsCmds.{SetHtml, Noop, Reload, ReplaceOptions, Script}
+import net.liftweb.http.js.JsCmds.{SetValById, Noop, Reload, ReplaceOptions, Script}
 import net.liftweb.http.js.JE.JsRaw
 import model.{Cache, GroupAssignments, LastPassFinder, Terms}
 import schema.{Assessment, AssessmentTag, AppSchema, Piece}
@@ -41,6 +41,7 @@ class NewAssessment extends MusicianFromReq {
     var opSelSubinstId = opNextPi.flatMap(_.opSubInstId)
     var opSelPieceId = opNextPi.map(_.piece.id)
     var notes = ""
+    var tempo = 0
 
     def findTempo = opSelPieceId.flatMap(selPieceId =>
       // First look for a tempo for the specific instrument
@@ -104,7 +105,7 @@ class NewAssessment extends MusicianFromReq {
         initialSel, (p) => {
           opSelPieceId = Some(p.toInt)
           val t = findTempo.map(_.tempo)
-          SetHtml("tempo", Text(~t.map(_.toString))) & setJsTempo(t)
+          SetValById("tempo", ~t.map(_.toString)) & setJsTempo(t)
         })
     }
 
@@ -122,9 +123,12 @@ class NewAssessment extends MusicianFromReq {
     }, "id" -> "commentText", "rows" -> "3", "style" -> "width: 30em;")
 
     "#instrument"     #> selInst &
-    s"#$subinstId"  #> selSubinst &
+    s"#$subinstId"    #> selSubinst &
     "#piece"          #> selPiece &
-    "#tempo *"        #> ~findTempo.map(_.tempo.toString) &
+    "#tempo"          #> SHtml.ajaxText(~findTempo.map(_.tempo.toString), (t) => asInt(t).map(ti => {
+                            tempo = ti
+                            setJsTempo(Some(ti))
+                          }) getOrElse Noop, "id" -> "tempo", "size" -> "3") &
     "#setTempo"       #> Script(setJsTempo(findTempo.map(_.tempo))) &
     "#checkbox *"     #> checkboxes &
     "#commentText"    #> commentText &
