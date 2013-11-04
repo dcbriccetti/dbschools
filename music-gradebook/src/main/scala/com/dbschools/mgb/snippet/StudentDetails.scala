@@ -141,8 +141,8 @@ class StudentDetails extends TagCounts with MusicianFromReq {
       })
     }
 
-    "#delete"   #> SHtml.ajaxButton("Delete selected group assignments", () => delete()) &
-    "#create"   #> SHtml.ajaxButton(s"Assign to group", () => create()) &
+    "#delete"   #> SHtml.ajaxButton("Remove from selected groups", () => delete()) &
+    "#create"   #> SHtml.ajaxButton(s"Add to group", () => create()) &
     "#nextSel"  #> nextSel
   }
 }

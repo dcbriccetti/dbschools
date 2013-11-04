@@ -4,14 +4,16 @@
 <div id="main" class="lift:surround?with=default;at=content">
     <div data-lift="NewAssessment">
         <script language="JavaScript">
-            var go = true;
+            var go = false;
             var tempoBpm = 60;
             function metro() {
-                if (document.getElementById('metronome').checked) {
+                if (go) {
+                    $('#metronome').removeClass('active');
+                    go = false;
+                } else {
+                    $('#metronome').addClass('active');
                     go = true;
                     beep();
-                } else {
-                    go = false;
                 }
             }
             function beep() {
@@ -67,8 +69,8 @@
                         <br/>
 
                         <div data-lift="StudentDetails.groupAssignments">
-                            <div><span id="delete" style="display: none;"/></div>
-                            <div><span id="create"></span> <span id="nextSel"/></div>
+                            <div><span id="delete" class="btn" style="display: none;"></span>
+                            <span id="create" class="btn"></span> <span id="nextSel"></span></div>
                         </div>
                     </div>
                 </div>
@@ -81,11 +83,18 @@
                     <form data-lift="form.ajax">
                         <div>
                             <span id="instrument"></span> <span id="subinstrument"></span> <span id="piece"></span>
-                            Tempo: <span id="tempo"></span> <input id="metronome" type="checkbox"
-                                onclick="metro()"> Metronome</input>
                         </div>
                         <p/>
+                        <div><span id="passButton" class="btn btn-success btn-lg"></span>
+                            <span style="margin-left: 2em;"></span>
+                            <span id="failButton" class="btn btn-danger btn-lg"></span>
+                            <span style="margin-left: 2em;"></span>
+                            <input id="metronome" class="btn btn-lg" type="button" value="Metronome"
+                                   onclick="metro()"/>
+                            Tempo: <span id="tempo"></span>
+                        </div>
 
+                        <p/>
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <h5 class="panel-title">Comments</h5>
@@ -103,7 +112,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div><span id="passButton"></span> <span id="failButton"/></div>
                     </form>
                 </div>
 
