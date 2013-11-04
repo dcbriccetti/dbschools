@@ -5,27 +5,27 @@ import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
-import schema.AssessmentTag
+import com.dbschools.mgb.schema.{Musician, AssessmentTag}
 
-case class AssessmentRow(date: DateTime, tester: String, piece: String,
+case class AssessmentRow(date: DateTime, musician: Musician, tester: String, piece: String,
   instrument: String, subinstrument: Option[String], pass: Boolean, notes: Option[String])
 
 object AssessmentRows {
-  import schema.AppSchema.{assessments, pieces, instruments, subinstruments, users}
+  import schema.AppSchema.{musicians, assessments, pieces, instruments, subinstruments, users}
 
   case class RowAndId(id: Int, row: AssessmentRow)
   
   def opStr(s: String) = if (s.trim.isEmpty) None else Some(s)
 
-  def forMusician(id: Int): Iterable[AssessmentRow] = {
-    val rows = join(assessments, pieces, instruments, users, subinstruments.leftOuter)((a, p, i, u, s) =>
-      where(a.musician_id === id)
+  def apply(opMusicianId: Option[Int], limit: Int = 1000): Iterable[AssessmentRow] = {
+    val rows = join(musicians, assessments, pieces, instruments, users, subinstruments.leftOuter)((m, a, p, i, u, s) =>
+      where(a.musician_id === opMusicianId.?)
       select RowAndId(a.id, AssessmentRow(
-        new DateTime(a.assessment_time.getTime), u.last_name, p.name.is, i.name.is,
-          s.map(_.name.is), a.pass, opStr(a.notes)))
-      orderBy(a.assessment_time desc)
-      on(a.pieceId === p.id, a.instrument_id === i.id, a.user_id === u.id, a.subinstrument_id === s.map(_.id))
-    )
+      new DateTime(a.assessment_time.getTime), m, u.last_name, p.name.get, i.name.get,
+      s.map(_.name.get), a.pass, opStr(a.notes)))
+      orderBy (a.assessment_time desc)
+      on(m.id === a.musician_id, a.pieceId === p.id, a.instrument_id === i.id, a.user_id === u.id, a.subinstrument_id === s.map(_.id))
+    ).page(0, limit)
     val predefCommentsMap = AssessmentTag.expandedPredefinedCommentsForAssessments(rows.map(_.id))
     rows.map(addPredefinedComments(predefCommentsMap))
   }

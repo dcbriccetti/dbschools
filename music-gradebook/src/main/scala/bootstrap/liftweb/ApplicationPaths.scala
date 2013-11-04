@@ -17,10 +17,11 @@ object ApplicationPaths {
   
   val graphs            = new Path("Graphs", "graphs")
   
-  val stats             = new Path("Statistics", "stats")
-  val students          = new Path("Students", "students")
+  val activity          = new Path("Activity",    "activity")
+  val stats             = new Path("Statistics",  "stats")
+  val students          = new Path("Students",    "students")
   val newStudent        = new Path("New Student", "newStudent")
-  val studentDetails    = new Path("Details", "studentDetails")
+  val studentDetails    = new Path("Details",     "studentDetails")
 
-  val history           = new Path("History", "history")
+  val history           = new Path("History",     "history")
 }

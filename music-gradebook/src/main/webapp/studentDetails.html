@@ -107,20 +107,9 @@
                     </form>
                 </div>
 
-                <div data-lift="Assessments">
-                    <h4>Past Assessments</h4>
-                    <table class="table autoWidth">
-                      <tr>
-                        <th>Date</th> <th>Tester</th> <th>Piece</th> <th>Instrument</th> <th width="50%">Comments</th>
-                      </tr>
-                      <tr class="assessmentRow">
-                        <td class="date"></td>
-                        <td class="tester"></td>
-                        <td class="piece"></td>
-                        <td class="instrument"></td>
-                        <td class="comments"></td>
-                      </tr>
-                    </table>
+                <h4>Past Assessments</h4>
+                <div data-lift="Assessments?eager_eval=true">
+                    <lift:embed what="_assessments"/>
                 </div>
             </div>
         </div>

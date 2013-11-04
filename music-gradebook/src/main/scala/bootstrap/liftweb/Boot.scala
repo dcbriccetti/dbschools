@@ -40,6 +40,7 @@ class Boot {
       instrumentsView.menu      >> loggedIn >> Hidden,
       noGroups.menu             >> loggedIn,
       studentDetails.menu       >> loggedIn >> Hidden,
+      activity.menu             >> loggedIn,
       graphs.menu               >> loggedIn,
       stats.menu                >> loggedIn,
       history.menu              >> loggedIn,
