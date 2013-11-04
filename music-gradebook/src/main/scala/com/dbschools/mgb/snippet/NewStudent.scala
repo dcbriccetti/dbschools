@@ -17,7 +17,7 @@ class NewStudent extends LiftScreen {
   override def screenFields = List(musician.last_name, musician.first_name, musician.student_id, grade)
 
   def valUniqueStudentId(): Errors = {
-    val opExisting = AppSchema.musicians.where(_.student_id.is === musician.student_id.is).headOption
+    val opExisting = AppSchema.musicians.where(_.student_id.get === musician.student_id.get).headOption
     opExisting.map(existing => FieldError(musician.student_id, existing.name + " already has that student ID")).toList
   }
 
