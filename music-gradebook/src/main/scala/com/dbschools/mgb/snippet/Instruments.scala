@@ -25,9 +25,9 @@ class Instruments extends Loggable {
   def list = {
     val usedInstrumentIds = from(AppSchema.musicianGroups)(mg => select(mg.instrument_id)).distinct.toSet
     "#create [href]"    #> instrumentsCreate.href &
-    ".row *"            #> from(AppSchema.instruments)(i => select(i) orderBy i.sequence.is).map(instrument => {
-      ".instrumentSequence *"   #> instrument.sequence.is &
-      ".instrumentName *"       #> SHtml.swappable(<span>{instrument.name.is}</span>, instrumentNameText(instrument)) &
+    ".row *"            #> from(AppSchema.instruments)(i => select(i) orderBy i.sequence.get).map(instrument => {
+      ".instrumentSequence *"   #> instrument.sequence.get &
+      ".instrumentName *"       #> SHtml.swappable(<span>{instrument.name.get}</span>, instrumentNameText(instrument)) &
       ".actions *"              #> actionsForInstrument(usedInstrumentIds, instrument)
     })
   }
@@ -39,9 +39,9 @@ class Instruments extends Loggable {
       NodeSeq.Empty
 
   private def instrumentNameText(instrument: Instrument) =
-    SHtml.ajaxText(instrument.name.is,
+    SHtml.ajaxText(instrument.name.get,
       v => {
-        if (v != instrument.name.is && v.trim.length > 0) { // TODO do this validation the right way?
+        if (v != instrument.name.get && v.trim.length > 0) { // TODO do this validation the right way?
           instrument.name(v)
           doSaveInstrument(doUpdateInstrument, instrument, notifyOk = false)
         }
@@ -50,10 +50,10 @@ class Instruments extends Loggable {
     )
 
   def create = {
-    val instrument = requestData.is
+    val instrument = requestData.get
     "#hidden"               #> SHtml.hidden(() => requestData(instrument)) &
-    "#instrumentSequence"   #> SHtml.number(requestData.is.sequence.is, (sequence: Int) => requestData.is.sequence(sequence), 0, 200) &
-    "#instrumentName"       #> SHtml.text(requestData.is.name.is, name => requestData.is.name(name)) &
+    "#instrumentSequence"   #> SHtml.number(requestData.get.sequence.get, (sequence: Int) => requestData.get.sequence(sequence), 0, 200) &
+    "#instrumentName"       #> SHtml.text(requestData.get.name.get, name => requestData.get.name(name)) &
     "#submit"               #> SHtml.onSubmitUnit(() => doSaveInstrument(doInsertInstrument))
   }
 
@@ -63,14 +63,14 @@ class Instruments extends Loggable {
       S.redirectTo(instrumentsList.href)
     }
     
-    val instrument = requestData.is
+    val instrument = requestData.get
 
-    "#instrumentName"   #> instrument.name.is &
+    "#instrumentName"   #> instrument.name.get &
     "#yes"              #> SHtml.link(instrumentsList.href, () => doDeleteInstrument(instrument), Text("Yes")) &
     "#no [href]"        #> instrumentsList.href
   }
 
-  private def doSaveInstrument(predicate: (Instrument) => Unit, instrument: Instrument = requestData.is,
+  private def doSaveInstrument(predicate: (Instrument) => Unit, instrument: Instrument = requestData.get,
       notifyOk: Boolean = true): Unit = {
     instrument.validate match {
       case Nil =>
@@ -92,6 +92,6 @@ class Instruments extends Loggable {
   }
 
   private def doDeleteInstrument(instrument: Instrument): Unit = {
-    AppSchema.instruments.deleteWhere(ins => ins.idField.is === instrument.idField.is)
+    AppSchema.instruments.deleteWhere(ins => ins.idField.get === instrument.idField.get)
   }
 }
