@@ -4,12 +4,11 @@
 <div id="main" class="lift:surround?with=default;at=content">
     <h2>Students</h2>
 
-    School Years: <span><span data-lift="Students.yearSelector"/></span>
+    <div>School Years: <span><span data-lift="Students.yearSelector"/></span>
     Groups: <span><span data-lift="Students.groupSelector"/></span>
     Instruments: <span><span data-lift="Students.instrumentSelector"/></span>
-    <span><span data-lift="Students.createNew"/><a id="create" href="#">New Student</a></span>
-    <br/>
-    Sort by: <span data-lift="Students.sortBy"></span>
+    <span><span data-lift="Students.createNew"/><a id="create" href="#">New Student</a></span></div>
+    <div style="margin-top: .4em;">Sort by: <span data-lift="Students.sortBy"></span></div>
 
     <lift:embed what="_inGroupsTable" />
 
