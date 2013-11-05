@@ -33,17 +33,17 @@ class Boot {
       logIn.menu                >> notLoggedIn,
       students.menu             >> loggedIn,
       newStudent.menu           >> loggedIn >> Hidden,
-      instrumentsList.menu      >> loggedIn,
-      instrumentsCreate.menu    >> loggedIn >> Hidden,
-      instrumentsDelete.menu    >> loggedIn >> Hidden,
-      instrumentsEdit.menu      >> loggedIn >> Hidden,
-      instrumentsView.menu      >> loggedIn >> Hidden,
       noGroups.menu             >> loggedIn,
       studentDetails.menu       >> loggedIn >> Hidden,
       activity.menu             >> loggedIn,
       graphs.menu               >> loggedIn,
       stats.menu                >> loggedIn,
       history.menu              >> loggedIn,
+      instrumentsList.menu      >> loggedIn,
+      instrumentsCreate.menu    >> loggedIn >> Hidden,
+      instrumentsDelete.menu    >> loggedIn >> Hidden,
+      instrumentsEdit.menu      >> loggedIn >> Hidden,
+      instrumentsView.menu      >> loggedIn >> Hidden,
       logout.menu               >> loggedIn
     )
 
