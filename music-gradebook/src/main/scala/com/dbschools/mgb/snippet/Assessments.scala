@@ -7,7 +7,7 @@ import org.scala_tools.time.Imports._
 import net.liftweb._
 import util._
 import Helpers._
-import model.AssessmentRows
+import com.dbschools.mgb.model.{AssessmentRow, AssessmentRows}
 import schema.Subinstrument
 
 class Assessments extends MusicianFromReq {
@@ -16,22 +16,27 @@ class Assessments extends MusicianFromReq {
     
     (if (opMusician.isEmpty) PassThru else removeNodes(".musician", "#studentHeading")) andThen (
       AssessmentRows(opMusician.map(_.id)).toList match {
-      case Nil => ClearNodes
-      case rows =>
-        ".assessmentRow" #> {
-          val dtf = DateTimeFormat.forStyle("S-")
-          val tmf = DateTimeFormat.forStyle("-M")
-
-          rows.map(ar =>
-            ".date       *" #> <span title={tmf.print(ar.date)}>{dtf.print(ar.date)}</span> &
-            ".tester     *" #> ar.tester &
-            ".musician   *" #> ar.musician.name &
-            ".piece [class]" #> (if (ar.pass) "pass" else "fail") &
-            ".piece      *" #> ar.piece &
-            ".instrument *" #> (ar.instrument + ~ar.subinstrument.map(Subinstrument.suffix)) &
-            ".comments   *" #> ar.notes
-          )
-        }
+      case Nil  => ClearNodes
+      case rows => Assessments.rowCssSel(rows)
     }
   )}
+}
+
+object Assessments {
+  def rowCssSel(rows: Iterable[AssessmentRow]): CssSel = {
+    ".assessmentRow" #> {
+      val dtf = DateTimeFormat.forStyle("S-")
+      val tmf = DateTimeFormat.forStyle("-M")
+
+      rows.map(ar =>
+        ".date       *" #> <span title={tmf.print(ar.date)}>{dtf.print(ar.date)}</span> &
+        ".tester     *" #> ar.tester &
+        ".musician   *" #> ar.musician.name &
+        ".piece [class]" #> (if (ar.pass) "pass" else "fail") &
+        ".piece      *" #> ar.piece &
+        ".instrument *" #> (ar.instrument + ~ar.subinstrument.map(Subinstrument.suffix)) &
+        ".comments   *" #> ar.notes
+      )
+    }
+  }
 }

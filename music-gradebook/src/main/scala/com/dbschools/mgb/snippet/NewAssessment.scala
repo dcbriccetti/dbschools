@@ -9,12 +9,19 @@ import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
 import org.scala_tools.time.Imports._
 import net.liftweb.util.Helpers._
-import net.liftweb.http.SHtml
-import net.liftweb.common.{Empty, Full}
-import net.liftweb.http.js.JsCmds.{SetValById, Noop, Reload, ReplaceOptions, Script}
-import net.liftweb.http.js.JE.JsRaw
-import model.{Cache, GroupAssignments, LastPassFinder, Terms}
-import schema.{Assessment, AssessmentTag, AppSchema, Piece}
+import net.liftweb.http
+import http.SHtml
+import http.js.JsCmds.{Noop, Reload, Script}
+import http.js.JsCmds.SetValById
+import http.js.JE.JsRaw
+import http.js.JsCmds.ReplaceOptions
+import net.liftweb.common.Empty
+import net.liftweb.common.Full
+import model.{AssessmentRow, Cache, GroupAssignments, LastPassFinder, Terms}
+import schema.{AssessmentTag, AppSchema, Piece}
+import com.dbschools.mgb.comet.ActivityCometDispatcher
+import com.dbschools.mgb.comet.ActivityStatusUpdate
+import com.dbschools.mgb.schema.Assessment
 
 class NewAssessment extends MusicianFromReq {
   private val log = Logger.getLogger(getClass)
@@ -55,9 +62,10 @@ class NewAssessment extends MusicianFromReq {
         pid       <- opSelPieceId
         user      <- AppSchema.users.find(_.login == Authenticator.userName.get)
       } {
+        val assTime = DateTime.now
         val newAss = Assessment(
           id                = 0,
-          assessment_time   = new Timestamp(DateTime.now.getMillis),
+          assessment_time   = new Timestamp(assTime.getMillis),
           musician_id       = musician.musician_id.get,
           instrument_id     = iid,
           subinstrument_id  = opSelSubinstId,
@@ -67,12 +75,23 @@ class NewAssessment extends MusicianFromReq {
           notes             = notes
         )
         AppSchema.assessments.insert(newAss)
-        val tags = for {
+        val selectedCommentIds = (for {
           (commentId, selected) <- commentTagSelections
           if selected
-        } yield AssessmentTag(newAss.id, commentId)
+        } yield commentId).toSet
+        val tags = selectedCommentIds.map(id => AssessmentTag(newAss.id, id))
         AppSchema.assessmentTags.insert(tags)
         log.info(s"Assessment: $newAss, $tags")
+
+        ActivityCometDispatcher ! ActivityStatusUpdate {
+          val inst = opSelInstId.flatMap(id => Cache.instruments.find(_.id == id)).map(_.name.get)
+          val subinst = opSelSubinstId.flatMap(id => Cache.subinstruments.values.flatten.find(_.id == id)).map(_.name.get)
+          val predef = Cache.tags.filter(t => selectedCommentIds.contains(t.id)).map(_.commentText).mkString(", ")
+          val expandedNotes = (if (predef.isEmpty) "" else s"$predef; ") + notes
+          AssessmentRow(assTime, musician, user.last_name,
+            ~opSelPieceId.flatMap(id => Cache.pieces.find(_.id == id)).map(_.name.get),
+            ~inst, subinst, pass, if (expandedNotes.isEmpty) None else Some(expandedNotes))
+        }
       }
     }
 

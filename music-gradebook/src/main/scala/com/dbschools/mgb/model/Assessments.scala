@@ -17,7 +17,7 @@ object AssessmentRows {
   
   def opStr(s: String) = if (s.trim.isEmpty) None else Some(s)
 
-  def apply(opMusicianId: Option[Int], limit: Int = 1000): Iterable[AssessmentRow] = {
+  def apply(opMusicianId: Option[Int], limit: Int = 500): Iterable[AssessmentRow] = {
     val rows =
       join(assessments, musicians, pieces, instruments, users, subinstruments.leftOuter)((a, m, p, i, u, s) =>
         where(a.musician_id === opMusicianId.?)
