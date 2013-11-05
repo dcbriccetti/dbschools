@@ -9,12 +9,11 @@ import util._
 import Helpers._
 import com.dbschools.mgb.model.{AssessmentRow, AssessmentRows}
 import schema.Subinstrument
+import scala.xml.NodeSeq
 
 class Assessments extends MusicianFromReq {
   def render = {
-    def removeNodes(selectors: String*) = selectors.map(_ #> none[String]).reduce(_ & _)
-    
-    (if (opMusician.isEmpty) PassThru else removeNodes(".musician", "#studentHeading")) andThen (
+    Assessments.filterNodes(opMusician.isEmpty) andThen (
       AssessmentRows(opMusician.map(_.id)).toList match {
       case Nil  => ClearNodes
       case rows => Assessments.rowCssSel(rows)
@@ -23,6 +22,12 @@ class Assessments extends MusicianFromReq {
 }
 
 object Assessments {
+  def removeNodes(selectors: String*) = selectors.map(_ #> none[String]).reduce(_ & _)
+
+  def filterNodes(keep: Boolean): (NodeSeq) => NodeSeq = {
+    if (keep) PassThru else Assessments.removeNodes(".musician", "#studentHeading")
+  }
+
   def rowCssSel(rows: Iterable[AssessmentRow]): CssSel = {
     ".assessmentRow" #> {
       val dtf = DateTimeFormat.forStyle("S-")
@@ -39,4 +44,19 @@ object Assessments {
       )
     }
   }
+
+  def createRow(assessmentRow: AssessmentRow, keepStudent: Boolean = true) = {
+    val sel = filterNodes(keepStudent) andThen rowCssSel(Seq(assessmentRow))
+    sel(Assessments.rowNodeSeq)
+  }
+
+  private val rowNodeSeq = // TODO Why does Templates give <html><body></body></html>? Templates(List("_assessmentRow")).open
+    <tr class="assessmentRow">
+      <td class="date"></td>
+      <td class="tester"></td>
+      <td class="musician"></td>
+      <td class="piece"></td>
+      <td class="instrument"></td>
+      <td class="comments"></td>
+    </tr>
 }

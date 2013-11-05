@@ -2,7 +2,7 @@ package com.dbschools.mgb
 package snippet
 
 import java.sql.Timestamp
-import scala.xml.Elem
+import scala.xml.{Elem, Text}
 import org.apache.log4j.Logger
 import scalaz._
 import Scalaz._
@@ -11,30 +11,30 @@ import org.scala_tools.time.Imports._
 import net.liftweb.util.Helpers._
 import net.liftweb.http
 import http.SHtml
-import http.js.JsCmds.{Noop, Reload, Script}
-import http.js.JsCmds.SetValById
-import http.js.JE.JsRaw
-import http.js.JsCmds.ReplaceOptions
-import net.liftweb.common.Empty
-import net.liftweb.common.Full
-import model.{AssessmentRow, Cache, GroupAssignments, LastPassFinder, Terms}
+import net.liftweb.http.js.JsCmds._
+import net.liftweb.common.{Empty, Full}
+import net.liftweb.http.js.jquery.JqJsCmds.PrependHtml
+import net.liftweb.http.js.JsCmd
+import net.liftweb.http.js.JsCmds.ReplaceOptions
+import net.liftweb.http.js.JE.JsRaw
+import model.{Cache, GroupAssignments, LastPassFinder, Terms}
 import schema.{AssessmentTag, AppSchema, Piece}
-import com.dbschools.mgb.comet.ActivityCometDispatcher
-import com.dbschools.mgb.comet.ActivityStatusUpdate
-import com.dbschools.mgb.schema.Assessment
+import comet.ActivityCometDispatcher
+import comet.ActivityStatusUpdate
+import schema.Assessment
+import model.AssessmentRow
 
 class NewAssessment extends MusicianFromReq {
   private val log = Logger.getLogger(getClass)
+  val lastPassFinder = new LastPassFinder()
 
-  def render = {
-    val lastPassFinder = new LastPassFinder()
-
+  class State {
     case class Pi(piece: Piece, instId: Int, opSubInstId: Option[Int] = None)
 
     val opNextPi = {
       val pi = for {
         musician  <- opMusician
-        lastPass  <- lastPassFinder.lastPassed(Some(musician.musician_id.get)).headOption
+        lastPass  <- lastPassFinder.lastPassed(Some(musician.id)).headOption
         piece     <- Cache.pieces.find(_.id == lastPass.pieceId)
         nextPiece =  lastPassFinder.next(piece)
       } yield Pi(nextPiece, lastPass.instrumentId, lastPass.opSubinstrumentId)
@@ -48,84 +48,102 @@ class NewAssessment extends MusicianFromReq {
     var opSelSubinstId = opNextPi.flatMap(_.opSubInstId)
     var opSelPieceId = opNextPi.map(_.piece.id)
     var notes = ""
-    var tempo = 0
 
-    def findTempo = opSelPieceId.flatMap(selPieceId =>
+    def tempoFromPiece = opSelPieceId.flatMap(selPieceId =>
       // First look for a tempo for the specific instrument
       Cache.tempos.find(t => t.instrumentId == opSelInstId && t.pieceId == selPieceId) orElse
-      Cache.tempos.find(_.pieceId == selPieceId))
+      Cache.tempos.find(_.pieceId == selPieceId)).map(_.tempo) | 0
 
-    def recordAss(pass: Boolean): Unit = {
-      for {
+    var tempo = tempoFromPiece
+  }
+  
+  def render = {
+    var s = new State()
+
+    def jsTempo = JsRaw(s"tempoBpm = ${s.tempo}").cmd
+
+    def tempoControl = SHtml.ajaxText(s.tempo.toString, (t) => asInt(t).map(ti => {
+      s.tempo = ti
+      jsTempo
+    }) getOrElse Noop, "id" -> "tempo", "size" -> "3")
+
+    def sendTempo = SetHtml("tempo", tempoControl) & jsTempo
+
+    def selPiece = {
+      val initialSel = s.opSelPieceId.map(p => Full(p.toString)) getOrElse Empty
+      SHtml.ajaxSelect(Cache.pieces.map(p => p.id.toString -> p.name.get),
+        initialSel, (p) => {
+          s.opSelPieceId = Some(p.toInt)
+          s.tempo = s.tempoFromPiece
+          sendTempo
+        })
+    }
+
+    def recordAss(pass: Boolean): JsCmd = {
+      (for {
         musician  <- opMusician
-        iid       <- opSelInstId
-        pid       <- opSelPieceId
+        iid       <- s.opSelInstId
+        pid       <- s.opSelPieceId
         user      <- AppSchema.users.find(_.login == Authenticator.userName.get)
-      } {
+      } yield {
         val assTime = DateTime.now
         val newAss = Assessment(
           id                = 0,
           assessment_time   = new Timestamp(assTime.getMillis),
-          musician_id       = musician.musician_id.get,
+          musician_id       = musician.id,
           instrument_id     = iid,
-          subinstrument_id  = opSelSubinstId,
+          subinstrument_id  = s.opSelSubinstId,
           user_id           = user.id,
           pieceId           = pid,
           pass              = pass,
-          notes             = notes
+          notes             = s.notes
         )
         AppSchema.assessments.insert(newAss)
         val selectedCommentIds = (for {
-          (commentId, selected) <- commentTagSelections
+          (commentId, selected) <- s.commentTagSelections
           if selected
         } yield commentId).toSet
         val tags = selectedCommentIds.map(id => AssessmentTag(newAss.id, id))
         AppSchema.assessmentTags.insert(tags)
         log.info(s"Assessment: $newAss, $tags")
 
-        ActivityCometDispatcher ! ActivityStatusUpdate {
-          val inst = opSelInstId.flatMap(id => Cache.instruments.find(_.id == id)).map(_.name.get)
-          val subinst = opSelSubinstId.flatMap(id => Cache.subinstruments.values.flatten.find(_.id == id)).map(_.name.get)
+        val row = {
+          val inst = s.opSelInstId.flatMap(id => Cache.instruments.find(_.id == id)).map(_.name.get)
+          val subinst = s.opSelSubinstId.flatMap(id => Cache.subinstruments.values.flatten.find(_.id == id)).map(_.name.get)
           val predef = Cache.tags.filter(t => selectedCommentIds.contains(t.id)).map(_.commentText).mkString(", ")
-          val expandedNotes = (if (predef.isEmpty) "" else s"$predef; ") + notes
+          val expandedNotes = (if (predef.isEmpty) "" else s"$predef; ") + s.notes
           AssessmentRow(assTime, musician, user.last_name,
-            ~opSelPieceId.flatMap(id => Cache.pieces.find(_.id == id)).map(_.name.get),
+            ~s.opSelPieceId.flatMap(id => Cache.pieces.find(_.id == id)).map(_.name.get),
             ~inst, subinst, pass, if (expandedNotes.isEmpty) None else Some(expandedNotes))
         }
-      }
+        ActivityCometDispatcher ! ActivityStatusUpdate(row)
+        val nodeSeq = Assessments.createRow(row, keepStudent = false)
+        s = new State
+        PrependHtml("assessmentsBody", nodeSeq) &
+          SetHtml("lastPiece", Text(StudentDetails.lastPiece(lastPassFinder, musician.id))) &
+          SetHtml("piece", selPiece) & sendTempo
+      }) | Noop
     }
 
     val subinstId = "subinstrument"
-    val initialInstrumentSel = opSelInstId.map(i => Full(i.toString)) getOrElse Empty
+    val initialInstrumentSel = s.opSelInstId.map(i => Full(i.toString)) getOrElse Empty
 
     def subinstSels(instId: Int): List[(String, String)] =
       Cache.subinstruments.get(instId).toList.flatten.map(si => si.id.toString -> si.name.get)
 
     def selInst = SHtml.ajaxSelect(Cache.instruments.map(i => i.id.toString -> i.name.get), initialInstrumentSel, (p) => {
       val instId = p.toInt
-      opSelInstId = Some(instId)
+      s.opSelInstId = Some(instId)
       val sels = subinstSels(instId)
-      sels.headOption.foreach(sel => opSelSubinstId = Some(sel._1.toInt))
+      sels.headOption.foreach(sel => s.opSelSubinstId = Some(sel._1.toInt))
       ReplaceOptions(subinstId, sels, Empty)
     })
 
     def selSubinst = {
-      val opts = opSelInstId.map(subinstSels) getOrElse Seq[(String, String)]()
-      def setSubinstId(idString: String) { opSelSubinstId = Some(idString.toInt) }
+      val opts = s.opSelInstId.map(subinstSels) getOrElse Seq[(String, String)]()
+      def setSubinstId(idString: String) { s.opSelSubinstId = Some(idString.toInt) }
       opts.headOption.foreach(sel => setSubinstId(sel._1))
       SHtml.select(opts, Empty, setSubinstId)
-    }
-
-    def setJsTempo(t: Option[Int]) = JsRaw(s"tempoBpm = ${~t}").cmd
-
-    def selPiece = {
-      val initialSel = opSelPieceId.map(p => Full(p.toString)) getOrElse Empty
-      SHtml.ajaxSelect(Cache.pieces.map(p => p.id.toString -> p.name.get),
-        initialSel, (p) => {
-          opSelPieceId = Some(p.toInt)
-          val t = findTempo.map(_.tempo)
-          SetValById("tempo", ~t.map(_.toString)) & setJsTempo(t)
-        })
     }
 
     def checkboxes(part: Int): Seq[Elem] = {
@@ -133,28 +151,25 @@ class NewAssessment extends MusicianFromReq {
       grouped(part).map(tag =>
         <div class="checkbox">
           <label>
-            {SHtml.checkbox(false, (checked) => commentTagSelections(tag.id) = checked)}{tag.commentText}
+            {SHtml.checkbox(false, (checked) => s.commentTagSelections(tag.id) = checked)}{tag.commentText}
           </label>
         </div>)
     }
 
-    def commentText = SHtml.textarea("", (s) => {
-      notes = s
+    def commentText = SHtml.textarea("", (n) => {
+      s.notes = n
       Noop
     }, "id" -> "commentText", "rows" -> "3", "style" -> "width: 30em;", "placeholder" -> "Additional comments")
 
     "#instrument"     #> selInst &
     s"#$subinstId"    #> selSubinst &
-    "#piece"          #> selPiece &
-    "#tempo"          #> SHtml.ajaxText(~findTempo.map(_.tempo.toString), (t) => asInt(t).map(ti => {
-                            tempo = ti
-                            setJsTempo(Some(ti))
-                          }) getOrElse Noop, "id" -> "tempo", "size" -> "3") &
-    "#setTempo"       #> Script(setJsTempo(findTempo.map(_.tempo))) &
+    "#piece *"        #> selPiece &
+    "#tempo *"        #> tempoControl &
+    "#setTempo"       #> Script(jsTempo) &
     "#checkbox1 *"    #> checkboxes(0) &
     "#checkbox2 *"    #> checkboxes(1) &
     "#commentText"    #> commentText &
-    "#passButton"     #> SHtml.ajaxSubmit("Pass", () => { recordAss(pass = true ); Reload }) &
-    "#failButton"     #> SHtml.ajaxSubmit("Fail", () => { recordAss(pass = false); Reload })
+    "#passButton"     #> SHtml.ajaxSubmit("Pass", () => { recordAss(pass = true ) }) &
+    "#failButton"     #> SHtml.ajaxSubmit("Fail", () => { recordAss(pass = false) })
   }
 }

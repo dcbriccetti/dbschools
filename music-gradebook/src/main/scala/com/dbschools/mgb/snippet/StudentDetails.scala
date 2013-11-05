@@ -20,8 +20,8 @@ class StudentDetails extends TagCounts with MusicianFromReq {
   private val groupSelectorValues = Cache.groups.map(g => (g.id.toString, g.name)).toSeq
   private var newAssignmentGroupId = groupSelectorValues(0)._1.toInt
   private val opMusicianDetails = opMusician.map(musician =>
-    MusicianDetails(musician, GroupAssignments(Some(musician.musician_id.get)),
-    AppSchema.assessments.where(_.musician_id === musician.musician_id.get).toSeq))
+    MusicianDetails(musician, GroupAssignments(Some(musician.id)),
+    AppSchema.assessments.where(_.musician_id === musician.id).toSeq))
 
   case class MusicianDetails(musician: Musician, groups: Iterable[GroupAssignment], assessments: Iterable[Assessment])
 
@@ -69,7 +69,7 @@ class StudentDetails extends TagCounts with MusicianFromReq {
       ".grade"            #> Terms.graduationYearAsGrade(md.musician.graduation_year.get) &
       ".stuId"            #> SHtml.swappable(<span id="stuId">{md.musician.student_id.toString}</span>,
                                 SHtml.ajaxText(md.musician.student_id.toString, changeStuId(md.musician))) &
-      "#lastPiece"        #> lastPassFinder.lastPassed(Some(md.musician.musician_id.get)).mkString(", ") &
+      "#lastPiece *"      #> StudentDetails.lastPiece(lastPassFinder, md.musician.id) &
       ".assignmentRow *"  #> groupsTable(md.groups) &
       ".assessmentsSummary *" #> assessmentsSummary(md)
 
@@ -144,5 +144,11 @@ class StudentDetails extends TagCounts with MusicianFromReq {
     "#delete"   #> SHtml.ajaxButton("Remove from selected groups", () => delete()) &
     "#create"   #> SHtml.ajaxButton(s"Add to group", () => create()) &
     "#nextSel"  #> nextSel
+  }
+}
+
+object StudentDetails {
+  def lastPiece(lastPassFinder: LastPassFinder, musicianId: Int): String = {
+    lastPassFinder.lastPassed(Some(musicianId)).mkString(", ")
   }
 }

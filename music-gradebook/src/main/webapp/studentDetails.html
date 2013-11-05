@@ -21,7 +21,7 @@
             function beep() {
                 if (go) {
                     var startTime = new Date().getTime();
-                    document.getElementById('audio').play();
+                    document.getElementById('audioControl').play();
                     var elapsed = new Date().getTime() - startTime;
                     var bps = tempoBpm == 0 ? 1 : tempoBpm / 60.0;
                     var msDelay = 1000 / bps;
@@ -45,7 +45,7 @@
             </tr>
             <tr>
                 <td class="alignRight">Last piece passed:</td>
-                <td><span id="lastPiece"/></td>
+                <td><span id="lastPiece"></span></td>
             </tr>
         </table>
         <p/>

@@ -100,8 +100,8 @@ class Students extends Loggable {
           ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.get) &
           ".group    *" #> row.group.name &
           ".instr    *" #> row.instrument.name.get &
-          ".lastAss  *" #> ~lastAssTimeByMusician.get(row.musician.musician_id.get).map(fmt.print) &
-          ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.musician_id.get))
+          ".lastAss  *" #> ~lastAssTimeByMusician.get(row.musician.id).map(fmt.print) &
+          ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.id))
       )
     })))
   }
@@ -117,7 +117,7 @@ class Students extends Loggable {
 
     ".studentRow"   #> musicians.map(m =>
       ".stuName  *" #> studentLink(m) &
-      ".id       *" #> m.musician_id.get &
+      ".id       *" #> m.id &
       ".stuId    *" #> m.student_id.get &
       ".grade    *" #> Terms.graduationYearAsGrade(m.graduation_year.get)
     )
@@ -127,5 +127,5 @@ class Students extends Loggable {
 }
 
 object Students {
-  def urlToDetails(m: Musician) = "studentDetails?id=" + m.musician_id.get
+  def urlToDetails(m: Musician) = "studentDetails?id=" + m.id
 }
