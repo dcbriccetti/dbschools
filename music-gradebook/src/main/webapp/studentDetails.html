@@ -81,10 +81,6 @@
                 <div data-lift="NewAssessment">
                     <h4>New Assessment</h4>
                     <form data-lift="form.ajax">
-                        <div>
-                            <span id="instrument"></span> <span id="subinstrument"></span> <span id="piece"></span>
-                        </div>
-                        <p/>
                         <div><span id="passButton" class="btn btn-success btn-lg"></span>
                             <span style="margin-left: 2em;"></span>
                             <span id="failButton" class="btn btn-danger btn-lg"></span>
@@ -93,6 +89,10 @@
                                    onclick="metro()"/>
                             Tempo: <span id="tempo"></span>
                         </div>
+                        <div style="margin-top: .7em;">
+                            <span id="instrument"></span> <span id="subinstrument"></span> <span id="piece"></span>
+                        </div>
+                        <p/>
 
                         <p/>
                         <div class="panel panel-default">
@@ -101,11 +101,14 @@
                             </div>
                             <div class="panel-body">
                                 <div class="row">
-                                    <div id="commentCheckboxesDiv" class="col-md-2">
-                                        <ul id="checkboxes" class="simpleUl">
-                                            <li id="checkbox"></li>
-                                        </ul>
+                                    <div class="col-md-2">
+                                        <span id="checkbox1"></span>
                                     </div>
+                                    <div class="col-md-2">
+                                        <span id="checkbox2"></span>
+                                    </div>
+                                </div>
+                                <div class="row">
                                     <div id="commentTextDiv" class="col-md-10">
                                         <span id="commentText"/>
                                     </div>

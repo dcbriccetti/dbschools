@@ -109,13 +109,15 @@ class NewAssessment extends MusicianFromReq {
         })
     }
 
-    def checkboxes: Seq[Elem] =
-      Cache.tags.map(tag =>
+    def checkboxes(part: Int): Seq[Elem] = {
+      val grouped = Cache.tags.grouped(Cache.tags.size / 2).toSeq
+      grouped(part).map(tag =>
         <div class="checkbox">
           <label>
             {SHtml.checkbox(false, (checked) => commentTagSelections(tag.id) = checked)}{tag.commentText}
           </label>
         </div>)
+    }
 
     def commentText = SHtml.textarea("", (s) => {
       notes = s
@@ -130,7 +132,8 @@ class NewAssessment extends MusicianFromReq {
                             setJsTempo(Some(ti))
                           }) getOrElse Noop, "id" -> "tempo", "size" -> "3") &
     "#setTempo"       #> Script(setJsTempo(findTempo.map(_.tempo))) &
-    "#checkbox *"     #> checkboxes &
+    "#checkbox1 *"    #> checkboxes(0) &
+    "#checkbox2 *"    #> checkboxes(1) &
     "#commentText"    #> commentText &
     "#passButton"     #> SHtml.ajaxSubmit("Pass", () => { recordAss(pass = true ); Reload }) &
     "#failButton"     #> SHtml.ajaxSubmit("Fail", () => { recordAss(pass = false); Reload })
