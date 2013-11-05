@@ -1,6 +1,6 @@
 name := "Music Gradebook"
 
-version := "3.0.2"
+version := "3.1.0"
 
 organization := "com.dbschools"
 
