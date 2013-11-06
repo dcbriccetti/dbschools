@@ -16,8 +16,9 @@ import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JsCmds.Replace
 import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
-import model.{LastPassFinder, Terms, GroupAssignments}
 import model.BoxOpener._
+import com.dbschools.mgb.model.{Cache, LastPassFinder, Terms, GroupAssignments}
+import com.dbschools.mgb.comet.{ScheduleMusicians, ScheduledMusician, TestCometDispatcher, ClearSchedule}
 
 object SortBy extends Enumeration {
   type SortBy = Value
@@ -52,6 +53,7 @@ class Students extends Loggable {
   var newId = 0
   var grade = 6
   var name = ""
+  var selectedMusicians = Map[Int, Musician]()
 
   def newStudent = {
 
@@ -75,10 +77,37 @@ class Students extends Loggable {
   def inGroups = {
     val fmt = DateTimeFormat.forStyle("S-")
     val lastPassesByMusician = lastPassFinder.lastPassed().groupBy(_.musicianId)
+    
+    def scheduleButton= {
+      SHtml.ajaxButton("Schedule for Testing", () => {
+        val now = DateTime.now
+        val scheduledMusicians = selectedMusicians.values.map(musician => {
+          val lastAsmtTime = lastAssTimeByMusician.get(musician.id)
+          val days = lastAsmtTime.map(la => Days.daysBetween(la, now).getDays) | Int.MaxValue
+          val opNextPieceName = for {
+            lastPass  <- lastPassFinder.lastPassed(Some(musician.id)).headOption
+            piece     <- Cache.pieces.find(_.id == lastPass.pieceId)
+            nextPiece = lastPassFinder.next(piece)
+          } yield nextPiece.name.get
+          ScheduledMusician(musician, -days, opNextPieceName | Cache.pieces.head.name.get)
+        })
+        TestCometDispatcher ! ScheduleMusicians(scheduledMusicians)
+        Noop
+      })
+    }
+
+    def clearScheduleButton = SHtml.ajaxButton("Clear Testing Schedule", () => {
+      TestCometDispatcher ! ClearSchedule
+      Noop
+    })
+    
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedInstId .isDefined) ".instr"   #> none[String] else PassThru) andThen (
-    ".studentRow"   #> {
+
+    "#clearSchedule"  #> clearScheduleButton &
+    "#schedule"       #> scheduleButton &
+    ".studentRow"     #> {
       val longAgo = new DateTime("1000-01-01").toDate
 
       val byYear = GroupAssignments(None, svSelectors.opSelectedTerm, svSelectors.opSelectedGroupId,
@@ -95,17 +124,25 @@ class Students extends Loggable {
           byYear.sortBy(ga => -pos(ga.musician.id))
       }
 
+      def selectionCheckbox(musician: Musician) =
+        SHtml.ajaxCheckbox(false, checked => {
+          if (checked) selectedMusicians += musician.id -> musician
+          else selectedMusicians -= musician.id
+          if (selectedMusicians.isEmpty) JsHideId("schedule") else JsShowId("schedule")
+        })
+
       val now = DateTime.now
       fullySorted.map(row => {
         val lastAsmtTime = lastAssTimeByMusician.get(row.musician.id)
+        ".sel      *" #> selectionCheckbox(row.musician) &
         ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
-          ".stuName  *" #> studentLink(row.musician) &
-          ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.get) &
-          ".group    *" #> row.group.name &
-          ".instr    *" #> row.instrument.name.get &
-          ".lastAss  *" #> ~lastAsmtTime.map(fmt.print) &
-          ".daysSince *" #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
-          ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.id))
+        ".stuName  *" #> studentLink(row.musician) &
+        ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.get) &
+        ".group    *" #> row.group.name &
+        ".instr    *" #> row.instrument.name.get &
+        ".lastAss  *" #> ~lastAsmtTime.map(fmt.print) &
+        ".daysSince *" #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
+        ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.id))
       })
     })))
   }

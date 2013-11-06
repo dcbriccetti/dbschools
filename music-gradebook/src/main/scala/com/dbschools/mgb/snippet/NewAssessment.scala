@@ -2,7 +2,7 @@ package com.dbschools.mgb
 package snippet
 
 import java.sql.Timestamp
-import scala.xml.{Elem, Text}
+import scala.xml.Text
 import org.apache.log4j.Logger
 import scalaz._
 import Scalaz._
@@ -18,10 +18,9 @@ import net.liftweb.http.js.JsCmd
 import net.liftweb.http.js.JsCmds.ReplaceOptions
 import net.liftweb.http.js.JE.JsRaw
 import model.{Cache, GroupAssignments, LastPassFinder, Terms}
-import schema.{AssessmentTag, AppSchema, Piece}
+import schema.{Assessment, AssessmentTag, AppSchema, Piece}
 import comet.ActivityCometDispatcher
 import comet.ActivityStatusUpdate
-import schema.Assessment
 import model.AssessmentRow
 
 class NewAssessment extends MusicianFromReq {
