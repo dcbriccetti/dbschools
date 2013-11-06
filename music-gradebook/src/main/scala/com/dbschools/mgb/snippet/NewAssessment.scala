@@ -79,6 +79,22 @@ class NewAssessment extends MusicianFromReq {
         })
     }
 
+    def commentText = SHtml.textarea("", (n) => {
+      s.notes = n
+      Noop
+    }, "id" -> "commentText", "rows" -> "3", "style" -> "width: 30em;", "placeholder" -> "Additional comments")
+
+    def checkboxes(part: Int) = {
+      val grouped = Cache.tags.grouped(Cache.tags.size / 2).toSeq
+      <div>{grouped(part).map(tag =>
+        <div class="checkbox">
+          <label>
+            {SHtml.checkbox(false, (checked) => s.commentTagSelections(tag.id) = checked)}{tag.commentText}
+          </label>
+        </div>)}
+      </div>
+    }
+
     def recordAss(pass: Boolean): JsCmd = {
       (for {
         musician  <- opMusician
@@ -121,7 +137,10 @@ class NewAssessment extends MusicianFromReq {
         s = new State
         PrependHtml("assessmentsBody", nodeSeq) &
           SetHtml("lastPiece", Text(StudentDetails.lastPiece(lastPassFinder, musician.id))) &
-          SetHtml("piece", selPiece) & sendTempo
+          SetHtml("piece", selPiece) & sendTempo &
+          SetHtml("commentText", commentText) &
+          SetHtml("checkbox1", checkboxes(0)) &
+          SetHtml("checkbox2", checkboxes(1))
       }) | Noop
     }
 
@@ -146,21 +165,6 @@ class NewAssessment extends MusicianFromReq {
       SHtml.select(opts, Empty, setSubinstId)
     }
 
-    def checkboxes(part: Int): Seq[Elem] = {
-      val grouped = Cache.tags.grouped(Cache.tags.size / 2).toSeq
-      grouped(part).map(tag =>
-        <div class="checkbox">
-          <label>
-            {SHtml.checkbox(false, (checked) => s.commentTagSelections(tag.id) = checked)}{tag.commentText}
-          </label>
-        </div>)
-    }
-
-    def commentText = SHtml.textarea("", (n) => {
-      s.notes = n
-      Noop
-    }, "id" -> "commentText", "rows" -> "3", "style" -> "width: 30em;", "placeholder" -> "Additional comments")
-
     "#instrument"     #> selInst &
     s"#$subinstId"    #> selSubinst &
     "#piece *"        #> selPiece &
@@ -168,7 +172,7 @@ class NewAssessment extends MusicianFromReq {
     "#setTempo"       #> Script(jsTempo) &
     "#checkbox1 *"    #> checkboxes(0) &
     "#checkbox2 *"    #> checkboxes(1) &
-    "#commentText"    #> commentText &
+    "#commentText *"  #> commentText &
     "#passButton"     #> SHtml.ajaxSubmit("Pass", () => { recordAss(pass = true ) }) &
     "#failButton"     #> SHtml.ajaxSubmit("Fail", () => { recordAss(pass = false) })
   }

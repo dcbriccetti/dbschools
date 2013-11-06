@@ -95,23 +95,17 @@
                 <div id="collapseThree" class="panel-collapse collapse">
                     <div class="panel-body">
                         <div data-lift="NewAssessment">
+                            <div>
+                                <span id="piece"></span>
+                                <input id="metronome" class="btn btn-lg" type="button" value="Metronome"
+                                       onclick="metro()"/>
+                                <span id="tempo"></span> beats per minute
+                            </div>
+                            <div style="margin-top: .7em; margin-bottom: 1em">
+                                <span id="instrument"></span> <span id="subinstrument"></span>
+                            </div>
+
                             <form data-lift="form.ajax">
-                                <div><span id="passButton" class="btn btn-success btn-lg"></span>
-                                    <span style="margin-left: 1em;"></span>
-                                    <span id="failButton" class="btn btn-danger btn-lg"></span>
-                                    <span style="margin-left: 1em;"></span>
-                                    <input id="metronome" class="btn btn-lg" type="button" value="Metronome"
-                                           onclick="metro()"/>
-                                    <span id="tempo"></span> beats per minute
-                                </div>
-                                <div style="margin-top: .7em;">
-                                    <span id="instrument"></span> <span id="subinstrument"></span> <span
-                                        id="piece"></span>
-                                </div>
-                                <p/>
-
-                                <p/>
-
                                 <div class="panel panel-default">
                                     <div class="panel-heading">
                                         <h5 class="panel-title">Comments</h5>
@@ -132,6 +126,12 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div style="margin-top: 0.5em">
+                                    <span id="passButton" class="btn btn-success btn-lg"></span>
+                                    <span style="margin-left: 1em;"></span>
+                                    <span id="failButton" class="btn btn-danger btn-lg"></span>
+                                    <span style="margin-left: 1em;"></span>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -151,6 +151,7 @@
                     <p class="assessmentsSummary"/>
 
                     <div data-lift="Assessments?eager_eval=true">
+                        <div><span data-lift="Assessments.delete" id="deleteAss" class="btn" style="display: none;"></span></div>
                         <lift:embed what="_assessments"/>
                     </div>
                 </div>

@@ -10,6 +10,7 @@ import Helpers._
 import com.dbschools.mgb.model.{AssessmentRow, AssessmentRows}
 import schema.Subinstrument
 import scala.xml.NodeSeq
+import net.liftweb.http.SHtml
 
 class Assessments extends MusicianFromReq {
   def render = {
@@ -19,6 +20,7 @@ class Assessments extends MusicianFromReq {
       case rows => Assessments.rowCssSel(rows)
     }
   )}
+  def delete = "#deleteAss" #> SHtml.button("Delete", () => {})
 }
 
 object Assessments {
@@ -34,6 +36,7 @@ object Assessments {
       val tmf = DateTimeFormat.forStyle("-M")
 
       rows.map(ar =>
+        ".sel        *" #> SHtml.ajaxCheckbox(false, (c) => {}) &
         ".date       *" #> <span title={tmf.print(ar.date)}>{dtf.print(ar.date)}</span> &
         ".tester     *" #> ar.tester &
         ".musician   *" #> ar.musician.name &
@@ -52,6 +55,7 @@ object Assessments {
 
   private val rowNodeSeq = // TODO Why does Templates give <html><body></body></html>? Templates(List("_assessmentRow")).open
     <tr class="assessmentRow">
+      <td class="sel"></td>
       <td class="date"></td>
       <td class="tester"></td>
       <td class="musician"></td>
