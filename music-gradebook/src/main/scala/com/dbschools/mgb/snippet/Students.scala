@@ -5,6 +5,7 @@ import xml.{NodeSeq, Text}
 import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
+import org.joda.time.Days
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
 import common.{Full, Loggable}
@@ -94,15 +95,18 @@ class Students extends Loggable {
           byYear.sortBy(ga => -pos(ga.musician.id))
       }
 
-      fullySorted.map(row =>
+      val now = DateTime.now
+      fullySorted.map(row => {
+        val lastAsmtTime = lastAssTimeByMusician.get(row.musician.id)
         ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
           ".stuName  *" #> studentLink(row.musician) &
           ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.get) &
           ".group    *" #> row.group.name &
           ".instr    *" #> row.instrument.name.get &
-          ".lastAss  *" #> ~lastAssTimeByMusician.get(row.musician.id).map(fmt.print) &
+          ".lastAss  *" #> ~lastAsmtTime.map(fmt.print) &
+          ".daysSince *" #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
           ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.id))
-      )
+      })
     })))
   }
 
