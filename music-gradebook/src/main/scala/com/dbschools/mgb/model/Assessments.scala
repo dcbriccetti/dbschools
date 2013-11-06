@@ -37,7 +37,7 @@ object AssessmentRows {
 
   private def addPredefinedComments(predefCommentsMap: Map[Int, String])(row: AssessmentRow): AssessmentRow = {
     predefCommentsMap.get(row.assId).map(predefComments => {
-      val newNotes = row.notes.map(predefComments + "; " + _) | predefComments
+      val newNotes = row.notes.toSeq.filter(_.nonEmpty).map(predefComments + "; " + _).headOption | predefComments
       row.copy(notes = Some(newNotes))
     }) | row
   }
