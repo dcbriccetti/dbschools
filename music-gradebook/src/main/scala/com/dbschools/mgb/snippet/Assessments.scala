@@ -56,7 +56,7 @@ object Assessments {
       val dtf = DateTimeFormat.forStyle("SS")
       val tmf = DateTimeFormat.forStyle("-S")
 
-      def assignmentCheckbox(row: AssessmentRow) =
+      def selectionCheckbox(row: AssessmentRow) =
         SHtml.ajaxCheckbox(false, checked => {
           val selectedAsses = rvSelectedAsses.is
           if (checked) selectedAsses += row.assId
@@ -66,7 +66,7 @@ object Assessments {
 
       val c = DateTimeComparator.getDateOnlyInstance
       rows.map(ar =>
-        ".sel        *" #> assignmentCheckbox(ar) &
+        ".sel        *" #> selectionCheckbox(ar) &
         ".date       *" #> (if (c.compare(null, ar.date) == 0) tmf else dtf).print(ar.date) &
         ".tester     *" #> ar.tester &
         ".musician   *" #> ar.musician.name &
