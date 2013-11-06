@@ -16,7 +16,7 @@ import schema.{Assessment, AppSchema, Musician, MusicianGroup}
 
 class StudentDetails extends TagCounts with MusicianFromReq {
   private val log = Logger.getLogger(getClass)
-  private var selectedMusicianGroups = Map[Int, MusicianGroup]()
+  private var selectedMusicianGroups = Set[Int]()
   private val groupSelectorValues = Cache.groups.map(g => (g.id.toString, g.name)).toSeq
   private var newAssignmentGroupId = groupSelectorValues(0)._1.toInt
   private val opMusicianDetails = opMusician.map(musician =>
@@ -78,7 +78,7 @@ class StudentDetails extends TagCounts with MusicianFromReq {
 
   private def assignmentCheckbox(ga: GroupAssignment) =
     SHtml.ajaxCheckbox(false, checked => {
-      if (checked) selectedMusicianGroups += ga.musicianGroup.id -> ga.musicianGroup
+      if (checked) selectedMusicianGroups += ga.musicianGroup.id
       else selectedMusicianGroups -= ga.musicianGroup.id
       if (selectedMusicianGroups.isEmpty) JsHideId("delete") else JsShowId("delete")
     })
@@ -104,7 +104,7 @@ class StudentDetails extends TagCounts with MusicianFromReq {
         Confirm(
           s"Are you sure you want to remove the ${selectedMusicianGroups.size} selected group assignments?",
           SHtml.ajaxInvoke(() => {
-            val ids = selectedMusicianGroups.keys
+            val ids = selectedMusicianGroups
             AppSchema.musicianGroups.deleteWhere(_.id in ids)
             log.info("Deleted group assignment(s): " + ids)
             selectedMusicianGroups = selectedMusicianGroups.empty
