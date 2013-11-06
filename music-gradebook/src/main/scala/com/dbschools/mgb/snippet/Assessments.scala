@@ -1,18 +1,25 @@
 package com.dbschools.mgb
 package snippet
 
+import scala.xml.NodeSeq
+import collection.mutable.{Set => MSet}
+import org.apache.log4j.Logger
 import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
 import net.liftweb._
 import util._
 import Helpers._
+import net.liftweb.http.{RequestVar, SHtml}
+import net.liftweb.http.js.JsCmds._
 import com.dbschools.mgb.model.{AssessmentRow, AssessmentRows}
 import schema.Subinstrument
-import scala.xml.NodeSeq
-import net.liftweb.http.SHtml
+
+object rvSelectedAsses extends RequestVar[MSet[Int]](MSet[Int]())
 
 class Assessments extends MusicianFromReq {
+  private val log = Logger.getLogger(getClass)
+
   def render = {
     Assessments.filterNodes(opMusician.isEmpty) andThen (
       AssessmentRows(opMusician.map(_.id)).toList match {
@@ -20,7 +27,20 @@ class Assessments extends MusicianFromReq {
       case rows => Assessments.rowCssSel(rows)
     }
   )}
-  def delete = "#deleteAss" #> SHtml.button("Delete", () => {})
+
+  def delete = "#deleteAss" #> SHtml.ajaxButton("Delete", () => {
+    val selAsses = rvSelectedAsses.is.toIterable
+    if (selAsses.nonEmpty) {
+      Confirm(
+        s"Are you sure you want to remove the ${selAsses.size} selected assessments? This can not be undone.",
+        SHtml.ajaxInvoke(() => {
+          model.Assessments.delete(selAsses)
+          log.info("Deleted assessment(s): " + selAsses)
+          rvSelectedAsses(rvSelectedAsses.is.empty)
+          Reload
+        }))
+    } else Noop
+  })
 }
 
 object Assessments {
@@ -35,8 +55,16 @@ object Assessments {
       val dtf = DateTimeFormat.forStyle("S-")
       val tmf = DateTimeFormat.forStyle("-M")
 
+      def assignmentCheckbox(row: AssessmentRow) =
+        SHtml.ajaxCheckbox(false, checked => {
+          val selectedAsses = rvSelectedAsses.is
+          if (checked) selectedAsses += row.assId
+          else selectedAsses -= row.assId
+          if (selectedAsses.isEmpty) JsHideId("deleteAss") else JsShowId("deleteAss")
+        })
+
       rows.map(ar =>
-        ".sel        *" #> SHtml.ajaxCheckbox(false, (c) => {}) &
+        ".sel        *" #> assignmentCheckbox(ar) &
         ".date       *" #> <span title={tmf.print(ar.date)}>{dtf.print(ar.date)}</span> &
         ".tester     *" #> ar.tester &
         ".musician   *" #> ar.musician.name &

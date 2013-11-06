@@ -128,7 +128,7 @@ class NewAssessment extends MusicianFromReq {
           val subinst = s.opSelSubinstId.flatMap(id => Cache.subinstruments.values.flatten.find(_.id == id)).map(_.name.get)
           val predef = Cache.tags.filter(t => selectedCommentIds.contains(t.id)).map(_.commentText).mkString(", ")
           val expandedNotes = (if (predef.isEmpty) "" else s"$predef; ") + s.notes
-          AssessmentRow(assTime, musician, user.last_name,
+          AssessmentRow(newAss.id, assTime, musician, user.last_name,
             ~s.opSelPieceId.flatMap(id => Cache.pieces.find(_.id == id)).map(_.name.get),
             ~inst, subinst, pass, if (expandedNotes.isEmpty) None else Some(expandedNotes))
         }
