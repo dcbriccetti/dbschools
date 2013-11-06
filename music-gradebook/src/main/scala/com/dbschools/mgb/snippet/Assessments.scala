@@ -14,6 +14,7 @@ import net.liftweb.http.{RequestVar, SHtml}
 import net.liftweb.http.js.JsCmds._
 import com.dbschools.mgb.model.{AssessmentRow, AssessmentRows}
 import schema.Subinstrument
+import org.joda.time.DateTimeComparator
 
 object rvSelectedAsses extends RequestVar[MSet[Int]](MSet[Int]())
 
@@ -52,8 +53,8 @@ object Assessments {
 
   def rowCssSel(rows: Iterable[AssessmentRow]): CssSel = {
     ".assessmentRow" #> {
-      val dtf = DateTimeFormat.forStyle("S-")
-      val tmf = DateTimeFormat.forStyle("-M")
+      val dtf = DateTimeFormat.forStyle("SS")
+      val tmf = DateTimeFormat.forStyle("-S")
 
       def assignmentCheckbox(row: AssessmentRow) =
         SHtml.ajaxCheckbox(false, checked => {
@@ -63,9 +64,10 @@ object Assessments {
           if (selectedAsses.isEmpty) JsHideId("deleteAss") else JsShowId("deleteAss")
         })
 
+      val c = DateTimeComparator.getDateOnlyInstance
       rows.map(ar =>
         ".sel        *" #> assignmentCheckbox(ar) &
-        ".date       *" #> <span title={tmf.print(ar.date)}>{dtf.print(ar.date)}</span> &
+        ".date       *" #> (if (c.compare(null, ar.date) == 0) tmf else dtf).print(ar.date) &
         ".tester     *" #> ar.tester &
         ".musician   *" #> ar.musician.name &
         ".piece [class]" #> (if (ar.pass) "pass" else "fail") &
