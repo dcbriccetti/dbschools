@@ -4,17 +4,18 @@ package snippet
 import scala.xml.NodeSeq
 import collection.mutable.{Set => MSet}
 import org.apache.log4j.Logger
+import org.joda.time.DateTimeComparator
 import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
 import net.liftweb._
 import util._
 import Helpers._
-import net.liftweb.http.{RequestVar, SHtml}
+import net.liftweb.http.{Templates, RequestVar, SHtml}
 import net.liftweb.http.js.JsCmds._
 import com.dbschools.mgb.model.{AssessmentRow, AssessmentRows}
 import schema.Subinstrument
-import org.joda.time.DateTimeComparator
+import model.BoxOpener._
 
 object rvSelectedAsses extends RequestVar[MSet[Int]](MSet[Int]())
 
@@ -83,14 +84,9 @@ object Assessments {
     sel(Assessments.rowNodeSeq)
   }
 
-  private val rowNodeSeq = // TODO Why does Templates give <html><body></body></html>? Templates(List("_assessmentRow")).open
-    <tr class="assessmentRow">
-      <td class="sel"></td>
-      <td class="date"></td>
-      <td class="tester"></td>
-      <td class="musician"></td>
-      <td class="piece"></td>
-      <td class="instrument"></td>
-      <td class="comments"></td>
-    </tr>
+  private val rowNodeSeq = {
+    val cssSel = ".assessmentRow ^^" #> ""
+    val table = Templates(List("_assessments")).open
+    cssSel(table)
+  }
 }
