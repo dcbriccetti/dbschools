@@ -18,7 +18,7 @@ import bootstrap.liftweb.{Actors, ApplicationPaths}
 import schema.{Musician, AppSchema}
 import model.BoxOpener._
 import com.dbschools.mgb.model.{Cache, LastPassFinder, Terms, GroupAssignments}
-import com.dbschools.mgb.comet.{ScheduleMusicians, ScheduledMusician, TestCometDispatcher, ClearSchedule}
+import com.dbschools.mgb.comet.{ScheduleMusicians, ScheduledMusician, ClearSchedule}
 
 object SortBy extends Enumeration {
   type SortBy = Value
@@ -92,7 +92,7 @@ class Students extends Loggable {
           ScheduledMusician(musician, -days, opNextPieceName | Cache.pieces.head.name.get)
         })
         Actors.testScheduler ! ScheduleMusicians(scheduledMusicians)
-        Noop
+        RedirectTo(ApplicationPaths.testing.href)
       })
     }
 
