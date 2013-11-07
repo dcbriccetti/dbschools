@@ -2,18 +2,23 @@ package com.dbschools.mgb.comet
 
 import net.liftweb.http.{ListenerManager, CometListener, CometActor}
 import org.apache.log4j.Logger
-import net.liftweb.http.js.jquery.JqJsCmds.FadeOut
-import net.liftweb.util.PassThru
+import akka.actor.Actor
+import net.liftweb.http.js.jquery.JqJsCmds.{FadeIn, FadeOut}
+import net.liftweb.util.{Helpers, PassThru}
+import Helpers._
 import net.liftweb.actor.LiftActor
 import net.liftweb.http.js.JsCmds.Reload
-import net.liftweb.util.Helpers._
+import net.liftweb.http.js.JE.JsRaw
 import com.dbschools.mgb.schema.Musician
-import akka.actor.Actor
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 
 case class ScheduledMusician(musician: Musician, sortOrder: Int, nextPieceName: String)
+case class TestingMusician(musician: Musician, testerName: String, time: DateTime)
 
 object testing {
   var scheduledMusicians = Set[ScheduledMusician]()
+  var testingMusicians = Set[TestingMusician]()
 }
 
 class TestSchedulerActor extends Actor {
@@ -23,13 +28,17 @@ class TestSchedulerActor extends Actor {
       testing.scheduledMusicians ++= scheds
       TestCometDispatcher ! RedisplaySchedule
 
-    case RemoveMusician(musician) =>
-      testing.scheduledMusicians.find(_.musician == musician).foreach(testing.scheduledMusicians -= _)
-      TestCometDispatcher ! RemoveMusician(musician)
+    case TestMusician(testingMusician) =>
+      testing.scheduledMusicians.find(_.musician == testingMusician.musician).foreach(sm => {
+        testing.scheduledMusicians -= sm
+        testing.testingMusicians += testingMusician
+      })
+      TestCometDispatcher ! MoveMusician(testingMusician)
 
     case ClearSchedule =>
-      testing.scheduledMusicians.foreach(sm => TestCometDispatcher ! RemoveMusician(sm.musician))
       testing.scheduledMusicians = testing.scheduledMusicians.empty
+      testing.testingMusicians = testing.testingMusicians.empty
+      TestCometDispatcher ! RedisplaySchedule
   }
 }
 
@@ -42,8 +51,19 @@ class TestCometActor extends CometActor with CometListener {
     case RedisplaySchedule =>
       partialUpdate(Reload)
 
-    case RemoveMusician(musician) =>
-      partialUpdate(FadeOut(musician.id.toString, 0 seconds, 2 seconds))
+    case MoveMusician(testingMusician) =>
+      val m = testingMusician.musician
+      val tn = testingMusician.testerName
+      val rowId = "t" + m.id
+      val tmf = DateTimeFormat.forStyle("-M")
+      val now = tmf.print(DateTime.now)
+
+      partialUpdate( // todo Remove duplication
+        FadeOut(testingMusician.musician.id.toString, 0 seconds, 2 seconds) &
+        JsRaw(s"""$$("#testingTable tbody").prepend("<tr id='$rowId' style='display: none;'>""" +
+          s"""<td class='h4'>${m.first_name} ${m.last_name}</td><td class='h4'>$tn</td><td class='h4'>$now</td></tr>");""").cmd &
+        FadeIn(rowId, 0 seconds, 2 seconds)
+      )
 
     case Welcome =>
   }
@@ -52,8 +72,9 @@ class TestCometActor extends CometActor with CometListener {
 }
 
 case object RedisplaySchedule
-case class ScheduleMusicians(scheds: Iterable[ScheduledMusician])
-case class RemoveMusician(musician: Musician)
+case class ScheduleMusicians(scheduledMusicians: Iterable[ScheduledMusician])
+case class TestMusician(testingMusician: TestingMusician)
+case class MoveMusician(testingMusician: TestingMusician)
 case object ClearSchedule
 case object Welcome
 

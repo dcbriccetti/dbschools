@@ -2,14 +2,40 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
-    <h2>Test Schedule</h2>
 
     <div data-lift="TestSched">
         <div data-lift="comet?type=TestCometActor"></div>
-        <table class="table autoWidth">
-            <tr><th>Student</th><th>Piece</th></tr>
-            <tr id="student"></tr>
-        </table>
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Queue</h2>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Piece</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="student"></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-4">
+                <h2>Sessions</h2>
+                <table id='testingTable' class="table">
+                    <thead>
+                    <tr id="testingTableHead">
+                        <th>Student</th>
+                        <th>Tester</th>
+                        <th>Time In</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="test"></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 </body>

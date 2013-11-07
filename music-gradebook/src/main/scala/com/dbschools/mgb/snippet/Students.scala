@@ -96,7 +96,7 @@ class Students extends Loggable {
       })
     }
 
-    def clearScheduleButton = SHtml.ajaxButton("Clear Testing Schedule", () => {
+    def clearScheduleButton = SHtml.ajaxButton("Clear Testing", () => {
       Actors.testScheduler ! ClearSchedule
       Noop
     })
