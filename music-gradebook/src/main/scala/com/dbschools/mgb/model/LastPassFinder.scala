@@ -8,13 +8,13 @@ import com.dbschools.mgb.schema._
 import Terms.toTs
 
 class LastPassFinder {
-  val instruments     = Cache.instruments       .map(i => i.id -> i.name.is).toMap
+  val instruments     = Cache.instruments       .map(i => i.id -> i.name.get).toMap
   val subinstruments  = AppSchema.subinstruments.map(i => i.id -> i).toMap
   val pieces = Cache.pieces
-  val pieceNames = pieces.map(p => p.id -> p.name.is).toMap
-  val pieceOrderToId = pieces.map(p => p.testOrder.is -> p.id).toMap
+  val pieceNames = pieces.map(p => p.id -> p.name.get).toMap
+  val pieceOrderToId = pieces.map(p => p.testOrder.get -> p.id).toMap
   val numPieces = pieces.size
-  lazy val pieceIdToPosition = pieces.sortBy(_.testOrder.is).map(_.id).zipWithIndex.toMap
+  lazy val pieceIdToPosition = pieces.sortBy(_.testOrder.get).map(_.id).zipWithIndex.toMap
 
   def lastPassed(
       musicianId: Option[Int]       = None,
@@ -25,8 +25,8 @@ class LastPassFinder {
       where(a.pass === true and a.musician_id === musicianId.? and
         a.pieceId === p.id and a.assessment_time < upTo.map(toTs).?)
       groupBy(a.musician_id, a.instrument_id, a.subinstrument_id)
-      compute max(p.testOrder.is)
-      orderBy(max(p.testOrder.is) desc)
+      compute max(p.testOrder.get)
+      orderBy(max(p.testOrder.get) desc)
     ).map(group => {
       val testOrder = group.measures.get
       val pieceId = pieceOrderToId(testOrder)
@@ -42,5 +42,5 @@ class LastPassFinder {
     }
   }
 
-  def next(piece: Piece) = Cache.pieces.find(_.testOrder.is.compareTo(piece.testOrder.is) > 0) | Cache.pieces.head
+  def next(piece: Piece) = Cache.pieces.find(_.testOrder.get.compareTo(piece.testOrder.get) > 0) | Cache.pieces.head
 }
