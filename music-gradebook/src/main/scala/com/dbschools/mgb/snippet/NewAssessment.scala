@@ -31,15 +31,18 @@ class NewAssessment extends MusicianFromReq {
     case class Pi(piece: Piece, instId: Int, opSubInstId: Option[Int] = None)
 
     val opNextPi = {
+      val currentGroups = GroupAssignments(opMusician.map(_.id), opSelectedTerm = Some(Terms.currentTerm)).toSeq
+      val currentInstIds = currentGroups.map(_.instrument.id)
+
       val pi = for {
-        musician  <- opMusician
-        lastPass  <- lastPassFinder.lastPassed(Some(musician.id)).headOption
-        piece     <- Cache.pieces.find(_.id == lastPass.pieceId)
-        nextPiece =  lastPassFinder.next(piece)
+        musician      <- opMusician
+        allLastPassed =  lastPassFinder.lastPassed(Some(musician.id))
+        lastPass      <- allLastPassed.find(lp => currentInstIds contains lp.instrumentId)
+        piece         <- Cache.pieces.find(_.id == lastPass.pieceId)
+        nextPiece     =  lastPassFinder.next(piece)
       } yield Pi(nextPiece, lastPass.instrumentId, lastPass.opSubinstrumentId)
 
-      pi orElse GroupAssignments(opMusician.map(_.id), opSelectedTerm = Some(Terms.currentTerm)).headOption.map(ga =>
-        Pi(Cache.pieces.head, ga.instrument.id))
+      pi orElse currentGroups.headOption.map(ga => Pi(Cache.pieces.head, ga.instrument.id))
     }
 
     val commentTagSelections = scala.collection.mutable.Map(Cache.tags.map(_.id -> false): _*)
