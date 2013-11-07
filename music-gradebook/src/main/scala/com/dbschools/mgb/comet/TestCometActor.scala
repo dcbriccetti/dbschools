@@ -67,7 +67,7 @@ class TestCometActor extends CometActor with CometListener {
       }
 
       partialUpdate(
-        FadeOut("qr" + m.id.toString, 0 seconds, 2 seconds) &
+        FadeOut("qr" + m.id, 0 seconds, 2 seconds) &
         JsRaw(rawJsCmd).cmd &
         FadeIn("sr" + m.id, 0 seconds, 2 seconds)
       )
