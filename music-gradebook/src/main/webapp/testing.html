@@ -3,7 +3,7 @@
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
 
-    <div data-lift="TestSched">
+    <div data-lift="Testing">
         <div data-lift="comet?type=TestCometActor"></div>
         <div class="row">
             <div class="col-md-6">
@@ -16,7 +16,10 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="student"></tr>
+                    <tr class='queueRow'>
+                      <td id="qrstu" class="h3"></td>
+                      <td id="qrpiece" class="h3"></td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -31,7 +34,11 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="test"></tr>
+                    <tr class='sessionRow'>
+                      <td id="srstu" class="h5"></td>
+                      <td id="srtester" class="h5"></td>
+                      <td id="srtime" class="h5"></td>
+                    </tr>
                     </tbody>
                 </table>
             </div>

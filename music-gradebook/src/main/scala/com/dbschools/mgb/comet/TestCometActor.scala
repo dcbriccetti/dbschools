@@ -1,8 +1,11 @@
-package com.dbschools.mgb.comet
+package com.dbschools.mgb
+package comet
 
-import net.liftweb.http.{ListenerManager, CometListener, CometActor}
+import scala.xml.NodeSeq
 import org.apache.log4j.Logger
+import org.joda.time.DateTime
 import akka.actor.Actor
+import net.liftweb.http.{Templates, ListenerManager, CometListener, CometActor}
 import net.liftweb.http.js.jquery.JqJsCmds.{FadeIn, FadeOut}
 import net.liftweb.util.{Helpers, PassThru}
 import Helpers._
@@ -10,8 +13,8 @@ import net.liftweb.actor.LiftActor
 import net.liftweb.http.js.JsCmds.Reload
 import net.liftweb.http.js.JE.JsRaw
 import com.dbschools.mgb.schema.Musician
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
+import com.dbschools.mgb.snippet.Testing
+import model.BoxOpener._
 
 case class ScheduledMusician(musician: Musician, sortOrder: Int, nextPieceName: String)
 case class TestingMusician(musician: Musician, testerName: String, time: DateTime)
@@ -53,16 +56,20 @@ class TestCometActor extends CometActor with CometListener {
 
     case MoveMusician(testingMusician) =>
       val m = testingMusician.musician
-      val tn = testingMusician.testerName
-      val rowId = "t" + m.id
-      val tmf = DateTimeFormat.forStyle("-M")
-      val now = tmf.print(DateTime.now)
+      val rawJsCmd = {
+        val testSchedTemplate: NodeSeq = Templates(List("testing")).open
+        val cssSelExtractRow = s".sessionRow ^^" #> ""
+        val row = cssSelExtractRow(testSchedTemplate)
+        val cssSelProcessRow =
+          Testing.sessionRow(show = false)(TestingMusician(m, testingMusician.testerName, DateTime.now))
+        val escapedJsString = cssSelProcessRow(row).toString.replace("\"", """\"""").replace("\n", "") // TODO find correct way to escape
+        s""" $$("#testingTable tbody").prepend("$escapedJsString");"""
+      }
 
-      partialUpdate( // todo Remove duplication
-        FadeOut(testingMusician.musician.id.toString, 0 seconds, 2 seconds) &
-        JsRaw(s"""$$("#testingTable tbody").prepend("<tr id='$rowId' style='display: none;'>""" +
-          s"""<td class='h4'>${m.first_name} ${m.last_name}</td><td class='h4'>$tn</td><td class='h4'>$now</td></tr>");""").cmd &
-        FadeIn(rowId, 0 seconds, 2 seconds)
+      partialUpdate(
+        FadeOut("qr" + m.id.toString, 0 seconds, 2 seconds) &
+        JsRaw(rawJsCmd).cmd &
+        FadeIn("sr" + m.id, 0 seconds, 2 seconds)
       )
 
     case Welcome =>
