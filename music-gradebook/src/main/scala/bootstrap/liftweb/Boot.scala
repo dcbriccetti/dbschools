@@ -12,6 +12,8 @@ import net.liftmodules.FoBo
 
 import com.dbschools.mgb.Db
 import com.dbschools.mgb.model.Cache
+import akka.actor.{PoisonPill, Props, ActorSystem}
+import com.dbschools.mgb.comet.TestSchedulerActor
 
 object RunState {
   object loggedIn extends SessionVar[Boolean] (false)
@@ -75,9 +77,17 @@ class Boot {
       new Html5Properties(r.userAgent))    
 
     Db.initialize()
-    S.addAround(new LoanWrapper{override def apply[T](f: => T): T = {inTransaction {f}}})
-
     Cache.init()
     Flot.init()
+  }
+}
+
+object Actors {
+  val system = ActorSystem()
+  val testScheduler = system.actorOf(Props[TestSchedulerActor], "testScheduler")
+  private val all = Seq(testScheduler)
+
+  def stop(): Unit = {
+    all.foreach(_ ! PoisonPill)
   }
 }

@@ -14,7 +14,7 @@ import Helpers._
 import net.liftweb.http.{SessionVar, Templates, SHtml}
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JsCmds.Replace
-import bootstrap.liftweb.ApplicationPaths
+import bootstrap.liftweb.{Actors, ApplicationPaths}
 import schema.{Musician, AppSchema}
 import model.BoxOpener._
 import com.dbschools.mgb.model.{Cache, LastPassFinder, Terms, GroupAssignments}
@@ -91,13 +91,13 @@ class Students extends Loggable {
           } yield nextPiece.name.get
           ScheduledMusician(musician, -days, opNextPieceName | Cache.pieces.head.name.get)
         })
-        TestCometDispatcher ! ScheduleMusicians(scheduledMusicians)
+        Actors.testScheduler ! ScheduleMusicians(scheduledMusicians)
         Noop
       })
     }
 
     def clearScheduleButton = SHtml.ajaxButton("Clear Testing Schedule", () => {
-      TestCometDispatcher ! ClearSchedule
+      Actors.testScheduler ! ClearSchedule
       Noop
     })
     

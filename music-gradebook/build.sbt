@@ -1,6 +1,6 @@
 name := "Music Gradebook"
 
-version := "3.1.0"
+version := "3.2.0"
 
 organization := "com.dbschools"
 
@@ -18,6 +18,7 @@ scalacOptions ++= Seq("-deprecation", "-unchecked")
 libraryDependencies ++= {
   val liftVersion = "2.6-SNAPSHOT"
   Seq(
+    "com.typesafe.akka" %% "akka-actor"         % "2.1.4" withSources(),
     "org.scalaz"        %  "scalaz-core_2.10"   % "7.0.3" withSources(),
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",
     "net.liftweb"       %% "lift-mapper"        % liftVersion        % "compile",

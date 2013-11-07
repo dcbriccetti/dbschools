@@ -5,8 +5,7 @@ import com.dbschools.mgb.schema.SchemaHelper
 import model.DefaultDataCreator
 import net.liftweb.http.S
 import net.liftweb.squerylrecord.RecordTypeMode.inTransaction
-import net.liftweb.util.LoanWrapper
-import net.liftweb.util.Props
+import net.liftweb.util.{LiftFlowOfControlException, LoanWrapper, Props}
 
 object Db {
 
@@ -31,10 +30,15 @@ object Db {
       SchemaHelper.touch()
     }
 
-    /* Make transaction wrap around the whole HTTP request */
     S.addAround(new LoanWrapper {
-      override def apply[T](f: ⇒ T): T = {
-        inTransaction { f }
+      override def apply[T](f: => T): T = {
+        inTransaction {
+          try {
+            f
+          } catch {
+            case e: LiftFlowOfControlException => throw e
+          }
+        }
       }
     })
   }
