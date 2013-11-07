@@ -34,10 +34,13 @@ object Db {
       override def apply[T](f: => T): T = {
         inTransaction {
           try {
-            f
+            Right(f)
           } catch {
-            case e: LiftFlowOfControlException => throw e
+            case e: LiftFlowOfControlException => Left(e)
           }
+        } match {
+          case Left(e)  => throw e
+          case Right(r) => r
         }
       }
     })
