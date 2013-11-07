@@ -7,7 +7,7 @@ import org.joda.time.DateTime
 import akka.actor.Actor
 import net.liftweb.http.{Templates, ListenerManager, CometListener, CometActor}
 import net.liftweb.http.js.jquery.JqJsCmds.{FadeIn, FadeOut}
-import net.liftweb.util.{Helpers, PassThru}
+import net.liftweb.util.{StringHelpers, Helpers, PassThru}
 import Helpers._
 import net.liftweb.actor.LiftActor
 import net.liftweb.http.js.JsCmds.Reload
@@ -62,8 +62,8 @@ class TestCometActor extends CometActor with CometListener {
         val row = cssSelExtractRow(testSchedTemplate)
         val cssSelProcessRow =
           Testing.sessionRow(show = false)(TestingMusician(m, testingMusician.testerName, DateTime.now))
-        val escapedJsString = cssSelProcessRow(row).toString.replace("\"", """\"""").replace("\n", "") // TODO find correct way to escape
-        s""" $$("#testingTable tbody").prepend("$escapedJsString");"""
+        val jsString = StringHelpers.encJs(cssSelProcessRow(row).toString)
+        s"""$$("#testingTable tbody").prepend($jsString);"""
       }
 
       partialUpdate(
