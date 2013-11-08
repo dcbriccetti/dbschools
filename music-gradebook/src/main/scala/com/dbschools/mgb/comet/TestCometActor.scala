@@ -56,19 +56,19 @@ class TestCometActor extends CometActor with CometListener {
 
     case MoveMusician(testingMusician) =>
       val m = testingMusician.musician
-      val rawJsCmd = {
+      val prependRowToSessionsTable = {
         val testSchedTemplate: NodeSeq = Templates(List("testing")).open
         val cssSelExtractRow = s".sessionRow ^^" #> ""
         val row = cssSelExtractRow(testSchedTemplate)
         val cssSelProcessRow =
           Testing.sessionRow(show = false)(TestingMusician(m, testingMusician.testerName, DateTime.now))
-        val jsString = StringHelpers.encJs(cssSelProcessRow(row).toString)
+        val jsString = cssSelProcessRow(row).toString.encJs
         s"""$$("#testingTable tbody").prepend($jsString);"""
       }
 
       partialUpdate(
         FadeOut("qr" + m.id, 0 seconds, 2 seconds) &
-        JsRaw(rawJsCmd).cmd &
+        JsRaw(prependRowToSessionsTable).cmd &
         FadeIn("sr" + m.id, 0 seconds, 2 seconds)
       )
 
