@@ -26,17 +26,15 @@ object SortBy extends Enumeration {
   val LastAssessment = Value("Last Assessment")
   val LastPiece = Value("Last Piece")
 }
-object sortingBy extends SessionVar[SortBy.Value](SortBy.Name)
+
+object svSortingStudentsBy extends SessionVar[SortBy.Value](SortBy.Name)
 
 object svSelectors extends SessionVar[Selectors](new Selectors())
 
 class Students extends Loggable {
   private val selectors = svSelectors.is
 
-  private def replaceContents = {
-    val template = "_inGroupsTable"
-    Templates(List(template)).map(Replace("inGroups", _)).open
-  }
+  private def replaceContents = Templates(List("_inGroupsTable")).map(Replace("inGroups", _)).open
 
   selectors.opCallback = Some(() => replaceContents)
   def yearSelector = selectors.yearSelector
@@ -47,8 +45,13 @@ class Students extends Loggable {
 
   def createNew = "#create [href]" #> ApplicationPaths.newStudent.href
 
-  def sortBy = SHtml.ajaxRadio[SortBy.Value](Seq(SortBy.Name, SortBy.LastAssessment, SortBy.LastPiece), Full(sortingBy.is),
-    (s) => {sortingBy(s); replaceContents}).flatMap(c => <span>{c.xhtml} {c.key.toString} </span>)
+  def sortBy = {
+    val orders = Seq(SortBy.Name, SortBy.LastAssessment, SortBy.LastPiece)
+    SHtml.ajaxRadio[SortBy.Value](orders, Full(svSortingStudentsBy.is), (s) => {
+      svSortingStudentsBy(s)
+      replaceContents
+    }).flatMap(item => <label style="margin-right: .5em;">{item.xhtml} {item.key.toString} </label>)
+  }
 
   var newId = 0
   var grade = 6
@@ -113,7 +116,7 @@ class Students extends Loggable {
       val byYear = GroupAssignments(None, svSelectors.opSelectedTerm, svSelectors.opSelectedGroupId,
         svSelectors.opSelectedInstId).toSeq.sortBy(_.musicianGroup.school_year)
 
-      val fullySorted = sortingBy.is match {
+      val fullySorted = svSortingStudentsBy.is match {
         case SortBy.Name =>
           byYear.sortBy(_.musician.name)
         case SortBy.LastAssessment =>
