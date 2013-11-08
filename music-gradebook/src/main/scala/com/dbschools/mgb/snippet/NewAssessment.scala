@@ -13,7 +13,8 @@ import net.liftweb.http
 import http.SHtml
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.common.{Empty, Full}
-import net.liftweb.http.js.jquery.JqJsCmds.PrependHtml
+import net.liftweb.http.js.jquery.JqJsCmds
+import JqJsCmds.{FadeOut, PrependHtml}
 import net.liftweb.http.js.JsCmd
 import net.liftweb.http.js.JsCmds.ReplaceOptions
 import net.liftweb.http.js.JE.JsRaw
@@ -125,13 +126,15 @@ class NewAssessment extends MusicianFromReq {
         AppSchema.assessmentTags.insert(tags)
         log.info(s"Assessment: $newAss, $tags")
 
+        def pieceNameFromId(id: Int) = Cache.pieces.find(_.id == id).map(_.name.get)
+
         val row = {
           val inst = s.opSelInstId.flatMap(id => Cache.instruments.find(_.id == id)).map(_.name.get)
           val subinst = s.opSelSubinstId.flatMap(id => Cache.subinstruments.values.flatten.find(_.id == id)).map(_.name.get)
           val predef = Cache.tags.filter(t => selectedCommentIds.contains(t.id)).map(_.commentText).mkString(", ")
           val expandedNotes = (if (predef.isEmpty) "" else s"$predef; ") + s.notes
           AssessmentRow(newAss.id, assTime, musician, user.last_name,
-            ~s.opSelPieceId.flatMap(id => Cache.pieces.find(_.id == id)).map(_.name.get),
+            ~s.opSelPieceId.flatMap(id => pieceNameFromId(id)),
             ~inst, subinst, pass, if (expandedNotes.isEmpty) None else Some(expandedNotes))
         }
         ActivityCometDispatcher ! ActivityStatusUpdate(row)
@@ -142,7 +145,12 @@ class NewAssessment extends MusicianFromReq {
           SetHtml("piece", selPiece) & sendTempo &
           SetHtml("commentText", commentText) &
           SetHtml("checkbox1", checkboxes(0)) &
-          SetHtml("checkbox2", checkboxes(1))
+          SetHtml("checkbox2", checkboxes(1)) &
+          (pieceNameFromId(newAss.pieceId).map(pieceName => {
+            val id = "passFailConfirmation"
+            val msg = if (newAss.pass) "Passed " else "Failed "
+            SetHtml(id, Text(msg + pieceName)) & JqJsCmds.Show(id) & FadeOut(id)
+          }) | Noop)
       }) | Noop
     }
 
