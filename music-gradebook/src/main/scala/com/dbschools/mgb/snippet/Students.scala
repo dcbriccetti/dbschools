@@ -80,9 +80,11 @@ class Students extends Loggable {
   def inGroups = {
     val fmt = DateTimeFormat.forStyle("S-")
     val lastPassesByMusician = lastPassFinder.lastPassed().groupBy(_.musicianId)
-    
+
+    def hideIf(b: Boolean) = "style" -> (if (b) "display: none;" else "")
+
     def scheduleButton= {
-      SHtml.ajaxButton("Schedule for Testing", () => {
+      SHtml.ajaxButton("Add Selected Students", () => {
         val now = DateTime.now
         val scheduledMusicians = selectedMusicians.values.map(musician => {
           val lastAsmtTime = lastAssTimeByMusician.get(musician.id)
@@ -96,21 +98,21 @@ class Students extends Loggable {
         })
         Actors.testScheduler ! ScheduleMusicians(scheduledMusicians)
         RedirectTo(ApplicationPaths.testing.href)
-      })
+      }, hideIf(selectedMusicians.isEmpty))
     }
 
-    def clearScheduleButton = SHtml.ajaxButton("Clear Testing", () => {
+    def clearScheduleButton = SHtml.ajaxButton("Clear", () => {
       Actors.testScheduler ! ClearSchedule
       Noop
-    })
+    }, hideIf(comet.testing.scheduledMusicians.isEmpty))
     
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedInstId .isDefined) ".instr"   #> none[String] else PassThru) andThen (
 
-    "#clearSchedule"  #> clearScheduleButton &
-    "#schedule"       #> scheduleButton &
-    ".studentRow"     #> {
+    "#clearSchedule"          #> clearScheduleButton &
+    "#schedule"               #> scheduleButton &
+    ".studentRow"             #> {
       val longAgo = new DateTime("1000-01-01").toDate
 
       val byYear = GroupAssignments(None, svSelectors.opSelectedTerm, svSelectors.opSelectedGroupId,
@@ -131,7 +133,7 @@ class Students extends Loggable {
         SHtml.ajaxCheckbox(false, checked => {
           if (checked) selectedMusicians += musician.id -> musician
           else selectedMusicians -= musician.id
-          if (selectedMusicians.isEmpty) JsHideId("schedule") else JsShowId("schedule")
+          (if (selectedMusicians.isEmpty) JsHideId("schedule") else JsShowId("schedule")) & Students.showClearSchedule
         })
 
       val now = DateTime.now
@@ -172,4 +174,8 @@ class Students extends Loggable {
 
 object Students {
   def urlToDetails(m: Musician) = "studentDetails?id=" + m.id
+
+  def showClearSchedule = JsShowIdIf("clearSchedule", comet.testing.scheduledMusicians.nonEmpty)
+
+  def JsShowIdIf(what: String, condition: Boolean) = if (condition) JsShowId(what) else JsHideId(what)
 }

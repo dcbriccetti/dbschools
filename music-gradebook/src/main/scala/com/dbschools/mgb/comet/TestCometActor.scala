@@ -7,7 +7,7 @@ import org.joda.time.DateTime
 import akka.actor.Actor
 import net.liftweb.http.{Templates, ListenerManager, CometListener, CometActor}
 import net.liftweb.http.js.jquery.JqJsCmds.{FadeIn, FadeOut}
-import net.liftweb.util.{StringHelpers, Helpers, PassThru}
+import net.liftweb.util.{Helpers, PassThru}
 import Helpers._
 import net.liftweb.actor.LiftActor
 import net.liftweb.http.js.JsCmds.Reload
@@ -30,6 +30,7 @@ class TestSchedulerActor extends Actor {
     case ScheduleMusicians(scheds) =>
       testing.scheduledMusicians ++= scheds
       TestCometDispatcher ! RedisplaySchedule
+      updateStudentsPage()
 
     case TestMusician(testingMusician) =>
       testing.scheduledMusicians.find(_.musician == testingMusician.musician).foreach(sm => {
@@ -37,12 +38,17 @@ class TestSchedulerActor extends Actor {
         testing.testingMusicians += testingMusician
       })
       TestCometDispatcher ! MoveMusician(testingMusician)
+      updateStudentsPage()
 
     case ClearSchedule =>
       testing.scheduledMusicians = testing.scheduledMusicians.empty
       testing.testingMusicians = testing.testingMusicians.empty
       TestCometDispatcher ! RedisplaySchedule
+      updateStudentsPage()
   }
+
+  private def updateStudentsPage(): Unit =
+    StudentsCometDispatcher ! TestingUpdate(testing.scheduledMusicians)
 }
 
 class TestCometActor extends CometActor with CometListener {
