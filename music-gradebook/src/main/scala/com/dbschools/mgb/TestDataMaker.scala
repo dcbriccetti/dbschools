@@ -229,7 +229,7 @@ cindy""")
     AppSchema.musicianGroups  .deleteWhere(mg => mg.id === mg.id)
     AppSchema.assessmentTags  .deleteWhere(a => a.assessmentId === a.assessmentId)
     AppSchema.assessments     .deleteWhere(a => a.id === a.id)
-    AppSchema.musicians       .deleteWhere(m => m.idField.is === m.idField.is)
+    AppSchema.musicians       .deleteWhere(m => m.idField.get === m.idField.get)
   }
   
   private def createAndGroupStudents(): Unit = {
@@ -249,7 +249,7 @@ cindy""")
         case _            => GroupIds(1)
       }
       groupIds.foreach(groupId => {
-        AppSchema.musicianGroups.insert(MusicianGroup(id, m.musician_id.is, groupId,
+        AppSchema.musicianGroups.insert(MusicianGroup(id, m.musician_id.get, groupId,
           instrumentIds((random * instrumentIds.length).toInt), grad_year))
         id += 1
       })

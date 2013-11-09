@@ -18,7 +18,7 @@ object MusicianGroup {
   def selectedMusicians(term: Option[Int] = None, musicGroupId: Option[Int] = None,
       instrumentId: Option[Int] = None) =
     from(AppSchema.musicianGroups, AppSchema.musicians)((mg, m) =>
-    where(mg.musician_id === m.musician_id.is and mg.school_year === term.? and
+    where(mg.musician_id === m.musician_id.get and mg.school_year === term.? and
       mg.group_id === musicGroupId.? and mg.instrument_id === instrumentId.?)
     select MusicianGroupMusician(mg, m))
 
@@ -28,7 +28,7 @@ object MusicianGroup {
       where(mg.instrument_id === i.id and mg.school_year === term.? and
         mg.group_id === musicGroupId.?)
       groupBy i.id
-      compute count(i.name.is)
-    ).map(g => instrumentsMap(g.key) -> g.measures).toSeq.sortBy(_._1.sequence.is)
+      compute count(i.name.get)
+    ).map(g => instrumentsMap(g.key) -> g.measures).toSeq.sortBy(_._1.sequence.get)
   }
 }
