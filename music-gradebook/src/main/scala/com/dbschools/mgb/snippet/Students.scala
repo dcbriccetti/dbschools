@@ -19,6 +19,7 @@ import schema.{Musician, AppSchema}
 import model.BoxOpener._
 import com.dbschools.mgb.model.{Cache, LastPassFinder, Terms, GroupAssignments}
 import com.dbschools.mgb.comet.{ScheduleMusicians, ScheduledMusician, ClearSchedule}
+import Cache.lastAssTimeByMusician
 
 object SortBy extends Enumeration {
   type SortBy = Value
@@ -71,11 +72,6 @@ class Students extends Loggable {
     "#name"      #> SHtml.text(name, name = _) &
     "#save"      #> SHtml.onSubmitUnit(() => saveStudent)
   }
-
-  private val lastAssTimeByMusician = (for {
-    gm <- from(AppSchema.assessments)(a => groupBy(a.musician_id) compute max(a.assessment_time))
-    m <- gm.measures
-  } yield gm.key -> new DateTime(m.getTime)).toMap
 
   def inGroups = {
     val fmt = DateTimeFormat.forStyle("S-")

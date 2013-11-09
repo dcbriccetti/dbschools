@@ -124,6 +124,7 @@ class NewAssessment extends MusicianFromReq {
         } yield commentId).toSet
         val tags = selectedCommentIds.map(id => AssessmentTag(newAss.id, id))
         AppSchema.assessmentTags.insert(tags)
+        Cache.updateLastAssTime(newAss.musician_id, assTime)
         log.info(s"Assessment: $newAss, $tags")
 
         def pieceNameFromId(id: Int) = Cache.pieces.find(_.id == id).map(_.name.get)
