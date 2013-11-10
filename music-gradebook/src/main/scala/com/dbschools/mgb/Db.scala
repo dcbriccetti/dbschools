@@ -1,10 +1,10 @@
 package com.dbschools.mgb
 
-import com.dbschools.mgb.schema.SchemaHelper
+import com.dbschools.mgb.schema.{AppSchema, SchemaHelper}
 
 import model.DefaultDataCreator
 import net.liftweb.http.S
-import net.liftweb.squerylrecord.RecordTypeMode.inTransaction
+import net.liftweb.squerylrecord.RecordTypeMode.{inTransaction, transaction}
 import net.liftweb.util.{LiftFlowOfControlException, LoanWrapper, Props}
 
 object Db {
@@ -44,5 +44,10 @@ object Db {
         }
       }
     })
+  }
+
+  def main(args: Array[String]) {
+    initialize()
+    transaction { AppSchema.printDdl }
   }
 }
