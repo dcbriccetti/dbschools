@@ -29,7 +29,7 @@ class Graphs extends Loggable {
 
   def grades = {
     val gradesToMgms = selectors.musicianGroups.groupBy(mgm =>
-      Terms.graduationYearAsGrade(mgm.m.graduation_year.is, mgm.mg.school_year))
+      Terms.graduationYearAsGrade(mgm.m.graduation_year.get, mgm.mg.school_year))
     val sortedYears = gradesToMgms.keys.toSeq.sorted
     val labels = sortedYears.map(_.toString)
     val portions = sortedYears.map(gradesToMgms).map(_.size).toSeq
@@ -38,8 +38,8 @@ class Graphs extends Loggable {
 
   def instruments = {
     val sortedInstruments = MusicianGroup.selectedInstruments(
-      selectors.opSelectedTerm, selectors.opSelectedGroupId).filter(_._1.name.is != "Unassigned")
-    val names = sortedInstruments.map(_._1.name.is.toString)
+      selectors.opSelectedTerm, selectors.opSelectedGroupId).filter(_._1.name.get != "Unassigned")
+    val names = sortedInstruments.map(_._1.name.get.toString)
     val portions = sortedInstruments.map(_._2.toInt)
     PassThru // todo Flot.renderPie("instruments_graph", Pie(portions, Some(names)))
   }
@@ -75,7 +75,7 @@ class Graphs extends Loggable {
 
   private def lastPasses: Iterable[LastPassFinder#LastPass] = {
     val lpf = new LastPassFinder()
-    val musicianIds = selectors.musicianGroups.map(_.m.musician_id.is).toSet
+    val musicianIds = selectors.musicianGroups.map(_.m.musician_id.get).toSet
     val opTermEnd = selectors.opSelectedTerm.map(Terms.termEnd)
     val lastPasses = lpf.lastPassed(upTo = opTermEnd)
     lastPasses.filter(lp => musicianIds.contains(lp.musicianId))
