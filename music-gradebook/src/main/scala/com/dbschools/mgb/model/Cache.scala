@@ -1,9 +1,11 @@
 package com.dbschools.mgb.model
 
-import com.dbschools.mgb.schema.AppSchema
+import com.dbschools.mgb.schema.{Piece, AppSchema}
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.PrimitiveTypeMode.{inTransaction => inT}
 import org.joda.time.DateTime
+import scalaz._
+import Scalaz._
 
 object Cache {
   var groups = readGroups
@@ -41,4 +43,6 @@ object Cache {
   def invalidatePieces(): Unit = { pieces = readPieces }
 
   def invalidateTempos(): Unit = { tempos = readTempos }
+
+  def nextPiece(piece: Piece) = pieces.find(_.testOrder.get.compareTo(piece.testOrder.get) > 0) | pieces.head
 }

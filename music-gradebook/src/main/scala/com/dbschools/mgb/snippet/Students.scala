@@ -43,6 +43,7 @@ class Students extends Loggable {
   def instrumentSelector = selectors.instrumentSelector
 
   private val lastPassFinder = new LastPassFinder()
+  private val lastPassesByMusician = lastPassFinder.lastPassed().groupBy(_.musicianId)
 
   def createNew = "#create [href]" #> ApplicationPaths.newStudent.href
 
@@ -57,7 +58,7 @@ class Students extends Loggable {
   var newId = 0
   var grade = 6
   var name = ""
-  var selectedMusicians = Map[Int, Musician]()
+  var selectedMusicians = Set[Musician]()
 
   def newStudent = {
 
@@ -75,27 +76,13 @@ class Students extends Loggable {
 
   def inGroups = {
     val fmt = DateTimeFormat.forStyle("S-")
-    val lastPassesByMusician = lastPassFinder.lastPassed().groupBy(_.musicianId)
 
     def hideIf(b: Boolean) = "style" -> (if (b) "display: none;" else "")
 
-    def scheduleButton= {
-      SHtml.ajaxButton("Add Selected Students", () => {
-        val now = DateTime.now
-        val scheduledMusicians = selectedMusicians.values.map(musician => {
-          val lastAsmtTime = lastAssTimeByMusician.get(musician.id)
-          val days = lastAsmtTime.map(la => Days.daysBetween(la, now).getDays) | Int.MaxValue
-          val opNextPieceName = for {
-            lastPass  <- lastPassFinder.lastPassed(Some(musician.id)).headOption
-            piece     <- Cache.pieces.find(_.id == lastPass.pieceId)
-            nextPiece = lastPassFinder.next(piece)
-          } yield nextPiece.name.get
-          ScheduledMusician(musician, -days, opNextPieceName | Cache.pieces.head.name.get)
-        })
-        Actors.testScheduler ! ScheduleMusicians(scheduledMusicians)
-        RedirectTo(ApplicationPaths.testing.href)
-      }, hideIf(selectedMusicians.isEmpty))
-    }
+    def scheduleButton = SHtml.ajaxButton("Add Selected Students", () => {
+      scheduleSelectedMusicians()
+      RedirectTo(ApplicationPaths.testing.href)
+    }, hideIf(selectedMusicians.isEmpty))
 
     def clearScheduleButton = SHtml.ajaxButton("Clear", () => {
       Actors.testScheduler ! ClearSchedule
@@ -127,8 +114,8 @@ class Students extends Loggable {
 
       def selectionCheckbox(musician: Musician) =
         SHtml.ajaxCheckbox(false, checked => {
-          if (checked) selectedMusicians += musician.id -> musician
-          else selectedMusicians -= musician.id
+          if (checked) selectedMusicians += musician
+          else selectedMusicians -= musician
           (if (selectedMusicians.isEmpty) JsHideId("schedule") else JsShowId("schedule")) & Students.showClearSchedule
         })
 
@@ -163,6 +150,22 @@ class Students extends Loggable {
       ".stuId    *" #> m.student_id.get &
       ".grade    *" #> Terms.graduationYearAsGrade(m.graduation_year.get)
     )
+  }
+
+  private def scheduleSelectedMusicians() {
+    val now = DateTime.now
+    val scheduledMusicians = selectedMusicians.map(musician => {
+      val lastAsmtTime = lastAssTimeByMusician.get(musician.id)
+      val days = lastAsmtTime.map(la => Days.daysBetween(la, now).getDays) | Int.MaxValue
+      val opNextPieceName = for {
+        lastPasses  <- lastPassesByMusician.get(musician.id)
+        lastPass    <- lastPasses.headOption
+        piece       <- Cache.pieces.find(_.id == lastPass.pieceId)
+        nextPiece    = Cache.nextPiece(piece)
+      } yield nextPiece.name.get
+      ScheduledMusician(musician, -days, opNextPieceName | Cache.pieces.head.name.get)
+    })
+    Actors.testScheduler ! ScheduleMusicians(scheduledMusicians)
   }
 
   private def studentLink(m: Musician) = SHtml.link(Students.urlToDetails(m), () => {}, Text(m.name))

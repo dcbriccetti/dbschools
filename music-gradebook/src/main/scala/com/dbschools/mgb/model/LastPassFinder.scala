@@ -8,7 +8,7 @@ import com.dbschools.mgb.schema._
 import Terms.toTs
 
 class LastPassFinder {
-  val instruments     = Cache.instruments       .map(i => i.id -> i.name.get).toMap
+  def instrumentName(id: Int) = Cache.instruments.find(_.id == id).map(_.name.get)
   val subinstruments  = AppSchema.subinstruments.map(i => i.id -> i).toMap
   val pieces = Cache.pieces
   val pieceNames = pieces.map(p => p.id -> p.name.get).toMap
@@ -38,9 +38,7 @@ class LastPassFinder {
       pieceId: Int, testOrder: Int, position: Int) {
     override def toString = {
       val opSi = opSubinstrumentId.map(subinstruments)
-      pieceNames(pieceId) + " on " + instruments(instrumentId) + ~opSi.map(Subinstrument.suffix)
+      pieceNames(pieceId) + " on " + ~instrumentName(instrumentId) + ~opSi.map(Subinstrument.suffix)
     }
   }
-
-  def next(piece: Piece) = Cache.pieces.find(_.testOrder.get.compareTo(piece.testOrder.get) > 0) | Cache.pieces.head
 }

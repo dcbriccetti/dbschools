@@ -40,7 +40,7 @@ class NewAssessment extends MusicianFromReq {
         allLastPassed =  lastPassFinder.lastPassed(Some(musician.id))
         lastPass      <- allLastPassed.find(lp => currentInstIds contains lp.instrumentId)
         piece         <- Cache.pieces.find(_.id == lastPass.pieceId)
-        nextPiece     =  lastPassFinder.next(piece)
+        nextPiece     =  Cache.nextPiece(piece)
       } yield Pi(nextPiece, lastPass.instrumentId, lastPass.opSubinstrumentId)
 
       pi orElse currentGroups.headOption.map(ga => Pi(Cache.pieces.head, ga.instrument.id))
