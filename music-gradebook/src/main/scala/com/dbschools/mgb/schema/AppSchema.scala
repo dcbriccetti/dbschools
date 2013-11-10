@@ -12,6 +12,7 @@ object AppSchema extends Schema {
   val instruments         = table[Instrument]         ("instrument")
   val subinstruments      = table[Subinstrument]      ("subinstrument")
   val assessments         = table[Assessment]         ("assessment")
+  on(assessments)(a => declare(a.assessment_time is indexed("assessments_assessment_time")))
   val assessmentTags      = table[AssessmentTag]      ("assessment_tag")
   val predefinedComments  = table[PredefinedComment]  ("predefined_comment")
   val rejectionReasons    = table[RejectionReason]    ("rejection_reason")

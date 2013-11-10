@@ -30,7 +30,7 @@ object AssessmentRows {
           a.user_id           === u.id,
           a.subinstrument_id  === s.map(_.id)
         )
-      ).page(0, limit)
+      ).page(0, limit).toSeq
     val predefCommentsMap = AssessmentTag.expandedPredefinedCommentsForAssessments(rows.map(_.assId))
     rows.map(addPredefinedComments(predefCommentsMap))
   }
