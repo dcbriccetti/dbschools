@@ -32,7 +32,7 @@ object svSortingStudentsBy extends SessionVar[SortBy.Value](SortBy.Name)
 
 object svSelectors extends SessionVar[Selectors](new Selectors())
 
-class Students extends Loggable {
+class Students extends SelectedMusician with Loggable {
   private val selectors = svSelectors.is
 
   private def replaceContents = Templates(List("_inGroupsTable")).map(Replace("inGroups", _)).open
@@ -168,12 +168,13 @@ class Students extends Loggable {
     Actors.testScheduler ! ScheduleMusicians(scheduledMusicians)
   }
 
-  private def studentLink(m: Musician) = SHtml.link(Students.urlToDetails(m), () => {}, Text(m.name))
+  private def studentLink(m: Musician) = {
+    svSelectedMusician(Some(m))
+    SHtml.link(ApplicationPaths.studentDetails.href, () => {}, Text(m.name))
+  }
 }
 
 object Students {
-  def urlToDetails(m: Musician) = "studentDetails?id=" + m.id
-
   def showClearSchedule = JsShowIdIf("clearSchedule", comet.testing.scheduledMusicians.nonEmpty)
 
   def JsShowIdIf(what: String, condition: Boolean) = if (condition) JsShowId(what) else JsHideId(what)

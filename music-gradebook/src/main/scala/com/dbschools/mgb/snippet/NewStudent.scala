@@ -1,14 +1,15 @@
 package com.dbschools.mgb.snippet
 
+import org.apache.log4j.Logger
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
 import http._
 import net.liftweb.util.FieldError
+import bootstrap.liftweb.ApplicationPaths
 import com.dbschools.mgb.schema.{Musician, AppSchema}
 import com.dbschools.mgb.model.Terms
-import org.apache.log4j.Logger
 
-class NewStudent extends LiftScreen {
+class NewStudent extends LiftScreen with SelectedMusician {
   private val log = Logger.getLogger(getClass)
   private val musician = Musician.createRecord
 
@@ -27,6 +28,7 @@ class NewStudent extends LiftScreen {
     musician.graduation_year.set(Terms.gradeAsGraduationYear(grade.get))
     AppSchema.musicians.insert(musician)
     log.info("Created musician " + musician)
-    S.redirectTo(Students.urlToDetails(musician))
+    svSelectedMusician(Some(musician))
+    S.redirectTo(ApplicationPaths.studentDetails.href)
   }
 }

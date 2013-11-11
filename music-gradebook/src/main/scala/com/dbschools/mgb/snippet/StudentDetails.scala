@@ -14,12 +14,12 @@ import net.liftweb.http.js.JsCmds.{Confirm, SetHtml}
 import model.{Cache, GroupAssignment, GroupAssignments, LastPassFinder, TagCounts, Terms}
 import schema.{Assessment, AppSchema, Musician, MusicianGroup}
 
-class StudentDetails extends TagCounts with Collapsible with MusicianFromReq {
+class StudentDetails extends TagCounts with Collapsible with SelectedMusician {
   private val log = Logger.getLogger(getClass)
   private object svExpanded extends SessionVar[Array[Boolean]](Array(false, false, false))
   private val expanded = svExpanded.is
   private var selectedMusicianGroups = Set[Int]()
-  private val groupSelectorValues = Cache.filteredGroups(Some(Terms.currentTerm)).map(g => (g.id.toString, g.name)).toSeq
+  private val groupSelectorValues = Cache.filteredGroups().map(g => (g.id.toString, g.name)).toSeq
   private var newAssignmentGroupId = groupSelectorValues(0)._1.toInt
   private val opMusicianDetails = opMusician.map(musician =>
     MusicianDetails(musician, GroupAssignments(Some(musician.id)),

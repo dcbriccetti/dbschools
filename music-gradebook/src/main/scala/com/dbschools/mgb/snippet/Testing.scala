@@ -10,7 +10,7 @@ import net.liftweb._
 import util._
 import Helpers._
 import net.liftweb.http.SHtml
-import bootstrap.liftweb.Actors
+import bootstrap.liftweb.{ApplicationPaths, Actors}
 import com.dbschools.mgb.comet.{ScheduledMusician, TestingMusician, TestMusician}
 import com.dbschools.mgb.schema.AppSchema
 
@@ -20,17 +20,18 @@ class Testing {
     ".sessionRow" #> comet.testing.testingMusicians.toSeq.sortBy(-_.time.millis).map(Testing.sessionRow(show = true))
 }
 
-object Testing {
+object Testing extends SelectedMusician {
 
   def queueRow(sm: ScheduledMusician): CssSel = {
     val userName = ~AppSchema.users.where(_.login === Authenticator.userName.get).headOption.map(_.last_name)
     val m = sm.musician
 
-    def testLink =
-      SHtml.link(Students.urlToDetails(m), () => {
-        val testingMusician = TestingMusician(m, userName, DateTime.now)
-        Actors.testScheduler ! TestMusician(testingMusician)
+    def testLink = {
+      svSelectedMusician(Some(m))
+      SHtml.link(ApplicationPaths.studentDetails.href, () => {
+        Actors.testScheduler ! TestMusician(TestingMusician(m, userName, DateTime.now))
       }, Text(m.first_name.get + " " + m.last_name))
+    }
 
     "tr [id]"     #> ("qr" + sm.musician.id.toString) &
     "#qrstu *"    #> testLink &

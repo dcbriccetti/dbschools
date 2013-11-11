@@ -24,7 +24,7 @@ import comet.ActivityCometDispatcher
 import comet.ActivityStatusUpdate
 import model.AssessmentRow
 
-class NewAssessment extends MusicianFromReq {
+class NewAssessment extends SelectedMusician {
   private val log = Logger.getLogger(getClass)
   val lastPassFinder = new LastPassFinder()
 

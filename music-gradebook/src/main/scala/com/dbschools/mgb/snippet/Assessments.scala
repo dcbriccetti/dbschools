@@ -19,7 +19,7 @@ import model.BoxOpener._
 
 object rvSelectedAsses extends RequestVar[MSet[Int]](MSet[Int]())
 
-class Assessments extends MusicianFromReq {
+class Assessments extends SelectedMusician {
   private val log = Logger.getLogger(getClass)
 
   def render = {

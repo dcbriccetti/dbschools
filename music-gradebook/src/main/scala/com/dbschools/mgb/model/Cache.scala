@@ -50,7 +50,7 @@ object Cache {
 
   def nextPiece(piece: Piece) = pieces.find(_.testOrder.get.compareTo(piece.testOrder.get) > 0) | pieces.head
 
-  def filteredGroups(opSelectedTerm: Option[Int]) = {
+  def filteredGroups(opSelectedTerm: Option[Int] = Some(Terms.currentTerm)) = {
     val ids = for {
       gt      <- Cache.groupTerms
       selTerm <- opSelectedTerm
