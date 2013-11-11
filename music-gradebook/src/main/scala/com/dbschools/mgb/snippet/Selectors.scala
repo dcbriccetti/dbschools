@@ -33,16 +33,8 @@ class Selectors(callback: => Option[() => JsCmd] = None, onlyTestingGroups: Bool
   def groupSelector =
     selector(groupSelectorId, groupSelectValues, opSelectedGroupId, opSelectedGroupId = _)
 
-  private def groupSelectValues: List[(String, String)] = {
-    val ids = for {
-      gt      <- Cache.groupTerms
-      selTerm <- opSelectedTerm
-      if gt.term == selTerm
-    } yield gt.groupId
-
-    val filteredGroups = Cache.groups.filter(g => ids.isEmpty || (ids contains g.id))
-    allItem :: filteredGroups.toList.sortBy(_.name).map(g => g.id.toString -> g.name)
-  }
+  private def groupSelectValues =
+    allItem :: Cache.filteredGroups(opSelectedTerm).toList.sortBy(_.name).map(g => g.id.toString -> g.name)
 
   def instrumentSelector = selector("instrumentSelector",
     allItem :: Cache.instruments.toList.sortBy(_.sequence.get).map(i => i.id.toString -> i.name.get),

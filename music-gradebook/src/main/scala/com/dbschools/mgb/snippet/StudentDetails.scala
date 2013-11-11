@@ -1,7 +1,7 @@
 package com.dbschools.mgb
 package snippet
 
-import scala.xml.Text
+import scala.xml.{NodeSeq, Text}
 import org.squeryl.PrimitiveTypeMode._
 import org.apache.log4j.Logger
 import net.liftweb._
@@ -9,7 +9,6 @@ import net.liftweb.common.{Empty, Full}
 import util._
 import http._
 import js.JsCmds._
-import net.liftweb.http.js.JE.JsRaw
 import Helpers._
 import net.liftweb.http.js.JsCmds.{Confirm, SetHtml}
 import model.{Cache, GroupAssignment, GroupAssignments, LastPassFinder, TagCounts, Terms}
@@ -20,7 +19,7 @@ class StudentDetails extends TagCounts with Collapsible with MusicianFromReq {
   private object svExpanded extends SessionVar[Array[Boolean]](Array(false, false, false))
   private val expanded = svExpanded.is
   private var selectedMusicianGroups = Set[Int]()
-  private val groupSelectorValues = Cache.groups.map(g => (g.id.toString, g.name)).toSeq
+  private val groupSelectorValues = Cache.filteredGroups(Some(Terms.currentTerm)).map(g => (g.id.toString, g.name)).toSeq
   private var newAssignmentGroupId = groupSelectorValues(0)._1.toInt
   private val opMusicianDetails = opMusician.map(musician =>
     MusicianDetails(musician, GroupAssignments(Some(musician.id)),
@@ -46,12 +45,17 @@ class StudentDetails extends TagCounts with Collapsible with MusicianFromReq {
       }) getOrElse Noop
 
     def groupsTable(groups: Iterable[GroupAssignment]) =
-      groups.map(ga =>
-        ".sel *"        #> assignmentCheckbox(ga) &
+      groups.map(ga => {
+        val curTerm = ga.musicianGroup.school_year == Terms.currentTerm
+        ".sel *"        #> (if (curTerm) assignmentCheckbox(ga) else NodeSeq.Empty) &
         ".year *"       #> Terms.formatted(ga.musicianGroup.school_year) &
-        ".group *"      #> groupSelector(ga) &
-        ".instrument *" #> instrumentSelector(ga)
-      )
+        ".group *"      #>  {
+                              if (curTerm) groupSelector(ga)
+                              else Text(Cache.groups.find(_.id == ga.musicianGroup.group_id).map(_.name) getOrElse "")
+                            } &
+        ".instrument *" #> (if (curTerm) instrumentSelector(ga) else
+          Text(Cache.instruments.find(_.id == ga.musicianGroup.instrument_id).map(_.name.get) getOrElse ""))
+      })
 
     def assessmentsSummary(md: MusicianDetails) = {
       val (pass, fail) = md.assessments.partition(_.pass)

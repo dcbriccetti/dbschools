@@ -49,4 +49,15 @@ object Cache {
   def invalidateTempos(): Unit = { tempos = readTempos }
 
   def nextPiece(piece: Piece) = pieces.find(_.testOrder.get.compareTo(piece.testOrder.get) > 0) | pieces.head
+
+  def filteredGroups(opSelectedTerm: Option[Int]) = {
+    val ids = for {
+      gt      <- Cache.groupTerms
+      selTerm <- opSelectedTerm
+      if gt.term == selTerm
+    } yield gt.groupId
+
+    Cache.groups.filter(g => ids.isEmpty || (ids contains g.id))
+  }
+
 }
