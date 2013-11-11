@@ -24,5 +24,5 @@ case class Subinstrument private() extends Record[Subinstrument] with KeyedRecor
 
 object Subinstrument extends Subinstrument with MetaRecord[Subinstrument] {
   def suffix(si: String): String = s" ($si)"
-  def suffix(si: Subinstrument): String = suffix(si.name.is)
+  def suffix(si: Subinstrument): String = suffix(si.name.get)
 }
