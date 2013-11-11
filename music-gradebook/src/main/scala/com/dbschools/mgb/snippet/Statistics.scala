@@ -45,20 +45,20 @@ class Statistics extends Loggable {
   private def queryByGroup(pass: Boolean) = {
     val (dtFrom, dtTo) = fromTo
     from(groups, musicianGroups, musicians, assessments)((g, mg, m, a) =>
-      where(g.id === mg.group_id and mg.musician_id === m.musician_id.is and mg.school_year === dtFrom.getYear
-        and m.musician_id.is === a.musician_id
+      where(g.id === mg.group_id and mg.musician_id === m.musician_id.get and mg.school_year === dtFrom.getYear
+        and m.musician_id.get === a.musician_id
         and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
-        groupBy(g.name)
-        compute(count(a.id))
+        groupBy g.name
+        compute count(a.id)
     )
   }
 
   private def queryByGrade(pass: Boolean) = {
     val (dtFrom, dtTo) = fromTo
     from(musicians, assessments)((m, a) =>
-      where(m.musician_id.is === a.musician_id and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
-        groupBy(m.graduation_year.is.toString)
-        compute(count(a.id))
+      where(m.musician_id.get === a.musician_id and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
+        groupBy m.graduation_year.get.toString
+        compute count(a.id)
     )
   }
 
@@ -66,8 +66,8 @@ class Statistics extends Loggable {
     val (dtFrom, dtTo) = fromTo
     from(users, assessments)((u, a) =>
       where(u.id === a.user_id and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
-        groupBy(u.last_name)
-        compute(count(a.id))
+        groupBy u.last_name
+        compute count(a.id)
     )
   }
 
