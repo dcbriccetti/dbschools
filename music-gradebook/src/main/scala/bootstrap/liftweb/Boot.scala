@@ -1,8 +1,6 @@
 package bootstrap.liftweb
 
-import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
-import util._
 import common._
 import http._
 import sitemap._
