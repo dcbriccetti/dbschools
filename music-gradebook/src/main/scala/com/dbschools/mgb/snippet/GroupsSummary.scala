@@ -1,9 +1,12 @@
 package com.dbschools.mgb
 package snippet
 
+import scala.xml.Text
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.util.Helpers._
-import schema.AppSchema
+import net.liftweb.http.SHtml
+import bootstrap.liftweb.ApplicationPaths
+import com.dbschools.mgb.schema.{Instrument, AppSchema}
 import com.dbschools.mgb.model.{Cache, Terms}
 
 class GroupsSummary {
@@ -22,10 +25,10 @@ class GroupsSummary {
       Cache.instruments.filter(usedInstIds contains _.id).sortBy(_.sequence.get)
     }
 
-    case class InstrumentCounts(name: String, counts: Seq[Long])
+    case class InstrumentCounts(instrument: Instrument, counts: Seq[Long])
 
     val instRows = usedInstruments.map(inst => {
-      InstrumentCounts(inst.name.get, groups.map(group => {
+      InstrumentCounts(inst, groups.map(group => {
         (for {
           gicsForGroup  <- countsByGroup.get(group.id)
           gicInst       <- gicsForGroup.find(_.instrumentId == inst.id)
@@ -38,9 +41,16 @@ class GroupsSummary {
         colNums = (0 until instRows.size).map(r => instRows(r).counts(col))
       } yield colNums.sum
 
+    val selectors = svSelectors.is
+
     def detailRows = instRows.map(iRow =>
       <tr>
-        <th>{iRow.name}</th>
+        <th>{
+          SHtml.link(ApplicationPaths.students.href, () => {
+            selectors.opSelectedGroupId = None
+            selectors.opSelectedInstId = Some(iRow.instrument.id)
+            }, Text(iRow.instrument.name.get))
+          }</th>
         {iRow.counts.map(count => <td class="alignRight">
           {count match {
             case 0 => ""
@@ -57,7 +67,20 @@ class GroupsSummary {
         <th class="alignRight">{totals.sum}</th>
       </tr>
 
-    "#heading" #> <tr> <th>Instrument</th>{groups.map(g => <th>{g.name}</th>)} <td>Totals</td></tr> &
+    def heading = {
+      <tr>
+        <th>Instrument</th>{groups.map(g => <th>
+        {
+        SHtml.link(ApplicationPaths.students.href, () => {
+          selectors.opSelectedGroupId = Some(g.id)
+          selectors.opSelectedInstId = None
+          }, Text(g.name))
+        }
+      </th>)}<td>Totals</td>
+      </tr>
+    }
+
+    "#heading" #> heading &
     "#detail" #> detailRows &
     "#totals" #> totalsRow
   }
