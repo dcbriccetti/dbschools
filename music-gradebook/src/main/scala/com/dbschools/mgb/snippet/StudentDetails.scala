@@ -9,13 +9,16 @@ import net.liftweb.common.{Empty, Full}
 import util._
 import http._
 import js.JsCmds._
+import net.liftweb.http.js.JE.JsRaw
 import Helpers._
 import net.liftweb.http.js.JsCmds.{Confirm, SetHtml}
 import model.{Cache, GroupAssignment, GroupAssignments, LastPassFinder, TagCounts, Terms}
 import schema.{Assessment, AppSchema, Musician, MusicianGroup}
 
-class StudentDetails extends TagCounts with MusicianFromReq {
+class StudentDetails extends TagCounts with Collapsible with MusicianFromReq {
   private val log = Logger.getLogger(getClass)
+  private object svExpanded extends SessionVar[Array[Boolean]](Array(false, false, false))
+  private val expanded = svExpanded.is
   private var selectedMusicianGroups = Set[Int]()
   private val groupSelectorValues = Cache.groups.map(g => (g.id.toString, g.name)).toSeq
   private var newAssignmentGroupId = groupSelectorValues(0)._1.toInt
@@ -59,7 +62,10 @@ class StudentDetails extends TagCounts with MusicianFromReq {
       s"Passes: ${pass.size}, failures: ${fail.size}$tagCountsStr"
     }
 
-    def makeDetails(lastPassFinder: LastPassFinder)(md: MusicianDetails) =
+    def makeDetails(lastPassFinder: LastPassFinder)(md: MusicianDetails) = {
+      val collapseSels = (0 to 2).map(n => s"#collapse$n [class+]" #> (if (expanded(n)) "in" else ""))
+
+      collapseSels.reduce(_ & _) &
       ".lastName *"       #> SHtml.swappable(<span id="lastName">{md.musician.last_name.get}</span>,
                                 SHtml.ajaxText(md.musician.last_name.get,
                                 changeName(md.musician, md.musician.last_name, "lastName"))) &
@@ -72,9 +78,12 @@ class StudentDetails extends TagCounts with MusicianFromReq {
       "#lastPiece *"      #> StudentDetails.lastPiece(lastPassFinder, md.musician.id) &
       ".assignmentRow *"  #> groupsTable(md.groups) &
       ".assessmentsSummary *" #> assessmentsSummary(md)
+    }
 
-    "#student" #> opMusicianDetails.map(makeDetails(new LastPassFinder()))
+    "#student"  #> opMusicianDetails.map(makeDetails(new LastPassFinder()))
   }
+
+  def js = collapseMonitorJs(expanded)
 
   private def assignmentCheckbox(ga: GroupAssignment) =
     SHtml.ajaxCheckbox(false, checked => {

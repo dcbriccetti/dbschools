@@ -51,15 +51,14 @@
         <p/>
 
         <div class="panel-group" id="accordion">
+
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
-                            Groups and Instruments
-                        </a>
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse0">Groups and Instruments</a>
                     </h4>
                 </div>
-                <div id="collapseTwo" class="panel-collapse collapse">
+                <div id="collapse0" class="panel-collapse collapse">
                     <div data-lift="StudentDetails" class="panel-body">
                         <table class="autoWidth noShade">
                             <tr>
@@ -84,15 +83,14 @@
                     </div>
                 </div>
             </div>
+
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">
-                            Assessment
-                        </a>
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse1">Assessment</a>
                     </h4>
                 </div>
-                <div id="collapseThree" class="panel-collapse collapse">
+                <div id="collapse1" class="panel-collapse collapse">
                     <div class="panel-body">
                         <div data-lift="NewAssessment">
                             <div>
@@ -138,29 +136,32 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseFour">
-                        History
-                    </a>
-                </h4>
-            </div>
-            <div id="collapseFour" class="panel-collapse collapse">
-                <div class="panel-body">
-                    <p class="assessmentsSummary"/>
 
-                    <div data-lift="Assessments?eager_eval=true">
-                        <div><span data-lift="Assessments.delete" id="deleteAss" class="btn" style="display: none;"></span></div>
-                        <lift:embed what="_assessments"/>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse2">History</a>
+                    </h4>
+                </div>
+                <div id="collapse2" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <p class="assessmentsSummary"/>
+
+                        <div data-lift="Assessments?eager_eval=true">
+                            <div><span data-lift="Assessments.delete" id="deleteAss" class="btn"
+                                       style="display: none;"></span></div>
+                            <lift:embed what="_assessments"/>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+        <span data-lift='StudentDetails.js'></span>
 
-    <audio id="audioControl" src="assets/audio/metronome.wav" preload="auto">Please use a standards-compliant browser.</audio>
+        <audio id="audioControl" src="assets/audio/metronome.wav" preload="auto">Please use a standards-compliant
+            browser.
+        </audio>
+    </div>
 </div>
 </body>
 </html>
