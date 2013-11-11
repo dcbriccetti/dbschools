@@ -1,6 +1,6 @@
 package com.dbschools.mgb.snippet
 
-import scala.xml.{NodeSeq, Text}
+import scala.xml.Text
 import org.apache.log4j.Logger
 import scalaz._
 import Scalaz._
@@ -31,7 +31,7 @@ class Authenticator extends FormHelper {
       if (credentialsValid(password)) {
         RunState loggedIn true
         log.info(s"${userName.is} logged in")
-        S.redirectTo(students.href)
+        S.redirectTo(groups.href)
       } else {
         log.info(s"${userName.is} failed to log in")
         S.error("Login failed")
@@ -45,7 +45,7 @@ class Authenticator extends FormHelper {
 
   def logOut = {
     Authenticator.logOut()
-    S.redirectTo(students.href)
+    S.redirectTo(logIn.href)
     PassThru
   }
 }

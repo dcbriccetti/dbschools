@@ -11,10 +11,10 @@ import org.scala_tools.time.Imports._
 import net.liftweb._
 import util._
 import Helpers._
-import net.liftweb.http.{Templates, RequestVar, SHtml}
+import net.liftweb.http.{Templates, RequestVar, SHtml, S}
 import net.liftweb.http.js.JsCmds._
 import com.dbschools.mgb.model.{AssessmentRow, AssessmentRows}
-import schema.Subinstrument
+import com.dbschools.mgb.schema.{Musician, Subinstrument}
 import model.BoxOpener._
 
 object rvSelectedAsses extends RequestVar[MSet[Int]](MSet[Int]())
@@ -22,13 +22,18 @@ object rvSelectedAsses extends RequestVar[MSet[Int]](MSet[Int]())
 class Assessments extends SelectedMusician {
   private val log = Logger.getLogger(getClass)
 
-  def render = {
-    Assessments.filterNodes(opMusician.isEmpty) andThen (
-      AssessmentRows(opMusician.map(_.id)).toList match {
-      case Nil  => ClearNodes
-      case rows => Assessments.rowCssSel(rows)
-    }
-  )}
+  def render = renderAllOrOne(opMusician)
+
+  def all = renderAllOrOne(none[Musician])
+
+  private def renderAllOrOne(m: Option[Musician]): (NodeSeq) => NodeSeq = {
+    Assessments.filterNodes(m.isEmpty) andThen (
+      AssessmentRows(m.map(_.id)).toList match {
+        case Nil => ClearNodes
+        case rows => Assessments.rowCssSel(rows)
+      }
+    )
+  }
 
   def delete = "#deleteAss" #> SHtml.ajaxButton("Delete", () => {
     val selAsses = rvSelectedAsses.is.toIterable

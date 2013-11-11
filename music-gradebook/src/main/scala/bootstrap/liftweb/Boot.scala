@@ -31,10 +31,10 @@ class Boot {
     def sitemap = SiteMap(
       home.menu,
       logIn.menu                >> notLoggedIn,
+      groups.menu               >> loggedIn,
       students.menu             >> loggedIn,
       testing.menu              >> loggedIn,
       newStudent.menu           >> loggedIn >> Hidden,
-      groups.menu               >> loggedIn,
       studentDetails.menu       >> loggedIn >> Hidden,
       activity.menu             >> loggedIn,
       graphs.menu               >> loggedIn,
