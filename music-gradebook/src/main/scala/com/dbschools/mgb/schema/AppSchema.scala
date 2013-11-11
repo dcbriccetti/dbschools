@@ -7,6 +7,8 @@ object AppSchema extends Schema {
   val users               = table[User]               ("music_user")
   val musicians           = table[Musician]           ("musician")
   val groups              = table[Group]              ("music_group")
+  val groupTerms          = table[GroupTerm]
+  on(groupTerms)(gt => declare(columns(gt.groupId, gt.term) are (unique, indexed("GroupTerm_groupId_term"))))
   val pieces              = table[Piece]              ("piece")
   val musicianGroups      = table[MusicianGroup]      ("musician_group")
   val instruments         = table[Instrument]         ("instrument")
@@ -18,6 +20,5 @@ object AppSchema extends Schema {
   val rejectionReasons    = table[RejectionReason]    ("rejection_reason")
   val tempos              = table[Tempo]              ("tempo")
 
-  private val hs = autoIncremented("hibernate_sequence")
-  //Seq(musicians, instruments, groups).foreach(on(_)(t => declare(t.id is hs)))
+  val groupToGroupTerms   = oneToManyRelation(groups, groupTerms).via((g, t) => g.id === t.groupId)
 }

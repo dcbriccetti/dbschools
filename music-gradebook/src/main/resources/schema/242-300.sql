@@ -12,3 +12,19 @@ alter table rejection_reason rename column rejection_reason_id to id;
 alter table tempo rename column tempo_id to id;
 
 alter table musician drop column sex;
+
+create table "GroupTerm" (
+    "groupId" integer not null,
+    "term" integer not null
+  );
+alter table "GroupTerm" add constraint "GroupTermFK1" foreign key ("groupId") references "music_group"("id");
+create unique index "GroupTerm_groupId_term" on "GroupTerm" ("groupId","term");
+
+insert into "GroupTerm" values(3, 2013);
+insert into "GroupTerm" values(58562, 2013);
+insert into "GroupTerm" values(8, 2013);
+insert into "GroupTerm" values(6, 2013);
+insert into "GroupTerm" values(5, 2013);
+insert into "GroupTerm" values(13, 2013);
+insert into "GroupTerm" values(11, 2013);
+insert into "GroupTerm" values(7, 2013);

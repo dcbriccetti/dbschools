@@ -9,6 +9,7 @@ import Scalaz._
 
 object Cache {
   var groups = readGroups
+  var groupTerms = readGroupTerms
   var instruments = readInstruments
   var subinstruments = readSubinstruments
   var tags = readTags
@@ -23,6 +24,7 @@ object Cache {
   def updateLastAssTime(musicianId: Int, time: DateTime): Unit = _lastAssTimeByMusician += musicianId -> time
 
   private def readGroups      = inT {AppSchema.groups.toSeq.sortBy(_.name)}
+  private def readGroupTerms  = inT {AppSchema.groupTerms.toList}
   private def readInstruments = inT {AppSchema.instruments.toSeq.sortBy(_.sequence.get)}
   private def readSubinstruments
                               = inT {AppSchema.subinstruments.groupBy(_.instrumentId.get)}
@@ -33,6 +35,8 @@ object Cache {
   def init(): Unit = {}
 
   def invalidateGroups(): Unit = { groups = readGroups }
+
+  def invalidateGroupTerms(): Unit = { groupTerms = readGroupTerms }
 
   def invalidateInstruments(): Unit = { instruments = readInstruments }
 
