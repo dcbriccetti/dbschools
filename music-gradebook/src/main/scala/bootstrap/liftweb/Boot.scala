@@ -34,7 +34,7 @@ class Boot {
       students.menu             >> loggedIn,
       testing.menu              >> loggedIn,
       newStudent.menu           >> loggedIn >> Hidden,
-      noGroups.menu             >> loggedIn,
+      groups.menu               >> loggedIn,
       studentDetails.menu       >> loggedIn >> Hidden,
       activity.menu             >> loggedIn,
       graphs.menu               >> loggedIn,

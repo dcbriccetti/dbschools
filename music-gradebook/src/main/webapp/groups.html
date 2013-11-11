@@ -2,6 +2,20 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
+    <h2>Groups Summary</h2>
+
+    <div data-lift="GroupsSummary">
+        <table class="table table-condensed table-bordered table-striped autoWidth">
+            <thead>
+            <tr id="heading"></tr>
+            </thead>
+            <tbody>
+            <tr id="detail"></tr>
+            <tr id="totals"></tr>
+            </tbody>
+        </table>
+    </div>
+
     <h2>Students Not in Any Group</h2>
 
     <div class="span-24">
@@ -20,7 +34,7 @@
                     <td class="stuName"/>
                     <td class="id"/>
                     <td class="stuId"/>
-                    <td align="right" class="grade"/>
+                    <td class="grade alignRight"/>
                 </tr>
                 </tbody>
             </table>
