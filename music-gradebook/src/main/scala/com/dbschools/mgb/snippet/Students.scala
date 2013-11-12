@@ -81,7 +81,8 @@ class Students extends SelectedMusician with Loggable {
 
     def scheduleButton = SHtml.ajaxButton("Add Selected Students", () => {
       scheduleSelectedMusicians()
-      RedirectTo(ApplicationPaths.testing.href)
+      // todo fix race condition where we arrive without the newly added students.  RedirectTo(ApplicationPaths.testing.href)
+      Noop
     }, hideIf(selectedMusicians.isEmpty))
 
     def clearScheduleButton = SHtml.ajaxButton("Clear", () => {
