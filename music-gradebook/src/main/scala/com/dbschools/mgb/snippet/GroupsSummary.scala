@@ -50,13 +50,19 @@ class GroupsSummary {
             selectors.opSelectedGroupId = None
             selectors.opSelectedInstId = Some(iRow.instrument.id)
             }, Text(iRow.instrument.name.get))
-          }</th>
-        {iRow.counts.map(count => <td class="alignRight">
-          {count match {
-            case 0 => ""
-            case n => n.toString
-          }}
-          </td>)}
+        }</th>
+        {(0 until groups.size).map(g =>
+          <td class="alignRight">
+            {iRow.counts(g) match {
+              case 0 => ""
+              case n =>
+                SHtml.link(ApplicationPaths.students.href, () => {
+                  selectors.opSelectedGroupId = Some(groups(g).id)
+                  selectors.opSelectedInstId = Some(iRow.instrument.id)
+                }, Text(n.toString))
+            }}
+          </td>
+        )}
         <th class="alignRight">{iRow.counts.sum}</th>
       </tr>
     )
