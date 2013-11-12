@@ -13,6 +13,7 @@ import net.liftweb.http.SHtml
 import bootstrap.liftweb.{ApplicationPaths, Actors}
 import com.dbschools.mgb.comet.{ScheduledMusician, TestingMusician, TestMusician}
 import com.dbschools.mgb.schema.AppSchema
+import com.dbschools.mgb.model.{Cache, Terms}
 
 class Testing {
   def render =
@@ -25,6 +26,12 @@ object Testing extends SelectedMusician {
   def queueRow(sm: ScheduledMusician): CssSel = {
     val userName = ~AppSchema.users.where(_.login === Authenticator.userName.get).headOption.map(_.last_name)
     val m = sm.musician
+    val mgs = AppSchema.musicianGroups.where(mg => mg.musician_id === m.id and mg.school_year === Terms.currentTerm)
+    val instrumentNames =
+      for {
+        instrumentId  <- mgs.map(_.instrument_id)
+        instrument    <- Cache.instruments.find(_.id == instrumentId)
+      } yield instrument.name.get
 
     def testLink = {
       SHtml.link(ApplicationPaths.studentDetails.href, () => {
@@ -33,8 +40,9 @@ object Testing extends SelectedMusician {
       }, Text(m.first_name.get + " " + m.last_name))
     }
 
-    "tr [id]"     #> ("qr" + sm.musician.id.toString) &
+    "tr [id]"     #> ("qr" + m.id.toString) &
     "#qrstu *"    #> testLink &
+    "#qrinst *"   #> instrumentNames.toSeq.sorted.mkString(", ") &
     "#qrpiece *"  #> sm.nextPieceName
   }
 
