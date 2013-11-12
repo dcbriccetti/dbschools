@@ -8,7 +8,7 @@ import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.http.{S, SessionVar, SHtml}
 import net.liftweb.util.Helpers._
 import net.liftweb.util.{PassThru, ClearNodes, Props, BCrypt}
-import net.liftweb.http.js.JsCmds.FocusOnLoad
+import net.liftweb.http.js.JsCmds.{Script, Noop, RedirectTo, FocusOnLoad}
 import bootstrap.liftweb.RunState
 import com.dbschools.mgb.schema.AppSchema
 
@@ -48,6 +48,8 @@ class Authenticator extends FormHelper {
     S.redirectTo(logIn.href)
     PassThru
   }
+
+  def goToLogin = Script(if (RunState.loggedIn.is) Noop else RedirectTo(logIn.href))
 }
 
 object Authenticator {
