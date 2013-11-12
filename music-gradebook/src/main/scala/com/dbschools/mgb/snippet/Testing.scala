@@ -27,8 +27,8 @@ object Testing extends SelectedMusician {
     val m = sm.musician
 
     def testLink = {
-      svSelectedMusician(Some(m))
       SHtml.link(ApplicationPaths.studentDetails.href, () => {
+        svSelectedMusician(Some(m))
         Actors.testScheduler ! TestMusician(TestingMusician(m, userName, DateTime.now))
       }, Text(m.first_name.get + " " + m.last_name))
     }

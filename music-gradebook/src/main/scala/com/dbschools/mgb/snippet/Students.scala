@@ -170,8 +170,9 @@ class Students extends SelectedMusician with Loggable {
   }
 
   private def studentLink(m: Musician) = {
-    svSelectedMusician(Some(m))
-    SHtml.link(ApplicationPaths.studentDetails.href, () => {}, Text(m.name))
+    SHtml.link(ApplicationPaths.studentDetails.href, () => {
+      svSelectedMusician(Some(m))
+    }, Text(m.name))
   }
 }
 
