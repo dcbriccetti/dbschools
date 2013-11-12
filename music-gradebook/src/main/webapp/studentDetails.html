@@ -25,112 +25,110 @@
         </table>
         <p/>
 
-        <div class="panel-group" id="accordion">
-
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse0">Groups and Instruments</a>
-                    </h4>
-                </div>
-                <div id="collapse0" class="panel-collapse collapse">
-                    <div data-lift="StudentDetails" class="panel-body">
-                        <table class="autoWidth noShade">
-                            <tr>
-                                <th>Sel</th>
-                                <th>Year</th>
-                                <th>Group</th>
-                                <th>Instrument</th>
-                            </tr>
-                            <tr class="assignmentRow">
-                                <td class="sel"></td>
-                                <td class="year"></td>
-                                <td class="group"></td>
-                                <td class="instrument"></td>
-                            </tr>
-                        </table>
-                        <br/>
-
-                        <div data-lift="StudentDetails.groupAssignments">
-                            <div><span id="delete" class="btn" style="display: none;"></span>
-                                <span id="create" class="btn"></span> <span id="nextSel"></span></div>
-                        </div>
-                    </div>
-                </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" href="#collapse0">Groups and Instruments</a>
+                </h4>
             </div>
+            <div id="collapse0" class="panel-collapse collapse">
+                <div data-lift="StudentDetails" class="panel-body">
+                    <table class="autoWidth noShade">
+                        <tr>
+                            <th>Sel</th>
+                            <th>Year</th>
+                            <th>Group</th>
+                            <th>Instrument</th>
+                        </tr>
+                        <tr class="assignmentRow">
+                            <td class="sel"></td>
+                            <td class="year"></td>
+                            <td class="group"></td>
+                            <td class="instrument"></td>
+                        </tr>
+                    </table>
+                    <br/>
 
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse1">Assessment</a>
-                    </h4>
-                </div>
-                <div id="collapse1" class="panel-collapse collapse">
-                    <div class="panel-body">
-                        <div data-lift="NewAssessment">
-                            <div>
-                                <span id="piece"></span>
-                                <input id="metronome" class="btn btn-lg" type="button" value="Metronome"
-                                       onclick="metro()"/>
-                                <span id="tempo"></span> beats per minute
-                            </div>
-                            <div style="margin-top: .7em; margin-bottom: 1em">
-                                <span id="instrument"></span> <span id="subinstrument"></span>
-                            </div>
-
-                            <form data-lift="form.ajax">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading">
-                                        <h5 class="panel-title">Comments</h5>
-                                    </div>
-                                    <div class="panel-body">
-                                        <div class="row">
-                                            <div class="col-md-2">
-                                                <span id="checkbox1"></span>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <span id="checkbox2"></span>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div id="commentTextDiv" class="col-md-10">
-                                                <span id="commentText"/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div style="margin-top: 0.5em">
-                                    <span id="passButton" class="btn btn-success btn-lg"></span>
-                                    <span style="margin-left: 1em;"></span>
-                                    <span id="failButton" class="btn btn-danger btn-lg"></span>
-                                    <span style="margin-left: 1em;"></span>
-                                    <span class="h3" id="passFailConfirmation" style="vertical-align: middle;"></span>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#collapse2">History</a>
-                    </h4>
-                </div>
-                <div id="collapse2" class="panel-collapse collapse">
-                    <div class="panel-body">
-                        <p class="assessmentsSummary"/>
-
-                        <div data-lift="Assessments?eager_eval=true">
-                            <div><span data-lift="Assessments.delete" id="deleteAss" class="btn"
-                                       style="display: none;"></span></div>
-                            <lift:embed what="_assessments"/>
-                        </div>
+                    <div data-lift="StudentDetails.groupAssignments">
+                        <div><span id="delete" class="btn" style="display: none;"></span>
+                            <span id="create" class="btn"></span> <span id="nextSel"></span></div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" href="#collapse1">Assessment</a>
+                </h4>
+            </div>
+            <div id="collapse1" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div data-lift="NewAssessment">
+                        <div>
+                            <span id="piece"></span>
+                            <input id="metronome" class="btn btn-lg" type="button" value="Metronome"
+                                   onclick="metro()"/>
+                            <span id="tempo"></span> beats per minute
+                        </div>
+                        <div style="margin-top: .7em; margin-bottom: 1em">
+                            <span id="instrument"></span> <span id="subinstrument"></span>
+                        </div>
+
+                        <form data-lift="form.ajax">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h5 class="panel-title">Comments</h5>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <span id="checkbox1"></span>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <span id="checkbox2"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div id="commentTextDiv" class="col-md-10">
+                                            <span id="commentText"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 0.5em">
+                                <span id="passButton" class="btn btn-success btn-lg"></span>
+                                <span style="margin-left: 1em;"></span>
+                                <span id="failButton" class="btn btn-danger btn-lg"></span>
+                                <span style="margin-left: 1em;"></span>
+                                <span class="h3" id="passFailConfirmation" style="vertical-align: middle;"></span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" href="#collapse2">History</a>
+                </h4>
+            </div>
+            <div id="collapse2" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <p class="assessmentsSummary"/>
+
+                    <div data-lift="Assessments?eager_eval=true">
+                        <div><span data-lift="Assessments.delete" id="deleteAss" class="btn"
+                                   style="display: none;"></span></div>
+                        <lift:embed what="_assessments"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <span data-lift='StudentDetails.js'></span>
 
         <audio id="audioControl" src="assets/audio/metronome.wav" preload="auto">Please use a standards-compliant
