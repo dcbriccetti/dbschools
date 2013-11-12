@@ -36,8 +36,8 @@ class TestSchedulerActor extends Actor {
       testing.scheduledMusicians.find(_.musician == testingMusician.musician).foreach(sm => {
         testing.scheduledMusicians -= sm
         testing.testingMusicians += testingMusician
+        TestCometDispatcher ! MoveMusician(testingMusician)
       })
-      TestCometDispatcher ! MoveMusician(testingMusician)
       updateStudentsPage()
 
     case ClearSchedule =>
