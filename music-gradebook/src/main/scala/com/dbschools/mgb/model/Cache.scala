@@ -1,6 +1,6 @@
 package com.dbschools.mgb.model
 
-import com.dbschools.mgb.schema.{Piece, AppSchema}
+import com.dbschools.mgb.schema.{Group, Piece, AppSchema}
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.PrimitiveTypeMode.{inTransaction => inT}
 import org.joda.time.DateTime
@@ -50,14 +50,22 @@ object Cache {
 
   def nextPiece(piece: Piece) = pieces.find(_.testOrder.get.compareTo(piece.testOrder.get) > 0) | pieces.head
 
+  case class GroupPeriod(group: Group, period: Int)
+  
   def filteredGroups(opSelectedTerm: Option[Int] = Some(Terms.currentTerm)) = {
-    val ids = for {
+    val groupIdToPeriod = (for {
       gt      <- Cache.groupTerms
       selTerm <- opSelectedTerm
       if gt.term == selTerm
-    } yield gt.groupId
+    } yield gt.groupId -> gt.period).toMap
 
-    Cache.groups.filter(g => ids.isEmpty || (ids contains g.id))
+    val unsorted = if (groupIdToPeriod.isEmpty)
+      Cache.groups.map(g => GroupPeriod(g, 0))
+    else
+      for {
+        group   <- Cache.groups
+        period  <- groupIdToPeriod.get(group.id)
+      } yield GroupPeriod(group, period)
+    unsorted.toSeq.sortBy(gp => (gp.period, gp.group.shortName | gp.group.name))
   }
-
 }

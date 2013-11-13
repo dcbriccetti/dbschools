@@ -34,7 +34,7 @@ class Selectors(callback: => Option[() => JsCmd] = None, onlyTestingGroups: Bool
     selector(groupSelectorId, groupSelectValues, opSelectedGroupId, opSelectedGroupId = _)
 
   private def groupSelectValues =
-    allItem :: Cache.filteredGroups(opSelectedTerm).toList.sortBy(_.name).map(g => g.id.toString -> g.name)
+    allItem :: Cache.filteredGroups(opSelectedTerm).map(gp => gp.group.id.toString -> gp.group.name).toList
 
   def instrumentSelector = selector("instrumentSelector",
     allItem :: Cache.instruments.toList.sortBy(_.sequence.get).map(i => i.id.toString -> i.name.get),

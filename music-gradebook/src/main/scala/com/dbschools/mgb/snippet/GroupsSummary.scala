@@ -2,6 +2,8 @@ package com.dbschools.mgb
 package snippet
 
 import scala.xml.Text
+import scalaz._
+import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.util.Helpers._
 import net.liftweb.http.SHtml
@@ -19,7 +21,7 @@ class GroupsSummary {
     )
     val counts = q.map(g => Count(g.key._1, g.key._2, g.measures))
     val countsByGroup = counts.groupBy(_.groupId)
-    val groups = Cache.filteredGroups().sortBy(_.name)
+    val groupPeriods = Cache.filteredGroups()
     val usedInstruments = {
       val usedInstIds = counts.map(_.instrumentId).toSet
       Cache.instruments.filter(usedInstIds contains _.id).sortBy(_.sequence.get)
@@ -28,9 +30,9 @@ class GroupsSummary {
     case class InstrumentCounts(instrument: Instrument, counts: Seq[Long])
 
     val instRows = usedInstruments.map(inst => {
-      InstrumentCounts(inst, groups.map(group => {
+      InstrumentCounts(inst, groupPeriods.map(gp => {
         (for {
-          gicsForGroup  <- countsByGroup.get(group.id)
+          gicsForGroup  <- countsByGroup.get(gp.group.id)
           gicInst       <- gicsForGroup.find(_.instrumentId == inst.id)
         } yield gicInst.count) getOrElse 0L
       }))
@@ -51,13 +53,13 @@ class GroupsSummary {
             selectors.opSelectedInstId = Some(iRow.instrument.id)
             }, Text(iRow.instrument.name.get))
         }</th>
-        {(0 until groups.size).map(g =>
+        {(0 until groupPeriods.size).map(g =>
           <td class="alignRight">
             {iRow.counts(g) match {
               case 0 => ""
               case n =>
                 SHtml.link(ApplicationPaths.students.href, () => {
-                  selectors.opSelectedGroupId = Some(groups(g).id)
+                  selectors.opSelectedGroupId = Some(groupPeriods(g).group.id)
                   selectors.opSelectedInstId = Some(iRow.instrument.id)
                 }, Text(n.toString))
             }}
@@ -75,19 +77,19 @@ class GroupsSummary {
 
     def heading = {
       <tr>
-        <th>Instrument</th>{groups.map(g => <th>
+        <th>Instrument</th>{groupPeriods.map(gp => <th>
         {
         SHtml.link(ApplicationPaths.students.href, () => {
-          selectors.opSelectedGroupId = Some(g.id)
+          selectors.opSelectedGroupId = Some(gp.group.id)
           selectors.opSelectedInstId = None
-          }, Text(g.name))
+          }, Text(gp.group.shortName | gp.group.name))
         }
       </th>)}<td>Totals</td>
       </tr>
     }
 
-    "#heading" #> heading &
-    "#detail" #> detailRows &
-    "#totals" #> totalsRow
+    "#heading"  #> heading &
+    "#detail"   #> detailRows &
+    "#totals"   #> totalsRow
   }
 }

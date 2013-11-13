@@ -19,7 +19,7 @@ class StudentDetails extends TagCounts with Collapsible with SelectedMusician {
   private object svExpanded extends SessionVar[Array[Boolean]](Array(false, false, false))
   private val expanded = svExpanded.is
   private var selectedMusicianGroups = Set[Int]()
-  private val groupSelectorValues = Cache.filteredGroups().map(g => (g.id.toString, g.name)).toSeq
+  private val groupSelectorValues = Cache.filteredGroups().map(gp => (gp.group.id.toString, gp.group.name)).toSeq
   private var newAssignmentGroupId = groupSelectorValues(0)._1.toInt
   private val opMusicianDetails = opMusician.map(musician =>
     MusicianDetails(musician, GroupAssignments(Some(musician.id)),

@@ -6,6 +6,7 @@ object ApplicationPaths {
   val logIn             = new Path("Log In", "logIn")
   val logout            = new Path("Log Out", "logOut")
 
+  val noGroups          = new Path("No Groups", "noGroups")
   val groups            = new Path("Groups", "groups")
 
   val graphs            = new Path("Graphs", "graphs")

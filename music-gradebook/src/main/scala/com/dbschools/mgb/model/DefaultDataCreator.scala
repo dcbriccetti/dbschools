@@ -55,7 +55,7 @@ object DefaultDataCreator extends Loggable {
   }
 
   private def createGroups(): Unit = {
-    AppSchema.groups.insert(getLines("Group").map(Group(0, _, doesTesting = true)))
+    AppSchema.groups.insert(getLines("Group").map(Group(0, _, None, doesTesting = true)))
   }
 
   private def createPieces(): Unit = {

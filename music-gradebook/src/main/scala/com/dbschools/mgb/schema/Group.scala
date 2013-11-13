@@ -7,8 +7,11 @@ import org.squeryl.KeyedEntity
 case class Group(
                           id:           Int,
                           name:         String,
+                          shortName:    Option[String],
   @Column("does_testing") doesTesting:  Boolean
-) extends KeyedEntity[Int]
+) extends KeyedEntity[Int] {
+  def this() = this(0, "", Some(""), false)
+}
 
 object Group {
   /** TermGroupAssessments for all groups */
