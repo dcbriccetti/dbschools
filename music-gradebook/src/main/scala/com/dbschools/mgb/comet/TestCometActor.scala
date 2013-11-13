@@ -32,6 +32,15 @@ class TestSchedulerActor extends Actor {
       TestCometDispatcher ! RedisplaySchedule
       updateStudentsPage()
 
+    case UnscheduleMusicians(ids) =>
+      val idsSet = ids.toSet
+      val sms = testing.scheduledMusicians.filter(idsSet contains _.musician.id)
+      if (sms.nonEmpty) {
+        testing.scheduledMusicians --= sms
+        TestCometDispatcher ! RedisplaySchedule
+        updateStudentsPage()
+      }
+
     case TestMusician(testingMusician) =>
       testing.scheduledMusicians.find(_.musician == testingMusician.musician).foreach(sm => {
         testing.scheduledMusicians -= sm
@@ -86,6 +95,7 @@ class TestCometActor extends CometActor with CometListener {
 
 case object RedisplaySchedule
 case class ScheduleMusicians(scheduledMusicians: Iterable[ScheduledMusician])
+case class UnscheduleMusicians(ids: Iterable[Int])
 case class TestMusician(testingMusician: TestingMusician)
 case class MoveMusician(testingMusician: TestingMusician)
 case object ClearSchedule

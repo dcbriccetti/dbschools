@@ -14,6 +14,7 @@ import Helpers._
 import net.liftweb.http.{SessionVar, Templates, SHtml}
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JsCmds.Replace
+import LiftExtensions._
 import bootstrap.liftweb.{Actors, ApplicationPaths}
 import schema.{Musician, AppSchema}
 import model.BoxOpener._
@@ -178,6 +179,4 @@ class Students extends SelectedMusician with Loggable {
 
 object Students {
   def showClearSchedule = JsShowIdIf("clearSchedule", comet.testing.scheduledMusicians.nonEmpty)
-
-  def JsShowIdIf(what: String, condition: Boolean) = if (condition) JsShowId(what) else JsHideId(what)
 }

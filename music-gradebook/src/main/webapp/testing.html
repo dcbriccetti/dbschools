@@ -7,10 +7,14 @@
         <div data-lift="comet?type=TestCometActor"></div>
         <div class="row">
             <div class="col-md-8">
-                <h2>Queue</h2>
+                <div>
+                    <span class='h2'>Queue</span>
+                    <span id='queueDelete' class='btn' style="display: none;"></span>
+                </div>
                 <table class="table">
                     <thead>
                     <tr>
+                        <th></th>
                         <th>Student</th>
                         <th>Instrument</th>
                         <th>Piece</th>
@@ -18,6 +22,7 @@
                     </thead>
                     <tbody>
                     <tr class='queueRow'>
+                      <td id="qrsel" style='vertical-align: middle;'></td>
                       <td id="qrstu" class="h3"></td>
                       <td id="qrinst" class="h3"></td>
                       <td id="qrpiece" class="h3"></td>
@@ -26,7 +31,7 @@
                 </table>
             </div>
             <div class="col-md-4">
-                <h2>Sessions</h2>
+                <div><span class='h2'>Sessions</span></div>
                 <table id='testingTable' class="table">
                     <thead>
                     <tr id="testingTableHead">
