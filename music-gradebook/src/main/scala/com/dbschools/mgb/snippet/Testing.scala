@@ -42,7 +42,7 @@ object Testing extends SelectedMusician {
 
     "tr [id]"     #> ("qr" + m.id.toString) &
     "#qrstu *"    #> testLink &
-    "#qrinst *"   #> instrumentNames.toSeq.sorted.mkString(", ") &
+    "#qrinst *"   #> instrumentNames.toSet /* no dups */ .toSeq.sorted.mkString(", ") &
     "#qrpiece *"  #> sm.nextPieceName
   }
 
