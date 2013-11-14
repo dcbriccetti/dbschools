@@ -2,4 +2,9 @@
 
 # Login name, password, first name, last name
 
-jdoe	password	John	Doe
+a	password	Bill	Green
+b	password	Michael	Allen
+c	password	Eric	Anderson
+d	password	John	Chan
+e	password	Jessica	Collins
+f	password	Paul	Diaz
