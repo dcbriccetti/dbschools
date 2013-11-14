@@ -5,7 +5,7 @@ import xml.{NodeSeq, Text}
 import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
-import org.joda.time.Days
+import org.joda.time.{Seconds, Days}
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
 import common.{Full, Loggable}
@@ -158,14 +158,15 @@ class Students extends SelectedMusician with Loggable {
     val now = DateTime.now
     val scheduledMusicians = selectedMusicians.map(musician => {
       val lastAsmtTime = lastAssTimeByMusician.get(musician.id)
-      val days = lastAsmtTime.map(la => Days.daysBetween(la, now).getDays) | Int.MaxValue
       val opNextPieceName = for {
         lastPasses  <- lastPassesByMusician.get(musician.id)
         lastPass    <- lastPasses.headOption
         piece       <- Cache.pieces.find(_.id == lastPass.pieceId)
         nextPiece    = Cache.nextPiece(piece)
       } yield nextPiece.name.get
-      ScheduledMusician(musician, -days, opNextPieceName | Cache.pieces.head.name.get)
+      val longAgo = 60L * 60 * 24 * 365 * 100
+      val secondsSince = lastAsmtTime.map(la => Seconds.secondsBetween(la, now).getSeconds.toLong) | longAgo
+      ScheduledMusician(musician, -secondsSince, opNextPieceName | Cache.pieces.head.name.get)
     })
     Actors.testScheduler ! ScheduleMusicians(scheduledMusicians)
   }

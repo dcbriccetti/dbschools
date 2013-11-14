@@ -16,7 +16,7 @@ import com.dbschools.mgb.schema.Musician
 import com.dbschools.mgb.snippet.Testing
 import model.BoxOpener._
 
-case class ScheduledMusician(musician: Musician, sortOrder: Int, nextPieceName: String)
+case class ScheduledMusician(musician: Musician, sortOrder: Long, nextPieceName: String)
 case class TestingMusician(musician: Musician, testerName: String, time: DateTime)
 
 object testing {
