@@ -9,8 +9,8 @@ import net.liftweb.http.{S, SessionVar, SHtml}
 import net.liftweb.util.Helpers._
 import net.liftweb.util.{PassThru, ClearNodes, Props, BCrypt}
 import net.liftweb.http.js.JsCmds.{Script, Noop, RedirectTo, FocusOnLoad}
-import bootstrap.liftweb.RunState
 import com.dbschools.mgb.schema.AppSchema
+import com.dbschools.mgb.model.RunState
 
 class Authenticator extends FormHelper {
   val log = Logger.getLogger(getClass)
@@ -55,7 +55,7 @@ class Authenticator extends FormHelper {
 object Authenticator {
   val org = ~Props.get("organization").toOption
   val isDemo = org == "demo"
-  private val startingUserName = if (Authenticator.isDemo) "jdoe" else ""
+  private val startingUserName = if (Authenticator.isDemo) "a" else ""
 
   object userName extends SessionVar(startingUserName)
 

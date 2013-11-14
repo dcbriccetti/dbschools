@@ -12,10 +12,10 @@ import Helpers._
 import net.liftweb.http.SHtml
 import net.liftweb.http.js.JsCmds.Noop
 import LiftExtensions._
-import bootstrap.liftweb.{ApplicationPaths, Actors}
+import bootstrap.liftweb.{ApplicationPaths}
 import com.dbschools.mgb.comet.{UnscheduleMusicians, ScheduledMusician, TestingMusician, TestMusician}
 import com.dbschools.mgb.schema.AppSchema
-import com.dbschools.mgb.model.{Cache, Terms}
+import com.dbschools.mgb.model.{Actors, Cache, Terms}
 
 class Testing extends SelectedMusician {
   def render = {

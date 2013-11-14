@@ -245,7 +245,6 @@ cindy""")
       val groupIds = random match {
         case n if n < .1  => GroupIds(0)
         case n if n < .2  => GroupIds(2)
-        case n if n < .25 => GroupIds(3)
         case _            => GroupIds(1)
       }
       groupIds.foreach(groupId => {

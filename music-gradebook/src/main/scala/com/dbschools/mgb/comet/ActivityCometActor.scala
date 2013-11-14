@@ -15,7 +15,6 @@ class ActivityCometActor extends CometActor with CometListener {
   private val log = Logger.getLogger(getClass)
   def registerWith = ActivityCometDispatcher
 
-
   override def lowPriority = {
     case ActivityStatusUpdate(assessmentRow) =>
       log.info("Got an update!")

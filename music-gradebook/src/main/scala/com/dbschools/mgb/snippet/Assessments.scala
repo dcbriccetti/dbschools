@@ -11,7 +11,7 @@ import org.scala_tools.time.Imports._
 import net.liftweb._
 import util._
 import Helpers._
-import net.liftweb.http.{Templates, RequestVar, SHtml, S}
+import net.liftweb.http.{Templates, RequestVar, SHtml}
 import net.liftweb.http.js.JsCmds._
 import com.dbschools.mgb.model.{AssessmentRow, AssessmentRows}
 import com.dbschools.mgb.schema.{Musician, Subinstrument}
@@ -24,16 +24,11 @@ class Assessments extends SelectedMusician {
 
   def render = renderAllOrOne(opMusician)
 
-  def all = renderAllOrOne(none[Musician])
+  def renderWithStudents = renderAllOrOne(none[Musician])
 
-  private def renderAllOrOne(m: Option[Musician]): (NodeSeq) => NodeSeq = {
-    Assessments.filterNodes(m.isEmpty) andThen (
-      AssessmentRows(m.map(_.id)).toList match {
-        case Nil => ClearNodes
-        case rows => Assessments.rowCssSel(rows)
-      }
-    )
-  }
+  private def renderAllOrOne(opMusician: Option[Musician]) =
+    Assessments.filterStudentColumn(opMusician.isEmpty) andThen
+      Assessments.rowCssSel(AssessmentRows(opMusician.map(_.id)).toList)
 
   def delete = "#deleteAss" #> SHtml.ajaxButton("Delete", () => {
     val selAsses = rvSelectedAsses.is.toIterable
@@ -53,9 +48,8 @@ class Assessments extends SelectedMusician {
 object Assessments {
   def removeNodes(selectors: String*) = selectors.map(_ #> none[String]).reduce(_ & _)
 
-  def filterNodes(keep: Boolean): (NodeSeq) => NodeSeq = {
-    if (keep) PassThru else Assessments.removeNodes(".musician", "#studentHeading")
-  }
+  def filterStudentColumn(keepStudent: Boolean) =
+    if (keepStudent) PassThru else removeNodes(".student", "#studentHeading")
 
   def rowCssSel(rows: Iterable[AssessmentRow]): CssSel = {
     ".assessmentRow" #> {
@@ -72,20 +66,20 @@ object Assessments {
 
       val c = DateTimeComparator.getDateOnlyInstance
       rows.map(ar =>
-        ".sel        *" #> selectionCheckbox(ar) &
-        ".date       *" #> (if (c.compare(null, ar.date) == 0) tmf else dtf).print(ar.date) &
-        ".tester     *" #> ar.tester &
-        ".musician   *" #> ar.musician.name &
-        ".piece [class]" #> (if (ar.pass) "pass" else "fail") &
-        ".piece      *" #> ar.piece &
-        ".instrument *" #> (ar.instrument + ~ar.subinstrument.map(Subinstrument.suffix)) &
-        ".comments   *" #> ar.notes
+        ".sel         *"  #> selectionCheckbox(ar) &
+        ".date        *"  #> (if (c.compare(null, ar.date) == 0) tmf else dtf).print(ar.date) &
+        ".tester      *"  #> ar.tester &
+        ".student     *"  #> ar.musician.name &
+        ".piece [class]"  #> (if (ar.pass) "pass" else "fail") &
+        ".piece       *"  #> ar.piece &
+        ".instrument  *"  #> (ar.instrument + ~ar.subinstrument.map(Subinstrument.suffix)) &
+        ".comments    *"  #> ar.notes
       )
     }
   }
 
   def createRow(assessmentRow: AssessmentRow, keepStudent: Boolean = true) = {
-    val sel = filterNodes(keepStudent) andThen rowCssSel(Seq(assessmentRow))
+    val sel = filterStudentColumn(keepStudent) andThen rowCssSel(Seq(assessmentRow))
     sel(Assessments.rowNodeSeq)
   }
 

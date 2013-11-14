@@ -9,13 +9,7 @@ import net.liftmodules.widgets.flot.Flot
 import net.liftmodules.FoBo
 
 import com.dbschools.mgb.Db
-import com.dbschools.mgb.model.Cache
-import akka.actor.{PoisonPill, Props, ActorSystem}
-import com.dbschools.mgb.comet.TestSchedulerActor
-
-object RunState {
-  object loggedIn extends SessionVar[Boolean] (false)
-}
+import com.dbschools.mgb.model.{RunState, Cache}
 
 class Boot {
   def boot(): Unit = {
@@ -58,12 +52,10 @@ class Boot {
     FoBo.init()
 
     //Show the spinny image when an Ajax call starts
-    LiftRules.ajaxStart =
-      Full(() => LiftRules.jsArtifacts.show("ajax-loader").cmd)
+    LiftRules.ajaxStart = Full(() => LiftRules.jsArtifacts.show("ajax-loader").cmd)
     
     // Make the spinny image go away when it ends
-    LiftRules.ajaxEnd =
-      Full(() => LiftRules.jsArtifacts.hide("ajax-loader").cmd)
+    LiftRules.ajaxEnd = Full(() => LiftRules.jsArtifacts.hide("ajax-loader").cmd)
 
     // Force the request to be UTF-8
     LiftRules.early.append(_.setCharacterEncoding("UTF-8"))
@@ -72,21 +64,10 @@ class Boot {
     LiftRules.loggedInTest = Full(() => RunState.loggedIn.is)
 
     // Use HTML5 for rendering
-    LiftRules.htmlProperties.default.set((r: Req) =>
-      new Html5Properties(r.userAgent))    
+    LiftRules.htmlProperties.default.set((r: Req) => new Html5Properties(r.userAgent))
 
     Db.initialize()
     Cache.init()
     Flot.init()
-  }
-}
-
-object Actors {
-  val system = ActorSystem()
-  val testScheduler = system.actorOf(Props[TestSchedulerActor], "testScheduler")
-  private val all = Seq(testScheduler)
-
-  def stop(): Unit = {
-    all.foreach(_ ! PoisonPill)
   }
 }

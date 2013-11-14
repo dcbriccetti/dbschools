@@ -15,11 +15,11 @@ import net.liftweb.http.{SessionVar, Templates, SHtml}
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JsCmds.Replace
 import LiftExtensions._
-import bootstrap.liftweb.{Actors, ApplicationPaths}
+import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
 import model.BoxOpener._
-import com.dbschools.mgb.model.{Cache, LastPassFinder, Terms, GroupAssignments}
-import com.dbschools.mgb.comet.{ScheduleMusicians, ScheduledMusician, ClearSchedule}
+import model.{Actors, Cache, LastPassFinder, Terms, GroupAssignments}
+import comet.{ScheduleMusicians, ScheduledMusician, ClearSchedule}
 import Cache.lastAssTimeByMusician
 
 object SortBy extends Enumeration {
