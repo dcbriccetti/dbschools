@@ -1,7 +1,6 @@
 package com.dbschools.mgb
 package snippet
 
-import scala.xml.NodeSeq
 import collection.mutable.{Set => MSet}
 import org.apache.log4j.Logger
 import org.joda.time.DateTimeComparator
@@ -13,11 +12,11 @@ import util._
 import Helpers._
 import net.liftweb.http.{Templates, RequestVar, SHtml}
 import net.liftweb.http.js.JsCmds._
-import com.dbschools.mgb.model.{AssessmentRow, AssessmentRows}
-import com.dbschools.mgb.schema.{Musician, Subinstrument}
+import model.{AssessmentRow, AssessmentRows}
+import schema.{Musician, Subinstrument}
 import model.BoxOpener._
 
-object rvSelectedAsses extends RequestVar[MSet[Int]](MSet[Int]())
+object rvSelectedAsmts extends RequestVar[MSet[Int]](MSet[Int]())
 
 class Assessments extends SelectedMusician {
   private val log = Logger.getLogger(getClass)
@@ -31,14 +30,14 @@ class Assessments extends SelectedMusician {
       Assessments.rowCssSel(AssessmentRows(opMusician.map(_.id)).toList)
 
   def delete = "#deleteAss" #> SHtml.ajaxButton("Delete", () => {
-    val selAsses = rvSelectedAsses.is.toIterable
+    val selAsses = rvSelectedAsmts.is.toIterable
     if (selAsses.nonEmpty) {
       Confirm(
         s"Are you sure you want to remove the ${selAsses.size} selected assessments? This can not be undone.",
         SHtml.ajaxInvoke(() => {
           model.Assessments.delete(selAsses)
           log.info("Deleted assessment(s): " + selAsses)
-          rvSelectedAsses(rvSelectedAsses.is.empty)
+          rvSelectedAsmts(rvSelectedAsmts.is.empty)
           Reload
         }))
     } else Noop
@@ -58,7 +57,7 @@ object Assessments {
 
       def selectionCheckbox(row: AssessmentRow) =
         SHtml.ajaxCheckbox(false, checked => {
-          val selectedAsses = rvSelectedAsses.is
+          val selectedAsses = rvSelectedAsmts.is
           if (checked) selectedAsses += row.assId
           else selectedAsses -= row.assId
           if (selectedAsses.isEmpty) JsHideId("deleteAss") else JsShowId("deleteAss")

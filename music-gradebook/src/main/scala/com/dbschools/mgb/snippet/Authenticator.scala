@@ -1,4 +1,5 @@
-package com.dbschools.mgb.snippet
+package com.dbschools.mgb
+package snippet
 
 import scala.xml.Text
 import org.apache.log4j.Logger

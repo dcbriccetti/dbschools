@@ -19,19 +19,9 @@ import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
 import model.BoxOpener._
 import model.{Actors, Cache, LastPassFinder, Terms, GroupAssignments}
-import comet.{ScheduleMusicians, ScheduledMusician, ClearSchedule}
+import model.TestingManagerMessages._
+import model.EnqueuedMusician
 import Cache.lastAssTimeByMusician
-
-object SortBy extends Enumeration {
-  type SortBy = Value
-  val Name = Value("Name")
-  val LastAssessment = Value("Last Assessment")
-  val LastPiece = Value("Last Piece")
-}
-
-object svSortingStudentsBy extends SessionVar[SortBy.Value](SortBy.Name)
-
-object svSelectors extends SessionVar[Selectors](new Selectors())
 
 class Students extends SelectedMusician with Loggable {
   private val selectors = svSelectors.is
@@ -87,9 +77,9 @@ class Students extends SelectedMusician with Loggable {
     }, hideIf(selectedMusicians.isEmpty))
 
     def clearScheduleButton = SHtml.ajaxButton("Clear", () => {
-      Actors.testScheduler ! ClearSchedule
+      Actors.testingManager ! ClearQueue
       Noop
-    }, hideIf(comet.testing.scheduledMusicians.isEmpty))
+    }, hideIf(model.testingState.scheduledMusicians.isEmpty))
     
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
@@ -118,7 +108,7 @@ class Students extends SelectedMusician with Loggable {
         SHtml.ajaxCheckbox(false, checked => {
           if (checked) selectedMusicians += musician
           else selectedMusicians -= musician
-          (if (selectedMusicians.isEmpty) JsHideId("schedule") else JsShowId("schedule")) & Students.showClearSchedule
+          (if (selectedMusicians.isEmpty) JsHideId("schedule") else JsShowId("schedule")) & Students.showClearScheduleButton
         })
 
       val now = DateTime.now
@@ -166,9 +156,9 @@ class Students extends SelectedMusician with Loggable {
       } yield nextPiece.name.get
       val longAgo = 60L * 60 * 24 * 365 * 100
       val secondsSince = lastAsmtTime.map(la => Seconds.secondsBetween(la, now).getSeconds.toLong) | longAgo
-      ScheduledMusician(musician, -secondsSince, opNextPieceName | Cache.pieces.head.name.get)
+      EnqueuedMusician(musician, -secondsSince, opNextPieceName | Cache.pieces.head.name.get)
     })
-    Actors.testScheduler ! ScheduleMusicians(scheduledMusicians)
+    Actors.testingManager ! EnqueueMusicians(scheduledMusicians)
   }
 
   private def studentLink(m: Musician) = {
@@ -179,5 +169,16 @@ class Students extends SelectedMusician with Loggable {
 }
 
 object Students {
-  def showClearSchedule = JsShowIdIf("clearSchedule", comet.testing.scheduledMusicians.nonEmpty)
+  def showClearScheduleButton = JsShowIdIf("clearSchedule", model.testingState.scheduledMusicians.nonEmpty)
 }
+
+object SortBy extends Enumeration {
+  type SortBy = Value
+  val Name = Value("Name")
+  val LastAssessment = Value("Last Assessment")
+  val LastPiece = Value("Last Piece")
+}
+
+object svSortingStudentsBy extends SessionVar[SortBy.Value](SortBy.Name)
+
+object svSelectors extends SessionVar[Selectors](new Selectors())

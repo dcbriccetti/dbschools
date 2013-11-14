@@ -2,31 +2,30 @@ package com.dbschools.mgb
 package comet
 
 import scala.xml.Text
-import org.apache.log4j.Logger
-import net.liftweb.actor.LiftActor
-import net.liftweb.http.{ListenerManager, CometListener, CometActor}
+import net.liftweb.http.{CometListener, CometActor}
 import net.liftweb.http.js.JsCmds.SetHtml
-import com.dbschools.mgb.snippet.Students
-
-case class TestingUpdate(queue: Iterable[ScheduledMusician])
+import snippet.Students
 
 class StudentsCometActor extends CometActor with CometListener {
-  private val log = Logger.getLogger(getClass)
+  import StudentsCometActorMessages._
+  import CommonCometActorMessages._
+
   def registerWith = StudentsCometDispatcher
 
   override def lowPriority = {
-    case TestingUpdate(queue) =>
-      partialUpdate(SetHtml("count", Text(queue.size.toString)) & Students.showClearSchedule)
-    case _ =>
+
+    case QueueSize(queueSize) =>
+      partialUpdate(SetHtml("count", Text(queueSize.toString)) &
+        Students.showClearScheduleButton)
+
+    case Start =>
   }
 
-  def render = "#count *" #> comet.testing.scheduledMusicians.size.toString
+  def render = "#count *" #> model.testingState.scheduledMusicians.size.toString
 }
 
-object StudentsCometDispatcher extends LiftActor with ListenerManager {
-  def createUpdate = "Not used"
-
-  override def lowPriority = {
-    case msg => updateListeners(msg)
-  }
+object StudentsCometActorMessages {
+  case class QueueSize(queueSize: Int)
 }
+
+object StudentsCometDispatcher extends CommonCometDispatcher

@@ -12,16 +12,16 @@ import Helpers._
 import net.liftweb.http.SHtml
 import net.liftweb.http.js.JsCmds.Noop
 import LiftExtensions._
-import bootstrap.liftweb.{ApplicationPaths}
-import com.dbschools.mgb.comet.{UnscheduleMusicians, ScheduledMusician, TestingMusician, TestMusician}
-import com.dbschools.mgb.schema.AppSchema
-import com.dbschools.mgb.model.{Actors, Cache, Terms}
+import bootstrap.liftweb.ApplicationPaths
+import schema.AppSchema
+import model.{EnqueuedMusician, TestingMusician, Actors, Cache, Terms}
+import model.TestingManagerMessages._
 
 class Testing extends SelectedMusician {
   def render = {
     var selectedScheduledIds = Set[Int]()
 
-    def queueRow(sm: ScheduledMusician): CssSel = {
+    def queueRow(sm: EnqueuedMusician): CssSel = {
       val userName = ~AppSchema.users.where(_.login === Authenticator.userName.get).headOption.map(_.last_name)
       val m = sm.musician
       val mgs = AppSchema.musicianGroups.where(mg => mg.musician_id === m.id and mg.school_year === Terms.currentTerm)
@@ -34,11 +34,11 @@ class Testing extends SelectedMusician {
       def testLink = {
         SHtml.link(ApplicationPaths.studentDetails.href, () => {
           svSelectedMusician(Some(m))
-          Actors.testScheduler ! TestMusician(TestingMusician(m, userName, DateTime.now))
+          Actors.testingManager ! TestMusician(TestingMusician(m, userName, DateTime.now))
         }, Text(m.first_name.get + " " + m.last_name))
       }
 
-      "tr [id]"     #> ("qr" + m.id.toString) &
+      "tr [id]"     #> Testing.queueRowId(m.id) &
       "#qrsel *"    #> SHtml.ajaxCheckbox(false, (b) => {
         if (b)
           selectedScheduledIds += sm.musician.id
@@ -52,11 +52,11 @@ class Testing extends SelectedMusician {
     }
 
     "#queueDelete" #> SHtml.ajaxButton("Remove Selected", () => {
-      Actors.testScheduler ! UnscheduleMusicians(selectedScheduledIds)
+      Actors.testingManager ! DequeueMusicians(selectedScheduledIds)
       Noop
     }) &
-    ".queueRow"   #> comet.testing.scheduledMusicians.toSeq.sortBy(_.sortOrder).map(queueRow) &
-    ".sessionRow" #> comet.testing.testingMusicians.toSeq.sortBy(-_.time.millis).map(Testing.sessionRow(show = true))
+    ".queueRow"   #> model.testingState.scheduledMusicians.toSeq.sortBy(_.sortOrder).map(queueRow) &
+    ".sessionRow" #> model.testingState.testingMusicians.toSeq.sortBy(-_.time.millis).map(Testing.sessionRow(show = true))
   }
 }
 
@@ -65,10 +65,14 @@ object Testing {
   def sessionRow(show: Boolean)(tm: TestingMusician): CssSel = {
     val m = tm.musician
     val tmf = DateTimeFormat.forStyle("-M")
-    "tr [id]"     #> ("sr" + m.id.toString) &
+    "tr [id]"     #> Testing.sessionRowId(m.id) &
     "tr [style+]" #> (if (show) "" else "display: none;") &
     "#srstu *"    #> Text(m.first_name.get + " " + m.last_name) &
     "#srtester *" #> Text(tm.testerName) &
     "#srtime *"   #> Text(tmf.print(tm.time))
   }
+  
+  def queueRowId(musicianId: Int) = "qr" + musicianId 
+  
+  def sessionRowId(musicianId: Int) = "sr" + musicianId
 }

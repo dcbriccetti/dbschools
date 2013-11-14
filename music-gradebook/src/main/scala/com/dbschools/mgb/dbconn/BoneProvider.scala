@@ -1,4 +1,4 @@
-package com.dbschools.mgb.schema
+package com.dbschools.mgb.dbconn
 
 import java.sql.Connection
 
@@ -11,23 +11,19 @@ import net.liftweb.http.LiftRulesMocker.toLiftRules
 
 /** Connection Provider implemented with BoneCP.
  * 
- * A mutable attribute [[com.dbschools.mgb.schema.ConnectionProvider#pool]] is used to maintain the connection pool. As previously
- * documented in [[com.dbschools.mgb.schema.ConnectionProvider]], [[com.dbschools.mgb.schema.ConnectionProvider#init(DbSettings)]] 
+ * A mutable attribute [[com.dbschools.mgb.dbconn.ConnectionProvider#pool]] is used to maintain the connection pool. As previously
+ * documented in [[com.dbschools.mgb.dbconn.ConnectionProvider]], [[com.dbschools.mgb.dbconn.ConnectionProvider#init(DbSettings)]]
  * should be invoked only once. Doing this way the pool attribute '''race condition free'''. 
- * 
- * @since 1.0.0
  */
 object BoneProvider extends ConnectionProvider with Loggable {
   /** Mutable connection pool.
    * 
-   * @note Special care must be taken to invoke [[com.dbschools.mgb.schema.ConnectionProvider#init(DbSettings)]] only once.
+   * @note Special care must be taken to invoke [[ConnectionProvider#init(DbSettings)]] only once.
    */
   private var pool: BoneCP = null
   
-  /** @inheritdoc */
   def isInitialized = pool != null
   
-  /** @inheritdoc */
   def init(settings: DbSettings) {
     val config = new BoneCPConfig
     config.setJdbcUrl(settings.url)
@@ -51,13 +47,12 @@ object BoneProvider extends ConnectionProvider with Loggable {
       }
     }
 
-    /** Cleans-up the connection pool. */
+    /** Cleans up the connection pool. */
     def goodCitizen = {
-      pool.shutdown
+      pool.shutdown()
     }
   }
   
-  /** @inheritdoc */
   def getConnection(): Connection = {
     if(isInitialized){
       pool.getConnection

@@ -5,15 +5,13 @@ import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
-import com.dbschools.mgb.schema.{Musician, AssessmentTag}
+import schema.{Musician, AssessmentTag, AppSchema}
 
 case class AssessmentRow(assId: Int, date: DateTime, musician: Musician, tester: String, piece: String,
   instrument: String, subinstrument: Option[String], pass: Boolean, notes: Option[String])
 
 object AssessmentRows {
-  import schema.AppSchema.{musicians, assessments, pieces, instruments, subinstruments, users}
-
-  def opStr(s: String) = if (s.trim.isEmpty) None else Some(s)
+  import AppSchema.{musicians, assessments, pieces, instruments, subinstruments, users}
 
   def apply(opMusicianId: Option[Int], limit: Int = 500): Iterable[AssessmentRow] = {
     val rows =
@@ -41,11 +39,13 @@ object AssessmentRows {
       row.copy(notes = Some(newNotes))
     }) | row
   }
+
+  private def opStr(s: String) = if (s.trim.isEmpty) None else Some(s)
 }
 
 object Assessments {
   def delete(ids: Iterable[Int]): Unit = {
-    import schema.AppSchema.{assessments, assessmentTags}
+    import AppSchema.{assessments, assessmentTags}
     assessmentTags.deleteWhere(at => at.assessmentId in ids)
     assessments.deleteWhere(a => a.id in ids)
   }

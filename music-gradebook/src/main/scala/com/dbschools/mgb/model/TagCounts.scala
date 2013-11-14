@@ -3,6 +3,7 @@ package com.dbschools.mgb.model
 import org.squeryl.PrimitiveTypeMode._
 import com.dbschools.mgb.schema.AppSchema
 
+/** Provides the number of occurrences of each comment tag for a student */
 trait TagCounts {
   private lazy val predefCommentsById = Cache.tags.map(pc => pc.id -> pc.commentText).toMap
 

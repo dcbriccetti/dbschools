@@ -1,11 +1,12 @@
-package com.dbschools.mgb
+package com.dbschools.mgb.dbconn
 
 import com.dbschools.mgb.schema.{AppSchema, SchemaHelper}
 
-import model.DefaultDataCreator
 import net.liftweb.http.S
 import net.liftweb.squerylrecord.RecordTypeMode.{inTransaction, transaction}
 import net.liftweb.util.{LiftFlowOfControlException, LoanWrapper, Props}
+import com.dbschools.mgb.model.DefaultDataCreator
+import com.dbschools.mgb.TestDataMaker
 
 object Db {
 
@@ -20,10 +21,10 @@ object Db {
       SchemaHelper.initPostgres()
     }
 
-    if (Props.getBool("db.recreate", defVal = false)) {
+    if (Props.getBool("db.recreate", false)) {
       SchemaHelper.recreateSchema()
       DefaultDataCreator.createIfEmpty()
-      if (Props.getBool("db.development", defVal = false)) {
+      if (Props.getBool("db.development", false)) {
         TestDataMaker.createTestData()
       }
     } else {

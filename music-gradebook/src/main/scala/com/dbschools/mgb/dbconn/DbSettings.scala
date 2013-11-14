@@ -1,4 +1,4 @@
-package com.dbschools.mgb.schema
+package com.dbschools.mgb.dbconn
 
 import org.squeryl.adapters.H2Adapter
 import org.squeryl.adapters.PostgreSqlAdapter
@@ -30,7 +30,7 @@ class H2Settings extends DbSettings with Loggable {
 /**
  * Custom settings for Postgres
  */
-class PostgresSettings extends DbSettings with Loggable {
+class PostgreSqlSettings extends DbSettings with Loggable {
   val adapter = new PostgreSqlAdapter
   logger.trace(s"PostgresSettings: setting up Posgtres Adapter. driver=$driver url=$url user=$user")
 }

@@ -8,8 +8,8 @@ import Loc._
 import net.liftmodules.widgets.flot.Flot
 import net.liftmodules.FoBo
 
-import com.dbschools.mgb.Db
 import com.dbschools.mgb.model.{RunState, Cache}
+import com.dbschools.mgb.dbconn.Db
 
 class Boot {
   def boot(): Unit = {

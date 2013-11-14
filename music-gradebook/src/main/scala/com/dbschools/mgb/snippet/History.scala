@@ -5,7 +5,7 @@ import net.liftweb._
 import util._
 import Helpers._
 import schema.TermGroupAssessments
-import com.dbschools.mgb.model.Cache
+import model.Cache
 
 class History {
 

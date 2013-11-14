@@ -16,8 +16,8 @@ import schema.{Assessment, AppSchema, Musician, MusicianGroup}
 
 class StudentDetails extends TagCounts with Collapsible with SelectedMusician {
   private val log = Logger.getLogger(getClass)
-  private object svExpanded extends SessionVar[Array[Boolean]](Array(false, false, false))
-  private val expanded = svExpanded.is
+  private object svCollapsibleShowing extends SessionVar[Array[Boolean]](Array(false, false, false))
+  private val collapsibleShowing = svCollapsibleShowing.is
   private var selectedMusicianGroups = Set[Int]()
   private val groupSelectorValues = Cache.filteredGroups().map(gp => (gp.group.id.toString, gp.group.name)).toSeq
   private var newAssignmentGroupId = groupSelectorValues(0)._1.toInt
@@ -67,7 +67,7 @@ class StudentDetails extends TagCounts with Collapsible with SelectedMusician {
     }
 
     def makeDetails(lastPassFinder: LastPassFinder)(md: MusicianDetails) = {
-      val collapseSels = (0 to 2).map(n => s"#collapse$n [class+]" #> (if (expanded(n)) "in" else ""))
+      val collapseSels = (0 to 2).map(n => s"#collapse$n [class+]" #> (if (collapsibleShowing(n)) "in" else ""))
 
       collapseSels.reduce(_ & _) &
       ".lastName *"       #> SHtml.swappable(<span id="lastName">{md.musician.last_name.get}</span>,
@@ -87,7 +87,7 @@ class StudentDetails extends TagCounts with Collapsible with SelectedMusician {
     "#student"  #> opMusicianDetails.map(makeDetails(new LastPassFinder()))
   }
 
-  def js = collapseMonitorJs(expanded)
+  def js = collapseMonitorJs(collapsibleShowing)
 
   private def assignmentCheckbox(ga: GroupAssignment) =
     SHtml.ajaxCheckbox(false, checked => {

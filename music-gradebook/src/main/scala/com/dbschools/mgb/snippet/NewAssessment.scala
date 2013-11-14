@@ -11,18 +11,16 @@ import org.scala_tools.time.Imports._
 import net.liftweb.util.Helpers._
 import net.liftweb.http
 import http.SHtml
-import net.liftweb.http.js.JsCmds._
+import http.js.JsCmds._
+import http.js.JsCmd
+import http.js.JsCmds.ReplaceOptions
+import http.js.jquery.JqJsCmds
+import http.js.JE.JsRaw
 import net.liftweb.common.{Empty, Full}
-import net.liftweb.http.js.jquery.JqJsCmds
 import JqJsCmds.{FadeOut, PrependHtml}
-import net.liftweb.http.js.JsCmd
-import net.liftweb.http.js.JsCmds.ReplaceOptions
-import net.liftweb.http.js.JE.JsRaw
-import model.{Cache, GroupAssignments, LastPassFinder, Terms}
 import schema.{Assessment, AssessmentTag, AppSchema, Piece}
+import model.{AssessmentRow, Cache, GroupAssignments, LastPassFinder, Terms}
 import comet.ActivityCometDispatcher
-import comet.ActivityStatusUpdate
-import model.AssessmentRow
 
 class NewAssessment extends SelectedMusician {
   private val log = Logger.getLogger(getClass)
@@ -138,7 +136,7 @@ class NewAssessment extends SelectedMusician {
             ~s.opSelPieceId.flatMap(id => pieceNameFromId(id)),
             ~inst, subinst, pass, if (expandedNotes.isEmpty) None else Some(expandedNotes))
         }
-        ActivityCometDispatcher ! ActivityStatusUpdate(row)
+        ActivityCometDispatcher ! comet.ActivityCometActorMessages.ActivityStatusUpdate(row)
         val nodeSeq = Assessments.createRow(row, keepStudent = false)
         s = new State
         PrependHtml("assessmentsBody", nodeSeq) &

@@ -5,6 +5,7 @@ import org.squeryl.PrimitiveTypeMode._
 import schema.{MusicianGroup, Musician, AppSchema}
 import net.liftweb.common.Loggable
 import com.dbschools.mgb.model.Terms
+import com.dbschools.mgb.dbconn.Db
 
 object TestDataMaker extends Loggable {
 

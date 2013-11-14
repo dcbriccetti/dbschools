@@ -5,9 +5,10 @@ import org.squeryl.Session
 import net.liftweb.common.Loggable
 import net.liftweb.squerylrecord.RecordTypeMode.transaction
 import net.liftweb.squerylrecord.SquerylRecord
+import com.dbschools.mgb.dbconn.{PostgreSqlSettings, H2Settings, DbSettings, BoneProvider}
 
 /**
- * Initializes a DB connection and setup the connection pool.
+ * Initializes a DB connection and sets up the connection pool.
  */
 object SchemaHelper extends Loggable {
 
@@ -18,7 +19,7 @@ object SchemaHelper extends Loggable {
 
   /** Initializes schema with a PostgreSQL DB. */
   def initPostgres(): Unit = {
-    initSquerylRecord(new PostgresSettings)
+    initSquerylRecord(new PostgreSqlSettings)
   }
 
   /** Initializes the connection pool only. */
