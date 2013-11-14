@@ -32,7 +32,7 @@ class Boot {
       newStudent.menu           >> loggedIn >> Hidden,
       studentDetails.menu       >> loggedIn >> Hidden,
       activity.menu             >> loggedIn,
-      graphs.menu               >> loggedIn,
+      graphs.menu               >> loggedIn >> Hidden,
       stats.menu                >> loggedIn,
       history.menu              >> loggedIn,
       instrumentsList.menu      >> loggedIn,
