@@ -26,7 +26,12 @@ import Cache.lastAssTimeByMusician
 class Students extends SelectedMusician with Loggable {
   private val selectors = svSelectors.is
 
-  private def replaceContents = Templates(List("_inGroupsTable")).map(Replace("inGroups", _)).open
+  private def replaceContents = {
+    val template = Templates(List("students")).open
+    val elemId = "dynamicSection"
+    val getElem = s"#$elemId ^^" #> ""
+    Replace(elemId, getElem(template))
+  }
 
   selectors.opCallback = Some(() => replaceContents)
   def yearSelector = selectors.yearSelector
@@ -65,7 +70,7 @@ class Students extends SelectedMusician with Loggable {
     "#save"      #> SHtml.onSubmitUnit(() => saveStudent)
   }
 
-  def inGroups = {
+  def render = {
     val fmt = DateTimeFormat.forStyle("S-")
 
     def hideIf(b: Boolean) = "style" -> (if (b) "display: none;" else "")

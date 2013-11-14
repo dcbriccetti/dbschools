@@ -10,8 +10,40 @@
     <span><span data-lift="Students.createNew"/><a id="create" href="#">New Student</a></span></div>
     <div style="margin-top: .4em;">Sort by: <span data-lift="Students.sortBy"></span></div>
 
-    <lift:embed what="_inGroupsTable" />
-
+    <div id="dynamicSection" data-lift="Students">
+        <div data-lift="comet?type=StudentsCometActor" style="margin-top: .3em;">
+            <span>Testing Queue: </span><span id="count"></span>
+            <span id="clearSchedule" class="btn"></span>
+            <span id="schedule" class="btn"></span>
+        </div>
+        <table class="table table-condensed autoWidth">
+            <thead>
+            <tr>
+                <th>Sel</th>
+                <th class="schYear">School Year</th>
+                <th>Name</th>
+                <th>Grade</th>
+                <th class="group">Group</th>
+                <th class="instr">Instrument</th>
+                <th colspan="2">Last Assessment</th>
+                <th>Last Piece Passed</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="studentRow">
+                <td class="sel"/>
+                <td class="schYear"/>
+                <td class="stuName"/>
+                <td style="text-align: right" class="grade"/>
+                <td class="group"/>
+                <td class="instr"/>
+                <td class="lastAss"/>
+                <td style="text-align: right;" class="daysSince"/>
+                <td class="lastPass"/>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 </body>
 </html>
