@@ -12,7 +12,7 @@ import util._
 import Helpers._
 import net.liftweb.http.{Templates, RequestVar, SHtml}
 import net.liftweb.http.js.JsCmds._
-import model.{AssessmentRow, AssessmentRows}
+import com.dbschools.mgb.model.{SelectedMusician, AssessmentRow, AssessmentRows}
 import schema.{Musician, Subinstrument}
 import model.BoxOpener._
 

@@ -11,7 +11,7 @@ import http._
 import js.JsCmds._
 import Helpers._
 import net.liftweb.http.js.JsCmds.{Confirm, SetHtml}
-import model.{Cache, GroupAssignment, GroupAssignments, LastPassFinder, TagCounts, Terms}
+import model.{Cache, GroupAssignment, GroupAssignments, LastPassFinder, SelectedMusician, TagCounts, Terms}
 import schema.{Assessment, AppSchema, Musician, MusicianGroup}
 
 class StudentDetails extends TagCounts with Collapsible with SelectedMusician {
@@ -77,8 +77,8 @@ class StudentDetails extends TagCounts with Collapsible with SelectedMusician {
                                 SHtml.ajaxText(md.musician.first_name.get,
                                 changeName(md.musician, md.musician.first_name, "firstName"))) &
       ".grade"            #> Terms.graduationYearAsGrade(md.musician.graduation_year.get) &
-      ".stuId"            #> SHtml.swappable(<span id="stuId">{md.musician.student_id.toString}</span>,
-                                SHtml.ajaxText(md.musician.student_id.toString, changeStuId(md.musician))) &
+      ".stuId"            #> SHtml.swappable(<span id="stuId">{md.musician.student_id.toString()}</span>,
+                                SHtml.ajaxText(md.musician.student_id.toString(), changeStuId(md.musician))) &
       "#lastPiece *"      #> StudentDetails.lastPiece(lastPassFinder, md.musician.id) &
       ".assignmentRow *"  #> groupsTable(md.groups) &
       ".assessmentsSummary *" #> assessmentsSummary(md)

@@ -7,7 +7,7 @@ import http._
 import net.liftweb.util.FieldError
 import bootstrap.liftweb.ApplicationPaths
 import com.dbschools.mgb.schema.{Musician, AppSchema}
-import com.dbschools.mgb.model.Terms
+import com.dbschools.mgb.model.{SelectedMusician, Terms}
 
 class NewStudent extends LiftScreen with SelectedMusician {
   private val log = Logger.getLogger(getClass)

@@ -18,8 +18,8 @@ import http.js.jquery.JqJsCmds
 import http.js.JE.JsRaw
 import net.liftweb.common.{Empty, Full}
 import JqJsCmds.{FadeOut, PrependHtml}
-import schema.{Assessment, AssessmentTag, AppSchema, Piece}
-import model.{AssessmentRow, Cache, GroupAssignments, LastPassFinder, Terms}
+import schema.{Assessment, AssessmentTag, AppSchema}
+import model.{AssessmentState, AssessmentRow, Cache, LastPassFinder, SelectedMusician}
 import comet.ActivityCometDispatcher
 import LiftExtensions._
 
@@ -27,40 +27,8 @@ class NewAssessment extends SelectedMusician {
   private val log = Logger.getLogger(getClass)
   val lastPassFinder = new LastPassFinder()
 
-  class State {
-    case class Pi(piece: Piece, instId: Int, opSubInstId: Option[Int] = None)
-
-    val opNextPi = {
-      val currentGroups = GroupAssignments(opMusician.map(_.id), opSelectedTerm = Some(Terms.currentTerm)).toSeq
-      val currentInstIds = currentGroups.map(_.instrument.id)
-
-      val pi = for {
-        musician      <- opMusician
-        allLastPassed =  lastPassFinder.lastPassed(Some(musician.id))
-        lastPass      <- allLastPassed.find(lp => currentInstIds contains lp.instrumentId)
-        piece         <- Cache.pieces.find(_.id == lastPass.pieceId)
-        nextPiece     =  Cache.nextPiece(piece)
-      } yield Pi(nextPiece, lastPass.instrumentId, lastPass.opSubinstrumentId)
-
-      pi orElse currentGroups.headOption.map(ga => Pi(Cache.pieces.head, ga.instrument.id))
-    }
-
-    val commentTagSelections = scala.collection.mutable.Map(Cache.tags.map(_.id -> false): _*)
-    var opSelInstId = opNextPi.map(_.instId)
-    var opSelSubinstId = opNextPi.flatMap(_.opSubInstId)
-    var opSelPieceId = opNextPi.map(_.piece.id)
-    var notes = ""
-
-    def tempoFromPiece = opSelPieceId.flatMap(selPieceId =>
-      // First look for a tempo for the specific instrument
-      Cache.tempos.find(t => t.instrumentId == opSelInstId && t.pieceId == selPieceId) orElse
-      Cache.tempos.find(_.pieceId == selPieceId)).map(_.tempo) | 0
-
-    var tempo = tempoFromPiece
-  }
-  
   def render = {
-    var s = new State()
+    var s = new AssessmentState(lastPassFinder)
 
     def jsTempo = JsRaw(s"tempoBpm = ${s.tempo}").cmd
 
@@ -139,7 +107,7 @@ class NewAssessment extends SelectedMusician {
         }
         ActivityCometDispatcher ! comet.ActivityCometActorMessages.ActivityStatusUpdate(row)
         val nodeSeq = Assessments.createRow(row, keepStudent = false)
-        s = new State
+        s = new AssessmentState(lastPassFinder)
         PrependHtml("assessmentsBody", nodeSeq) &
           SetHtml("lastPiece", Text(StudentDetails.lastPiece(lastPassFinder, musician.id))) &
           (s.opSelPieceId.map(id => JsJqVal("#piece", id)) getOrElse Noop) &

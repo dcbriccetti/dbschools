@@ -18,9 +18,8 @@ import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
 import model.BoxOpener._
-import model.{Actors, Cache, LastPassFinder, Terms, GroupAssignments}
+import model.{Actors, Cache, EnqueuedMusician, LastPassFinder, Terms, GroupAssignments, SelectedMusician}
 import model.TestingManagerMessages._
-import model.EnqueuedMusician
 import Cache.lastAssTimeByMusician
 
 class Students extends SelectedMusician with Loggable {

@@ -14,7 +14,7 @@ import net.liftweb.http.js.JsCmds.Noop
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import schema.AppSchema
-import model.{EnqueuedMusician, TestingMusician, Actors, Cache, Terms}
+import model.{EnqueuedMusician, SelectedMusician, TestingMusician, Actors, Cache, Terms}
 import model.TestingManagerMessages._
 
 class Testing extends SelectedMusician {
