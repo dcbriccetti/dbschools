@@ -21,6 +21,7 @@ import JqJsCmds.{FadeOut, PrependHtml}
 import schema.{Assessment, AssessmentTag, AppSchema, Piece}
 import model.{AssessmentRow, Cache, GroupAssignments, LastPassFinder, Terms}
 import comet.ActivityCometDispatcher
+import LiftExtensions._
 
 class NewAssessment extends SelectedMusician {
   private val log = Logger.getLogger(getClass)
@@ -83,7 +84,7 @@ class NewAssessment extends SelectedMusician {
     def commentText = SHtml.textarea("", (n) => {
       s.notes = n
       Noop
-    }, "id" -> "commentText", "rows" -> "3", "style" -> "width: 30em;", "placeholder" -> "Additional comments")
+    })
 
     def checkboxes(part: Int) = {
       val grouped = Cache.tags.grouped(Cache.tags.size / 2).toSeq
@@ -141,8 +142,9 @@ class NewAssessment extends SelectedMusician {
         s = new State
         PrependHtml("assessmentsBody", nodeSeq) &
           SetHtml("lastPiece", Text(StudentDetails.lastPiece(lastPassFinder, musician.id))) &
-          SetHtml("piece", selPiece) & sendTempo &
-          SetHtml("commentText", commentText) &
+          (s.opSelPieceId.map(id => JsJqVal("#piece", id)) getOrElse Noop) &
+          sendTempo &
+          SetValById("commentText", "") &
           SetHtml("checkbox1", checkboxes(0)) &
           SetHtml("checkbox2", checkboxes(1)) &
           (pieceNameFromId(newAss.pieceId).map(pieceName => {
@@ -176,12 +178,12 @@ class NewAssessment extends SelectedMusician {
 
     "#instrument"     #> selInst &
     s"#$subinstId"    #> selSubinst &
-    "#piece *"        #> selPiece &
+    "#piece"          #> selPiece &
     "#tempo *"        #> tempoControl &
     "#setTempo"       #> Script(jsTempo) &
     "#checkbox1 *"    #> checkboxes(0) &
     "#checkbox2 *"    #> checkboxes(1) &
-    "#commentText *"  #> commentText &
+    "#commentText"    #> commentText &
     "#passButton"     #> SHtml.ajaxSubmit("Pass", () => { recordAss(pass = true ) }) &
     "#failButton"     #> SHtml.ajaxSubmit("Fail", () => { recordAss(pass = false) })
   }

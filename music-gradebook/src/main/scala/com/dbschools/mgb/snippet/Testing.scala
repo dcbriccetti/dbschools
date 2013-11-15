@@ -31,7 +31,7 @@ class Testing extends SelectedMusician {
           instrument    <- Cache.instruments.find(_.id == instrumentId)
         } yield instrument.name.get
 
-      def testLink = {
+      def studentNameTestLink = {
         SHtml.link(ApplicationPaths.studentDetails.href, () => {
           svSelectedMusician(Some(m))
           Actors.testingManager ! TestMusician(TestingMusician(m, userName, DateTime.now))
@@ -46,7 +46,7 @@ class Testing extends SelectedMusician {
           selectedScheduledIds -= sm.musician.id
         JsShowIdIf("queueDelete", selectedScheduledIds.nonEmpty)
       }) &
-      "#qrstu *"    #> testLink &
+      "#qrstu *"    #> studentNameTestLink &
       "#qrinst *"   #> instrumentNames.toSet /* no dups */ .toSeq.sorted.mkString(", ") &
       "#qrpiece *"  #> sm.nextPieceName
     }
@@ -55,7 +55,7 @@ class Testing extends SelectedMusician {
       Actors.testingManager ! DequeueMusicians(selectedScheduledIds)
       Noop
     }) &
-    ".queueRow"   #> model.testingState.scheduledMusicians.toSeq.sortBy(_.sortOrder).map(queueRow) &
+    ".queueRow"   #> model.testingState.enqueuedMusicians.toSeq.sortBy(_.sortOrder).map(queueRow) &
     ".sessionRow" #> model.testingState.testingMusicians.toSeq.sortBy(-_.time.millis).map(Testing.sessionRow(show = true))
   }
 }

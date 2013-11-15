@@ -21,7 +21,7 @@ class StudentsCometActor extends CometActor with CometListener {
     case Start =>
   }
 
-  def render = "#count *" #> model.testingState.scheduledMusicians.size.toString
+  def render = "#count *" #> model.testingState.enqueuedMusicians.size.toString
 }
 
 object StudentsCometActorMessages {

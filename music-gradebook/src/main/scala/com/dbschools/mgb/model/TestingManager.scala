@@ -14,36 +14,36 @@ class TestingManager extends Actor {
   def receive = {
 
     case EnqueueMusicians(scheds) =>
-      testingState.scheduledMusicians ++= scheds
+      testingState.enqueuedMusicians ++= scheds
       TestingCometDispatcher ! RedisplaySchedule
       updateStudentsPage()
 
     case DequeueMusicians(ids) =>
       val idsSet = ids.toSet
-      val sms = testingState.scheduledMusicians.filter(idsSet contains _.musician.id)
+      val sms = testingState.enqueuedMusicians.filter(idsSet contains _.musician.id)
       if (sms.nonEmpty) {
-        testingState.scheduledMusicians --= sms
+        testingState.enqueuedMusicians --= sms
         TestingCometDispatcher ! RedisplaySchedule
         updateStudentsPage()
       }
 
     case TestMusician(testingMusician) =>
-      testingState.scheduledMusicians.find(_.musician == testingMusician.musician).foreach(sm => {
-        testingState.scheduledMusicians -= sm
+      testingState.enqueuedMusicians.find(_.musician == testingMusician.musician).foreach(sm => {
+        testingState.enqueuedMusicians -= sm
         testingState.testingMusicians += testingMusician
         TestingCometDispatcher ! MoveMusician(testingMusician)
       })
       updateStudentsPage()
 
     case ClearQueue =>
-      testingState.scheduledMusicians = testingState.scheduledMusicians.empty
+      testingState.enqueuedMusicians = testingState.enqueuedMusicians.empty
       testingState.testingMusicians = testingState.testingMusicians.empty
       TestingCometDispatcher ! RedisplaySchedule
       updateStudentsPage()
   }
 
   private def updateStudentsPage(): Unit =
-    StudentsCometDispatcher ! QueueSize(testingState.scheduledMusicians.size)
+    StudentsCometDispatcher ! QueueSize(testingState.enqueuedMusicians.size)
 }
 
 case class EnqueuedMusician(musician: Musician, sortOrder: Long, nextPieceName: String)
@@ -58,6 +58,6 @@ object TestingManagerMessages {
 }
 
 object testingState {
-  var scheduledMusicians = Set[EnqueuedMusician]()
+  var enqueuedMusicians = Set[EnqueuedMusician]()
   var testingMusicians = Set[TestingMusician]()
 }

@@ -84,7 +84,7 @@ class Students extends SelectedMusician with Loggable {
     def clearScheduleButton = SHtml.ajaxButton("Clear", () => {
       Actors.testingManager ! ClearQueue
       Noop
-    }, hideIf(model.testingState.scheduledMusicians.isEmpty))
+    }, hideIf(model.testingState.enqueuedMusicians.isEmpty))
     
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
@@ -174,7 +174,7 @@ class Students extends SelectedMusician with Loggable {
 }
 
 object Students {
-  def showClearScheduleButton = JsShowIdIf("clearSchedule", model.testingState.scheduledMusicians.nonEmpty)
+  def showClearScheduleButton = JsShowIdIf("clearSchedule", model.testingState.enqueuedMusicians.nonEmpty)
 }
 
 object SortBy extends Enumeration {
