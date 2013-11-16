@@ -6,7 +6,6 @@ import scala.xml.Text
 import org.apache.log4j.Logger
 import scalaz._
 import Scalaz._
-import org.squeryl.PrimitiveTypeMode._
 import org.scala_tools.time.Imports._
 import net.liftweb.util.Helpers._
 import net.liftweb.http
@@ -18,8 +17,7 @@ import http.js.JE.JsRaw
 import net.liftweb.common.{Empty, Full}
 import JqJsCmds.{FadeOut, PrependHtml}
 import schema.{Assessment, AssessmentTag, AppSchema, Musician, User}
-import model.{AssessmentState, AssessmentRow, Cache, LastPassFinder, SelectedMusician}
-import model.Actors
+import model.{Actors, AssessmentState, AssessmentRow, Cache, LastPassFinder, SelectedMusician, RunState}
 import model.TestingManagerMessages.IncrementMusicianAssessmentCount
 import comet.ActivityCometDispatcher
 import comet.ActivityCometActorMessages._
@@ -108,7 +106,7 @@ class NewAssessment extends SelectedMusician {
         musician  <- opMusician
         iid       <- s.opSelInstId
         pid       <- s.opSelPieceId
-        user      <- AppSchema.users.find(_.login == Authenticator.userName.get)
+        user      <- RunState.loggedInUser.is
       } yield {
         val asmtTime = DateTime.now
         val asmt = Assessment(

@@ -21,7 +21,7 @@ import model.TestingManagerMessages._
 class Testing extends SelectedMusician {
   def render = {
     var selectedScheduledIds = Set[Int]()
-    val opUser = AppSchema.users.where(_.login === Authenticator.userName.get).headOption
+    val opUser = RunState.loggedInUser.is
 
     def queueRow(sm: EnqueuedMusician): CssSel = {
       val userName = ~opUser.map(_.last_name)

@@ -1,7 +1,10 @@
-package com.dbschools.mgb.model
+package com.dbschools.mgb
+package model
 
 import net.liftweb.http.SessionVar
+import schema.User
 
 object RunState {
-  object loggedIn extends SessionVar[Boolean] (false)
+  object loggedInUser extends SessionVar[Option[User]](None)
+  def loggedIn = loggedInUser.is.nonEmpty
 }

@@ -16,56 +16,43 @@ import model.RunState
 class Authenticator extends FormHelper {
   val log = Logger.getLogger(getClass)
   import bootstrap.liftweb.ApplicationPaths._
-  import Authenticator.{credentialsValid, isDemo, userName}
-  
+  import Authenticator.isDemo
+
+  var userId = ""
   var password = ""
 
-  def userText(id: String, label: String) =
-    FocusOnLoad(SHtml.text(userName.is, name => userName(name.trim), attrs(id, label): _*))
-  def passwordText(id: String, label: String) =
-    SHtml.password("", password = _, attrs(id, label): _*)
+  def userText(id: String, label: String) = FocusOnLoad(SHtml.text(userId, (u) => userId = u.trim, attrs(id, label): _*))
+
+  def passwordText(id: String, label: String) = SHtml.password("", password = _, attrs(id, label): _*)
 
   def authForm =
     "#userFormGroup"      #> addFormGroup("userName", "User Name", userText) &
     "#passwordFormGroup"  #> addFormGroup("password", "Password", passwordText) &
     "#submit"             #> SHtml.submit("Log In", () => {
-      if (isDemo || credentialsValid(password)) {
-        RunState loggedIn true
-        log.info(s"${userName.is} logged in")
+      val opUser = AppSchema.users.where(user => user.login === userId and user.enabled === true).headOption
+      if (opUser.nonEmpty && (isDemo || opUser.exists(user => BCrypt.checkpw(password, user.epassword)))) {
+        RunState loggedInUser opUser
+        log.info(s"$userId logged in")
         S.redirectTo(groups.href)
       } else {
-        log.info(s"${userName.is} failed to log in")
+        log.info(s"$userId failed to log in")
         S.error("Login failed")
       }
     })
-
 
   def demoMsg = if (isDemo) PassThru else ClearNodes
 
   def organization = if (isDemo) ClearNodes else "#organization" #> Text(Authenticator.org)
 
   def logOut = {
-    Authenticator.logOut()
+    RunState loggedInUser None
     S.redirectTo(logIn.href)
-    PassThru
   }
 
-  def goToLogin = Script(if (RunState.loggedIn.is) Noop else RedirectTo(logIn.href))
+  def goToLogin = Script(if (RunState.loggedInUser.is.nonEmpty) Noop else RedirectTo(logIn.href))
 }
 
 object Authenticator {
   val org = ~Props.get("organization").toOption
   val isDemo = org == "demo"
-  private val startingUserName = if (isDemo) "a" else ""
-
-  object userName extends SessionVar(startingUserName)
-
-  def logOut(): Unit = {
-    RunState loggedIn false
-    userName(startingUserName)
-  }
-
-  private def credentialsValid(password: String) =
-    AppSchema.users.where(user => user.login === userName.is and user.enabled === true).exists(user =>
-      BCrypt.checkpw(password, user.epassword))
 }
