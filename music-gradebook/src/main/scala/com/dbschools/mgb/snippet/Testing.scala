@@ -67,9 +67,10 @@ object Testing {
     val tmf = DateTimeFormat.forStyle("-M")
     "tr [id]"     #> Testing.sessionRowId(m.id) &
     "tr [style+]" #> (if (show) "" else "display: none;") &
-    "#srstu *"    #> Text(m.first_name.get + " " + m.last_name) &
-    "#srtester *" #> Text(tm.testerName) &
-    "#srtime *"   #> Text(tmf.print(tm.time))
+    "#srstu *"    #> (m.first_name.get + " " + m.last_name) &
+    "#srtester *" #> tm.testerName &
+    "#srtime *"   #> tmf.print(tm.time) &
+    ".srasmts *"  #> tm.numAsmts
   }
   
   def queueRowId(musicianId: Int) = "qr" + musicianId 

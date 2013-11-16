@@ -19,6 +19,8 @@ import net.liftweb.common.{Empty, Full}
 import JqJsCmds.{FadeOut, PrependHtml}
 import schema.{Assessment, AssessmentTag, AppSchema, Musician, User}
 import model.{AssessmentState, AssessmentRow, Cache, LastPassFinder, SelectedMusician}
+import model.Actors
+import model.TestingManagerMessages.IncrementMusicianAssessmentCount
 import comet.ActivityCometDispatcher
 import comet.ActivityCometActorMessages._
 import LiftExtensions._
@@ -127,6 +129,7 @@ class NewAssessment extends SelectedMusician {
 
         val row = createAssessmentRow(asmt, asmtTime, musician, user)
         ActivityCometDispatcher ! ActivityStatusUpdate(row)
+        Actors.testingManager ! IncrementMusicianAssessmentCount(musician.id)
         s = new AssessmentState(lastPassFinder)
 
         updatePageForNextAssessment(row, asmt)

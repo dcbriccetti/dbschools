@@ -30,10 +30,17 @@ class TestingManager extends Actor {
     case TestMusician(testingMusician) =>
       testingState.enqueuedMusicians.find(_.musician == testingMusician.musician).foreach(sm => {
         testingState.enqueuedMusicians -= sm
+        var opNextId = testingState.enqueuedMusicians.toSeq.sortBy(_.sortOrder).headOption.map(_.musician.id)
         testingState.testingMusicians += testingMusician
-        TestingCometDispatcher ! MoveMusician(testingMusician)
+        TestingCometDispatcher ! MoveMusician(testingMusician, opNextId)
       })
       updateStudentsPage()
+
+    case IncrementMusicianAssessmentCount(musicianId) =>
+      testingState.testingMusicians.find(_.musician.id == musicianId).foreach(tm => {
+        tm.numAsmts += 1
+        TestingCometDispatcher ! UpdateAssessmentCount(tm)
+      })
 
     case ClearQueue =>
       testingState.enqueuedMusicians = testingState.enqueuedMusicians.empty
@@ -48,12 +55,15 @@ class TestingManager extends Actor {
 
 case class EnqueuedMusician(musician: Musician, sortOrder: Long, nextPieceName: String)
 
-case class TestingMusician(musician: Musician, testerName: String, time: DateTime)
+case class TestingMusician(musician: Musician, testerName: String, time: DateTime) {
+  var numAsmts = 0
+}
 
 object TestingManagerMessages {
   case class EnqueueMusicians(enqueuedMusicians: Iterable[EnqueuedMusician])
   case class DequeueMusicians(ids: Iterable[Int])
   case class TestMusician(testingMusician: TestingMusician)
+  case class IncrementMusicianAssessmentCount(musicianId: Int)
   case object ClearQueue
 }
 

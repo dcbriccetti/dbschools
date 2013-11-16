@@ -1,21 +1,17 @@
 package com.dbschools.mgb
 package comet
 
+import scala.language.postfixOps
 import net.liftweb.http.{Templates, CometListener, CometActor}
+import net.liftweb.http.js.JsCmds.{After, Noop, Reload}
 import net.liftweb.http.js.jquery.JqJsCmds.{FadeIn, FadeOut}
 import net.liftweb.util.{Helpers, PassThru}
 import Helpers._
-import net.liftweb.http.js.JsCmds.Reload
-import net.liftweb.http.js.JE.JsRaw
 import model.TestingMusician
 import snippet.Testing
+import snippet.LiftExtensions._
 import Testing.{queueRowId, sessionRowId, sessionRow}
 import model.BoxOpener._
-
-object TestingCometActorMessages {
-  case object RedisplaySchedule
-  case class MoveMusician(testingMusician: TestingMusician)
-}
 
 class TestingCometActor extends CometActor with CometListener {
   import TestingCometActorMessages._
@@ -28,12 +24,24 @@ class TestingCometActor extends CometActor with CometListener {
     case RedisplaySchedule =>
       partialUpdate(Reload)
 
-    case MoveMusician(testingMusician) =>
+    case MoveMusician(testingMusician, opNextMusicianId) =>
       val id = testingMusician.musician.id
       partialUpdate(
         FadeOut(queueRowId(id), 0 seconds, 2 seconds) &
-        JsRaw(prependRowToSessionsTable(testingMusician)).cmd &
-        FadeIn(sessionRowId(id), 0 seconds, 2 seconds)
+        prependRowToSessionsTable(testingMusician) &
+        FadeIn(sessionRowId(id), 0 seconds, 2 seconds) &
+        JsJqHilite("#" + sessionRowId(id)) &
+        (opNextMusicianId.map(id => {
+          After(2 seconds, JsJqHilite("#" + queueRowId(id), 30000))
+        }) getOrElse Noop)
+      )
+
+    case UpdateAssessmentCount(tm) =>
+      val rowId = sessionRowId(tm.musician.id)
+      val sel = s"#$rowId .srasmts"
+      partialUpdate(
+        JsJqHtml(sel, tm.numAsmts) &
+        JsJqHilite(sel)
       )
 
     case Start =>
@@ -44,11 +52,16 @@ class TestingCometActor extends CometActor with CometListener {
     val cssSelExtractRow = s".sessionRow ^^" #> ""
     val row = cssSelExtractRow(testSchedTemplate)
     val cssSelProcessRow = sessionRow(show = false)(testingMusician)
-    val jsString = cssSelProcessRow(row).toString().encJs
-    s""" $$("#testingTable tbody").prepend($jsString);"""
+    JsJqPrepend("#testingTable tbody", cssSelProcessRow(row).toString().encJs)
   }
 
   def render = PassThru
 }
 
 object TestingCometDispatcher extends CommonCometDispatcher
+
+object TestingCometActorMessages {
+  case object RedisplaySchedule
+  case class MoveMusician(testingMusician: TestingMusician, opNextMusicianId: Option[Int])
+  case class UpdateAssessmentCount(testingMusician: TestingMusician)
+}
