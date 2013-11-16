@@ -26,14 +26,17 @@ class TestingCometActor extends CometActor with CometListener {
 
     case MoveMusician(testingMusician, opNextMusicianId) =>
       val id = testingMusician.musician.id
+      val fadeTime = 2.seconds
+      val queueRowSel = "#" + queueRowId  (id)
+      val sessRowSel  = "#" + sessionRowId(id)
+
       partialUpdate(
-        FadeOut(queueRowId(id), 0 seconds, 2 seconds) &
+        FadeOut(queueRowId(id), 0 seconds, fadeTime) &
+        After(fadeTime, JsJqRemove(queueRowSel)) &
         prependRowToSessionsTable(testingMusician) &
-        FadeIn(sessionRowId(id), 0 seconds, 2 seconds) &
-        JsJqHilite("#" + sessionRowId(id)) &
-        (opNextMusicianId.map(id => {
-          After(2 seconds, JsJqHilite("#" + queueRowId(id), 30000))
-        }) getOrElse Noop)
+        FadeIn(sessionRowId(id), 0 seconds, fadeTime) &
+        After(fadeTime, JsJqHilite(sessRowSel)) &
+        (opNextMusicianId.map(nextId => After(fadeTime, JsJqHilite("#" + queueRowId(nextId), 60000))) getOrElse Noop)
       )
 
     case UpdateAssessmentCount(tm) =>
