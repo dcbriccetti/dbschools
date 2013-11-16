@@ -2,8 +2,6 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
-    <h2>Students</h2>
-
     <div>School Years: <span><span data-lift="Students.yearSelector"/></span>
     Groups: <span><span data-lift="Students.groupSelector"/></span>
     Instruments: <span><span data-lift="Students.instrumentSelector"/></span>
@@ -12,9 +10,11 @@
 
     <div id="dynamicSection" data-lift="Students">
         <div data-lift="comet?type=StudentsCometActor" style="margin-top: .3em;">
+            <span id="autoSelect" class="btn" title="Check the first 5, or the 5 after the last checked one"></span>
             <span>Testing Queue: </span><span id="count"></span>
-            <span id="clearSchedule" class="btn"></span>
-            <span id="schedule" class="btn"></span>
+            <span id="schedule" class="btn" title="Add all checked students to the testing queue"></span>
+            <span id="clearSchedule" class="btn"
+                  title="Remove all students from the testing queue, and clear the Testing Page session items"></span>
         </div>
         <table class="table table-condensed autoWidth">
             <thead>

@@ -61,11 +61,11 @@ class Testing extends SelectedMusician {
     ".sessionRow" #> testingMusicians.toSeq.sortBy(-_.time.millis).map(Testing.sessionRow(show = true)) &
     "#message"    #> FocusOnLoad(SHtml.ajaxText("",
       _.trim match {
-        case "" => Noop
+        case "" => Focus("message") // Otherwise focus moves elsewhere
         case msg =>
           Actors.testingManager ! Chat(ChatMessage(DateTime.now, opUser.get, msg))
           JsJqVal("#message", "")
-      }, "id" -> "message", "size" -> "40", "placeholder" -> "Type chat message and press Enter"
+      }, "id" -> "message", "size" -> "40", "placeholder" -> "Type message and press Enter"
     )) &
     ".messageRow" #> chatMessages.map(Testing.messageRow) &
     "#clearMessages" #> SHtml.ajaxButton("Clear", () => {

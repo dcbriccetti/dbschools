@@ -17,7 +17,7 @@ import net.liftweb.http.js.JsCmds.Replace
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
-import model.{Actors, Cache, EnqueuedMusician, LastPassFinder, Terms, GroupAssignments, SelectedMusician}
+import model._
 import model.TestingManagerMessages._
 import Cache.lastAssTimeByMusician
 
@@ -40,8 +40,8 @@ class Students extends SelectedMusician with Loggable {
   def createNew = "#create [href]" #> ApplicationPaths.newStudent.href
 
   def sortBy = {
-    val orders = Seq(SortBy.Name, SortBy.LastAssessment, SortBy.LastPiece)
-    SHtml.ajaxRadio[SortBy.Value](orders, Full(svSortingStudentsBy.is), (s) => {
+    val orders = Seq(SortStudentsBy.Name, SortStudentsBy.LastAssessment, SortStudentsBy.LastPiece)
+    SHtml.ajaxRadio[SortStudentsBy.Value](orders, Full(svSortingStudentsBy.is), (s) => {
       svSortingStudentsBy(s)
       replaceContents
     }).flatMap(item => <label style="margin-right: .5em;">{item.xhtml} {item.key.toString} </label>)
@@ -69,9 +69,25 @@ class Students extends SelectedMusician with Loggable {
   def render = {
     val fmt = DateTimeFormat.forStyle("S-")
 
+    val groupAssignments = sortedStudents
+
     def disableIf(b: Boolean) = if (b) "disabled" -> "disabled" else "" -> ""
 
-    def scheduleButton = SHtml.ajaxButton("Add Selected Students", () => {
+    def cbId(musicianId: Int) = "mcb" + musicianId
+
+    def enableButtons =
+      JsEnableIf("#schedule", selectedMusicians.nonEmpty) & Students.showClearScheduleButton
+
+    def autoSelectButton = SHtml.ajaxButton("Check 5", () => {
+      val indexOfLastChecked = LastCheckedIndex.find(
+        groupAssignments.map(_.musician), selectedMusicians)
+      groupAssignments.drop(indexOfLastChecked + 1).take(5).map(row => {
+        selectedMusicians += row.musician
+        JsCheckIf("#" + cbId(row.musician.id), true)
+      }).reduce(_ & _) & enableButtons
+    })
+
+    def scheduleButton = SHtml.ajaxButton("Add Checked", () => {
       scheduleSelectedMusicians()
       Noop
     }, disableIf(selectedMusicians.isEmpty))
@@ -80,40 +96,24 @@ class Students extends SelectedMusician with Loggable {
       Actors.testingManager ! ClearQueue
       Noop
     }, disableIf(model.testingState.enqueuedMusicians.isEmpty))
-    
+
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedInstId .isDefined) ".instr"   #> none[String] else PassThru) andThen (
 
-    "#clearSchedule"          #> clearScheduleButton &
+    "#autoSelect"             #> autoSelectButton &
     "#schedule"               #> scheduleButton &
+    "#clearSchedule"          #> clearScheduleButton &
     ".studentRow"             #> {
-      val longAgo = new DateTime("1000-01-01").toDate
-
-      val byYear = GroupAssignments(None, svSelectors.opSelectedTerm, svSelectors.opSelectedGroupId,
-        svSelectors.opSelectedInstId).toSeq.sortBy(_.musicianGroup.school_year)
-
-      val fullySorted = svSortingStudentsBy.is match {
-        case SortBy.Name =>
-          byYear.sortBy(_.musician.name)
-        case SortBy.LastAssessment =>
-          byYear.sortBy(ga => lastAssTimeByMusician.get(ga.musician.id).map(_.toDate) | longAgo)
-        case SortBy.LastPiece =>
-          def pos(id: Int) =
-            lastPassesByMusician.get(id).toList.flatten.sortBy(-_.testOrder).lastOption.map(_.testOrder) | 0
-          byYear.sortBy(ga => -pos(ga.musician.id))
-      }
-
       def selectionCheckbox(musician: Musician) =
         SHtml.ajaxCheckbox(false, checked => {
           if (checked) selectedMusicians += musician
           else selectedMusicians -= musician
-          val nonEmpty = selectedMusicians.nonEmpty
-          JsEnableIdIf("#schedule", nonEmpty) & Students.showClearScheduleButton
-        })
+          enableButtons
+        }, "id" -> cbId(musician.id))
 
       val now = DateTime.now
-      fullySorted.map(row => {
+      groupAssignments.map(row => {
         val lastAsmtTime = lastAssTimeByMusician.get(row.musician.id)
         ".sel      *" #> selectionCheckbox(row.musician) &
         ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
@@ -126,6 +126,24 @@ class Students extends SelectedMusician with Loggable {
         ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.id))
       })
     })))
+  }
+
+  private def sortedStudents = {
+    val longAgo = new DateTime("1000-01-01").toDate
+
+    val byYear = GroupAssignments(None, svSelectors.opSelectedTerm, svSelectors.opSelectedGroupId,
+      svSelectors.opSelectedInstId).toSeq.sortBy(_.musicianGroup.school_year)
+
+    svSortingStudentsBy.is match {
+      case SortStudentsBy.Name =>
+        byYear.sortBy(_.musician.name)
+      case SortStudentsBy.LastAssessment =>
+        byYear.sortBy(ga => lastAssTimeByMusician.get(ga.musician.id).map(_.toDate) | longAgo)
+      case SortStudentsBy.LastPiece =>
+        def pos(id: Int) =
+          lastPassesByMusician.get(id).toList.flatten.sortBy(-_.testOrder).lastOption.map(_.testOrder) | 0
+        byYear.sortBy(ga => -pos(ga.musician.id))
+    }
   }
 
   private def formatLastPasses(opLastPasses: Option[Iterable[LastPassFinder#LastPass]]): NodeSeq = {
@@ -170,16 +188,9 @@ class Students extends SelectedMusician with Loggable {
 }
 
 object Students {
-  def showClearScheduleButton = JsEnableIdIf("#clearSchedule", model.testingState.enqueuedMusicians.nonEmpty)
+  def showClearScheduleButton = JsEnableIf("#clearSchedule", model.testingState.enqueuedMusicians.nonEmpty)
 }
 
-object SortBy extends Enumeration {
-  type SortBy = Value
-  val Name = Value("Name")
-  val LastAssessment = Value("Last Assessment")
-  val LastPiece = Value("Last Piece")
-}
-
-object svSortingStudentsBy extends SessionVar[SortBy.Value](SortBy.Name)
+object svSortingStudentsBy extends SessionVar[SortStudentsBy.Value](SortStudentsBy.Name)
 
 object svSelectors extends SessionVar[Selectors](new Selectors())

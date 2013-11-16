@@ -11,7 +11,9 @@ import Helpers._
 
 object LiftExtensions {
   def JsShowIdIf(what: String, condition: Boolean) = if (condition) JsShowId(what) else JsHideId(what)
-  def JsEnableIdIf(selector: String, condition: Boolean) =  JsJqFn2(selector, "prop", "disabled", ! condition)
+  def JsPropIf    (selector: String, prop: String, condition: Boolean) =  JsJqFn2(selector, "prop", prop, condition)
+  def JsEnableIf  (selector: String, condition: Boolean) =  JsPropIf(selector, "disabled", ! condition)
+  def JsCheckIf   (selector: String, condition: Boolean) =  JsPropIf(selector, "checked", condition)
   def JsJqHtml    [A](selector: String, value: A): JsCmd = JsJqFn1(selector, "html", value)
   def JsJqVal     [A](selector: String, value: A): JsCmd = JsJqFn1(selector, "val", value)
   def JsJqPrepend [A](selector: String, value: A): JsCmd = JsJqFn1(selector, "prepend", value)
