@@ -18,8 +18,8 @@ object AssessmentRows {
       join(assessments, musicians, pieces, instruments, users, subinstruments.leftOuter)((a, m, p, i, u, s) =>
         where(a.musician_id === opMusicianId.?)
         select AssessmentRow(a.id,
-        new DateTime(a.assessment_time.getTime), m, u.last_name, p.name.get, i.name.get,
-        s.map(_.name.get), a.pass, opStr(a.notes))
+          new DateTime(a.assessment_time.getTime), m, u.last_name, p.name.get, i.name.get,
+          s.map(_.name.get), a.pass, opStr(a.notes))
         orderBy (a.assessment_time desc)
         on(
           a.musician_id       === m.id,
@@ -35,7 +35,7 @@ object AssessmentRows {
 
   private def addPredefinedComments(predefCommentsMap: Map[Int, String])(row: AssessmentRow): AssessmentRow = {
     predefCommentsMap.get(row.assId).map(predefComments => {
-      val newNotes = row.notes.toSeq.filter(_.nonEmpty).map(predefComments + "; " + _).headOption | predefComments
+      val newNotes = Seq(row.notes, Some(predefComments)).flatten.mkString("; ")
       row.copy(notes = Some(newNotes))
     }) | row
   }

@@ -11,16 +11,16 @@ import org.scala_tools.time.Imports._
 import net.liftweb.util.Helpers._
 import net.liftweb.http
 import http.SHtml
-import http.js.JsCmds._
 import http.js.JsCmd
-import http.js.JsCmds.ReplaceOptions
+import http.js.JsCmds.{Noop, ReplaceOptions, SetHtml, SetValById, Script}
 import http.js.jquery.JqJsCmds
 import http.js.JE.JsRaw
 import net.liftweb.common.{Empty, Full}
 import JqJsCmds.{FadeOut, PrependHtml}
-import schema.{Assessment, AssessmentTag, AppSchema}
+import schema.{Assessment, AssessmentTag, AppSchema, Musician, User}
 import model.{AssessmentState, AssessmentRow, Cache, LastPassFinder, SelectedMusician}
 import comet.ActivityCometDispatcher
+import comet.ActivityCometActorMessages._
 import LiftExtensions._
 
 class NewAssessment extends SelectedMusician {
@@ -36,7 +36,7 @@ class NewAssessment extends SelectedMusician {
 
     def sendTempo: JsCmd = {
       val tempo = s.tempoFromPiece
-      JsJqVal("#tempo", tempo) & JsRaw(s"tempoBpm = $tempo;")
+      JsJqVal("#tempo", tempo) & JsRaw(s"tempoBpm = $tempo;").cmd
     }
 
     def selPiece = {
@@ -64,6 +64,43 @@ class NewAssessment extends SelectedMusician {
       </div>
     }
 
+    def selectedCommentIds =
+      for {
+        (commentId, selected) <- s.commentTagSelections
+        if selected
+      } yield commentId
+
+    val pieceNames = Cache.pieces.map(p => p.id -> p.name.get).toMap
+
+    def updatePageForNextAssessment(row: AssessmentRow, asmt: Assessment) =
+      PrependHtml("assessmentsBody", Assessments.createRow(row, keepStudent = false)) &
+      SetHtml("lastPiece", Text(StudentDetails.lastPiece(lastPassFinder, asmt.musician_id))) &
+      (s.opSelPieceId.map(id => JsJqVal("#piece", id)) getOrElse Noop) &
+      sendTempo &
+      SetValById("commentText", "") &
+      SetHtml("checkbox1", checkboxes(0)) &
+      SetHtml("checkbox2", checkboxes(1)) &
+      {
+        val id = "passFailConfirmation"
+        val msg = if (asmt.pass) "Passed " else "Failed "
+        SetHtml(id, Text(msg + pieceNames(asmt.pieceId))) & JqJsCmds.Show(id) & FadeOut(id)
+      }
+
+    def createAssessmentRow(asmt: Assessment, asmtTime: DateTime, musician: Musician, user: User): AssessmentRow = {
+      val inst = s.opSelInstId.flatMap(id => Cache.instruments.find(_.id == id)).map(_.name.get)
+      val subinst = s.opSelSubinstId.flatMap(id => Cache.subinstruments.values.flatten.find(_.id == id)).map(_.name.get)
+      def o(s: String) = if (s.isEmpty) None else Some(s)
+      val expandedNotes = {
+        val selIds = selectedCommentIds.toSet
+        val joinedSelectedTags = Cache.tags.filter(selIds contains _.id).map(_.commentText).mkString(", ")
+        Seq(o(joinedSelectedTags), o(s.notes)).flatten.mkString("; ")
+      }
+
+      AssessmentRow(asmt.id, asmtTime, musician, user.last_name,
+        ~s.opSelPieceId.map(id => pieceNames(id)),
+        ~inst, subinst, asmt.pass, o(expandedNotes))
+    }
+
     def recordAss(pass: Boolean): JsCmd = {
       (for {
         musician  <- opMusician
@@ -71,10 +108,10 @@ class NewAssessment extends SelectedMusician {
         pid       <- s.opSelPieceId
         user      <- AppSchema.users.find(_.login == Authenticator.userName.get)
       } yield {
-        val assTime = DateTime.now
-        val newAss = Assessment(
+        val asmtTime = DateTime.now
+        val asmt = Assessment(
           id                = 0,
-          assessment_time   = new Timestamp(assTime.getMillis),
+          assessment_time   = new Timestamp(asmtTime.getMillis),
           musician_id       = musician.id,
           instrument_id     = iid,
           subinstrument_id  = s.opSelSubinstId,
@@ -83,42 +120,16 @@ class NewAssessment extends SelectedMusician {
           pass              = pass,
           notes             = s.notes
         )
-        AppSchema.assessments.insert(newAss)
-        val selectedCommentIds = (for {
-          (commentId, selected) <- s.commentTagSelections
-          if selected
-        } yield commentId).toSet
-        val tags = selectedCommentIds.map(id => AssessmentTag(newAss.id, id))
-        AppSchema.assessmentTags.insert(tags)
-        Cache.updateLastAssTime(newAss.musician_id, assTime)
-        log.info(s"Assessment: $newAss, $tags")
+        AppSchema.assessments.insert(asmt)
+        AppSchema.assessmentTags.insert(selectedCommentIds.map(id => AssessmentTag(asmt.id, id)))
+        
+        Cache.updateLastAssTime(asmt.musician_id, asmtTime)
 
-        def pieceNameFromId(id: Int) = Cache.pieces.find(_.id == id).map(_.name.get)
-
-        val row = {
-          val inst = s.opSelInstId.flatMap(id => Cache.instruments.find(_.id == id)).map(_.name.get)
-          val subinst = s.opSelSubinstId.flatMap(id => Cache.subinstruments.values.flatten.find(_.id == id)).map(_.name.get)
-          val predef = Cache.tags.filter(t => selectedCommentIds.contains(t.id)).map(_.commentText).mkString(", ")
-          val expandedNotes = (if (predef.isEmpty) "" else s"$predef; ") + s.notes
-          AssessmentRow(newAss.id, assTime, musician, user.last_name,
-            ~s.opSelPieceId.flatMap(id => pieceNameFromId(id)),
-            ~inst, subinst, pass, if (expandedNotes.isEmpty) None else Some(expandedNotes))
-        }
-        ActivityCometDispatcher ! comet.ActivityCometActorMessages.ActivityStatusUpdate(row)
-        val nodeSeq = Assessments.createRow(row, keepStudent = false)
+        val row = createAssessmentRow(asmt, asmtTime, musician, user)
+        ActivityCometDispatcher ! ActivityStatusUpdate(row)
         s = new AssessmentState(lastPassFinder)
-        PrependHtml("assessmentsBody", nodeSeq) &
-          SetHtml("lastPiece", Text(StudentDetails.lastPiece(lastPassFinder, musician.id))) &
-          (s.opSelPieceId.map(id => JsJqVal("#piece", id)) getOrElse Noop) &
-          sendTempo &
-          SetValById("commentText", "") &
-          SetHtml("checkbox1", checkboxes(0)) &
-          SetHtml("checkbox2", checkboxes(1)) &
-          (pieceNameFromId(newAss.pieceId).map(pieceName => {
-            val id = "passFailConfirmation"
-            val msg = if (newAss.pass) "Passed " else "Failed "
-            SetHtml(id, Text(msg + pieceName)) & JqJsCmds.Show(id) & FadeOut(id)
-          }) | Noop)
+
+        updatePageForNextAssessment(row, asmt)
       }) | Noop
     }
 
