@@ -10,11 +10,11 @@ import org.scala_tools.time.Imports._
 import net.liftweb._
 import util._
 import Helpers._
-import net.liftweb.http.{Templates, RequestVar, SHtml}
+import net.liftweb.http.{RequestVar, SHtml}
 import net.liftweb.http.js.JsCmds._
 import com.dbschools.mgb.model.{SelectedMusician, AssessmentRow, AssessmentRows}
 import schema.{Musician, Subinstrument}
-import model.BoxOpener._
+import LiftExtensions._
 
 object rvSelectedAsmts extends RequestVar[MSet[Int]](MSet[Int]())
 
@@ -79,12 +79,6 @@ object Assessments {
 
   def createRow(assessmentRow: AssessmentRow, keepStudent: Boolean = true) = {
     val sel = filterStudentColumn(keepStudent) andThen rowCssSel(Seq(assessmentRow))
-    sel(Assessments.rowNodeSeq)
-  }
-
-  private val rowNodeSeq = {
-    val cssSel = ".assessmentRow ^^" #> ""
-    val table = Templates(List("_assessments")).open
-    cssSel(table)
+    sel(elemFromTemplate("_assessments", ".assessmentRow"))
   }
 }

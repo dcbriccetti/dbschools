@@ -3,6 +3,11 @@ package com.dbschools.mgb.snippet
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.http.js.JsCmd
+import net.liftweb.http.Templates
+import com.dbschools.mgb.model
+import model.BoxOpener._
+import net.liftweb.util.Helpers
+import Helpers._
 
 object LiftExtensions {
   def JsShowIdIf(what: String, condition: Boolean) = if (condition) JsShowId(what) else JsHideId(what)
@@ -12,6 +17,12 @@ object LiftExtensions {
   def JsJqPrepend [A](selector: String, value: A): JsCmd = JsJqFn1(selector, "prepend", value)
   def JsJqRemove(selector: String): JsCmd = JsJqFn0(selector, "remove")
   def JsJqHilite(selector: String, ms: Int = 3000): JsCmd = JsRaw(s"jQuery('$selector').effect('highlight', {}, $ms);").cmd
+
+  def elemFromTemplate(templateName: String, selector: String) = {
+    val template = Templates(templateName :: Nil).open
+    val cssGetTr = s"$selector ^^" #> ""
+    cssGetTr(template)
+  }
 
   private def JsJqFn0(selector: String, fn: String): JsCmd = JsRaw(s"jQuery('$selector').$fn()").cmd
   private def JsJqFn1[A](selector: String, fn: String, value: A): JsCmd = JsRaw(s"jQuery('$selector').$fn('${value.toString}')").cmd

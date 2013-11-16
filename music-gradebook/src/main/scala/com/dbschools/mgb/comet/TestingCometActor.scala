@@ -2,12 +2,13 @@ package com.dbschools.mgb
 package comet
 
 import scala.language.postfixOps
+import org.joda.time.format.DateTimeFormat
 import net.liftweb.http.{Templates, CometListener, CometActor}
 import net.liftweb.http.js.JsCmds.{After, Noop, Reload}
 import net.liftweb.http.js.jquery.JqJsCmds.{FadeIn, FadeOut}
 import net.liftweb.util.{Helpers, PassThru}
 import Helpers._
-import model.TestingMusician
+import com.dbschools.mgb.model.{ChatMessage, TestingMusician}
 import snippet.Testing
 import snippet.LiftExtensions._
 import Testing.{queueRowId, sessionRowId, sessionRow}
@@ -21,7 +22,7 @@ class TestingCometActor extends CometActor with CometListener {
 
   override def lowPriority = {
 
-    case RedisplaySchedule =>
+    case ReloadPage =>
       partialUpdate(Reload)
 
     case MoveMusician(testingMusician, opNextMusicianId) =>
@@ -47,13 +48,17 @@ class TestingCometActor extends CometActor with CometListener {
         JsJqHilite(sel)
       )
 
+    case Chat(chatMessage) =>
+      partialUpdate(Testing.addMessage(chatMessage))
+
+    case ClearChat =>
+      partialUpdate(Testing.clearMessages)
+
     case Start =>
   }
 
   private def prependRowToSessionsTable(testingMusician: TestingMusician) = {
-    val testSchedTemplate = Templates(List("testing")).open
-    val cssSelExtractRow = s".sessionRow ^^" #> ""
-    val row = cssSelExtractRow(testSchedTemplate)
+    val row = elemFromTemplate("testing", ".sessionRow")
     val cssSelProcessRow = sessionRow(show = false)(testingMusician)
     JsJqPrepend("#testingTable tbody", cssSelProcessRow(row).toString().encJs)
   }
@@ -64,7 +69,9 @@ class TestingCometActor extends CometActor with CometListener {
 object TestingCometDispatcher extends CommonCometDispatcher
 
 object TestingCometActorMessages {
-  case object RedisplaySchedule
+  case object ReloadPage
   case class MoveMusician(testingMusician: TestingMusician, opNextMusicianId: Option[Int])
   case class UpdateAssessmentCount(testingMusician: TestingMusician)
+  case class Chat(chatMessage: ChatMessage)
+  case object ClearChat
 }

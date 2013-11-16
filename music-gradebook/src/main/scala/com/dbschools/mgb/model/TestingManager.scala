@@ -4,18 +4,18 @@ package model
 import akka.actor.Actor
 import org.joda.time.DateTime
 import comet.{StudentsCometDispatcher, StudentsCometActorMessages, TestingCometDispatcher, TestingCometActorMessages}
-import schema.Musician
+import schema.{Musician, User}
 
 class TestingManager extends Actor {
   import StudentsCometActorMessages._
-  import TestingCometActorMessages._
+  import TestingCometActorMessages.{ReloadPage, MoveMusician, UpdateAssessmentCount}
   import TestingManagerMessages._
 
   def receive = {
 
     case EnqueueMusicians(scheds) =>
       testingState.enqueuedMusicians ++= scheds
-      TestingCometDispatcher ! RedisplaySchedule
+      TestingCometDispatcher ! ReloadPage
       updateStudentsPage()
 
     case DequeueMusicians(ids) =>
@@ -23,14 +23,14 @@ class TestingManager extends Actor {
       val sms = testingState.enqueuedMusicians.filter(idsSet contains _.musician.id)
       if (sms.nonEmpty) {
         testingState.enqueuedMusicians --= sms
-        TestingCometDispatcher ! RedisplaySchedule
+        TestingCometDispatcher ! ReloadPage
         updateStudentsPage()
       }
 
     case TestMusician(testingMusician) =>
       testingState.enqueuedMusicians.find(_.musician == testingMusician.musician).foreach(sm => {
         testingState.enqueuedMusicians -= sm
-        var opNextId = testingState.enqueuedMusicians.toSeq.sortBy(_.sortOrder).headOption.map(_.musician.id)
+        val opNextId = testingState.enqueuedMusicians.toSeq.sortBy(_.sortOrder).headOption.map(_.musician.id)
         testingState.testingMusicians += testingMusician
         TestingCometDispatcher ! MoveMusician(testingMusician, opNextId)
       })
@@ -45,8 +45,17 @@ class TestingManager extends Actor {
     case ClearQueue =>
       testingState.enqueuedMusicians = testingState.enqueuedMusicians.empty
       testingState.testingMusicians = testingState.testingMusicians.empty
-      TestingCometDispatcher ! RedisplaySchedule
+      TestingCometDispatcher ! ReloadPage
       updateStudentsPage()
+
+    case Chat(chatMessage) =>
+      testingState.chatMessages ::= chatMessage
+      TestingCometDispatcher ! TestingCometActorMessages.Chat(chatMessage)
+
+    case ClearChat =>
+      testingState.chatMessages = Nil
+      TestingCometDispatcher ! TestingCometActorMessages.ClearChat
+
   }
 
   private def updateStudentsPage(): Unit =
@@ -59,15 +68,20 @@ case class TestingMusician(musician: Musician, testerName: String, time: DateTim
   var numAsmts = 0
 }
 
+case class ChatMessage(time: DateTime, user: User, msg: String)
+
 object TestingManagerMessages {
   case class EnqueueMusicians(enqueuedMusicians: Iterable[EnqueuedMusician])
   case class DequeueMusicians(ids: Iterable[Int])
   case class TestMusician(testingMusician: TestingMusician)
   case class IncrementMusicianAssessmentCount(musicianId: Int)
   case object ClearQueue
+  case class Chat(chatMessage: ChatMessage)
+  case object ClearChat
 }
 
 object testingState {
   var enqueuedMusicians = Set[EnqueuedMusician]()
   var testingMusicians = Set[TestingMusician]()
+  var chatMessages = List[ChatMessage]()
 }

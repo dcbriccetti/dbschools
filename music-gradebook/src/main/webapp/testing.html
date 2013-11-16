@@ -31,7 +31,31 @@
                 </table>
             </div>
             <div class="col-md-4">
-                <div><span class='h2'>Sessions</span></div>
+                <div><span class='h3'>Chat</span></div>
+                <form data-lift="form.ajax">
+                    <input id="message" placeholder='Enter message here' size="50"></input>
+                </form>
+                <table id='messagesTable' class="table table-condensed" style="margin-bottom: .1em;">
+                    <thead>
+                    <tr id="messagesTableHead">
+                        <th>Time</th>
+                        <th>Tester</th>
+                        <th>Message</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class='messageRow'>
+                      <td id="mrtime"></td>
+                      <td id="mrtester"></td>
+                      <td id="mrmsg"></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div>
+                    <input type="button" id="clearMessages" class="btn" style="display: none;"/>
+                </div>
+
+                <div style="margin-top: 1.5em;"><span class='h3'>Sessions</span></div>
                 <table id='testingTable' class="table">
                     <thead>
                     <tr id="testingTableHead">

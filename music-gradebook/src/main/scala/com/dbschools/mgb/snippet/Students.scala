@@ -11,13 +11,12 @@ import net.liftweb._
 import common.{Full, Loggable}
 import util._
 import Helpers._
-import net.liftweb.http.{SessionVar, Templates, SHtml}
+import net.liftweb.http.{SessionVar, SHtml}
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JsCmds.Replace
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
-import model.BoxOpener._
 import model.{Actors, Cache, EnqueuedMusician, LastPassFinder, Terms, GroupAssignments, SelectedMusician}
 import model.TestingManagerMessages._
 import Cache.lastAssTimeByMusician
@@ -26,10 +25,8 @@ class Students extends SelectedMusician with Loggable {
   private val selectors = svSelectors.is
 
   private def replaceContents = {
-    val template = Templates(List("students")).open
     val elemId = "dynamicSection"
-    val getElem = s"#$elemId ^^" #> ""
-    Replace(elemId, getElem(template))
+    Replace(elemId, elemFromTemplate("students", "#$elemId"))
   }
 
   selectors.opCallback = Some(() => replaceContents)

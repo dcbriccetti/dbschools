@@ -10,19 +10,21 @@ import net.liftweb._
 import util._
 import Helpers._
 import net.liftweb.http.SHtml
-import net.liftweb.http.js.JsCmds.Noop
+import net.liftweb.http.js.JsCmds.{Focus, FocusOnLoad, Noop, JsShowId, JsHideId}
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import schema.AppSchema
-import model.{EnqueuedMusician, SelectedMusician, TestingMusician, Actors, Cache, Terms}
+import com.dbschools.mgb.model._
+import model.testingState._
 import model.TestingManagerMessages._
 
 class Testing extends SelectedMusician {
   def render = {
     var selectedScheduledIds = Set[Int]()
+    val opUser = AppSchema.users.where(_.login === Authenticator.userName.get).headOption
 
     def queueRow(sm: EnqueuedMusician): CssSel = {
-      val userName = ~AppSchema.users.where(_.login === Authenticator.userName.get).headOption.map(_.last_name)
+      val userName = ~opUser.map(_.last_name)
       val m = sm.musician
       val mgs = AppSchema.musicianGroups.where(mg => mg.musician_id === m.id and mg.school_year === Terms.currentTerm)
       val instrumentNames =
@@ -55,16 +57,30 @@ class Testing extends SelectedMusician {
       Actors.testingManager ! DequeueMusicians(selectedScheduledIds)
       Noop
     }) &
-    ".queueRow"   #> model.testingState.enqueuedMusicians.toSeq.sortBy(_.sortOrder).map(queueRow) &
-    ".sessionRow" #> model.testingState.testingMusicians.toSeq.sortBy(-_.time.millis).map(Testing.sessionRow(show = true))
+    ".queueRow"   #> enqueuedMusicians.toSeq.sortBy(_.sortOrder).map(queueRow) &
+    ".sessionRow" #> testingMusicians.toSeq.sortBy(-_.time.millis).map(Testing.sessionRow(show = true)) &
+    "#message"    #> FocusOnLoad(SHtml.ajaxText("",
+      _.trim match {
+        case "" => Noop
+        case msg =>
+          Actors.testingManager ! Chat(ChatMessage(DateTime.now, opUser.get, msg))
+          JsJqVal("#message", "")
+      }, "id" -> "message"
+    )) &
+    ".messageRow" #> chatMessages.map(Testing.messageRow) &
+    "#clearMessages" #> SHtml.ajaxButton("Clear", () => {
+      Actors.testingManager ! ClearChat
+      Noop
+    }, "style" -> (if (chatMessages.isEmpty) "display: none;" else ""))
   }
 }
 
 object Testing {
 
+  private val tmf = DateTimeFormat.forStyle("-M")
+
   def sessionRow(show: Boolean)(tm: TestingMusician): CssSel = {
     val m = tm.musician
-    val tmf = DateTimeFormat.forStyle("-M")
     "tr [id]"     #> Testing.sessionRowId(m.id) &
     "tr [style+]" #> (if (show) "" else "display: none;") &
     "#srstu *"    #> (m.first_name.get + " " + m.last_name) &
@@ -72,7 +88,18 @@ object Testing {
     "#srtime *"   #> tmf.print(tm.time) &
     ".srasmts *"  #> tm.numAsmts
   }
-  
+
+  def messageRow(chatMessage: ChatMessage) =
+    "#mrtime *"   #> tmf.print(chatMessage.time) &
+    "#mrtester *" #> chatMessage.user.last_name &
+    "#mrmsg *"    #> chatMessage.msg
+
+  def addMessage(chatMessage: ChatMessage) = JsJqPrepend("#messagesTable tbody",
+    messageRow(chatMessage)(elemFromTemplate("testing", ".messageRow")).toString().encJs) &
+    JsShowId("clearMessages") & Focus("message")
+
+  def clearMessages = JsJqRemove("#messagesTable tbody *") & JsHideId("clearMessages")
+
   def queueRowId(musicianId: Int) = "qr" + musicianId 
   
   def sessionRowId(musicianId: Int) = "sr" + musicianId
