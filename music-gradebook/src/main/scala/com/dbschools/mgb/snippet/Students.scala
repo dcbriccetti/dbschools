@@ -72,18 +72,17 @@ class Students extends SelectedMusician with Loggable {
   def render = {
     val fmt = DateTimeFormat.forStyle("S-")
 
-    def hideIf(b: Boolean) = "style" -> (if (b) "display: none;" else "")
+    def disableIf(b: Boolean) = if (b) "disabled" -> "disabled" else "" -> ""
 
     def scheduleButton = SHtml.ajaxButton("Add Selected Students", () => {
       scheduleSelectedMusicians()
-      // todo fix race condition where we arrive without the newly added students.  RedirectTo(ApplicationPaths.testing.href)
       Noop
-    }, hideIf(selectedMusicians.isEmpty))
+    }, disableIf(selectedMusicians.isEmpty))
 
     def clearScheduleButton = SHtml.ajaxButton("Clear", () => {
       Actors.testingManager ! ClearQueue
       Noop
-    }, hideIf(model.testingState.enqueuedMusicians.isEmpty))
+    }, disableIf(model.testingState.enqueuedMusicians.isEmpty))
     
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
@@ -112,7 +111,8 @@ class Students extends SelectedMusician with Loggable {
         SHtml.ajaxCheckbox(false, checked => {
           if (checked) selectedMusicians += musician
           else selectedMusicians -= musician
-          (if (selectedMusicians.isEmpty) JsHideId("schedule") else JsShowId("schedule")) & Students.showClearScheduleButton
+          val nonEmpty = selectedMusicians.nonEmpty
+          JsEnableIdIf("#schedule", nonEmpty) & Students.showClearScheduleButton
         })
 
       val now = DateTime.now
@@ -173,7 +173,7 @@ class Students extends SelectedMusician with Loggable {
 }
 
 object Students {
-  def showClearScheduleButton = JsShowIdIf("clearSchedule", model.testingState.enqueuedMusicians.nonEmpty)
+  def showClearScheduleButton = JsEnableIdIf("#clearSchedule", model.testingState.enqueuedMusicians.nonEmpty)
 }
 
 object SortBy extends Enumeration {
