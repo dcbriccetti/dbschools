@@ -10,16 +10,15 @@ import net.liftweb.http.{S, SessionVar, SHtml}
 import net.liftweb.util.Helpers._
 import net.liftweb.util.{PassThru, ClearNodes, Props, BCrypt}
 import net.liftweb.http.js.JsCmds.{Script, Noop, RedirectTo, FocusOnLoad}
-import schema.AppSchema
-import model.RunState
+import schema.{User, AppSchema}
 
 class Authenticator extends FormHelper {
   val log = Logger.getLogger(getClass)
   import bootstrap.liftweb.ApplicationPaths._
   import Authenticator.isDemo
 
-  var userId = ""
-  var password = ""
+  private var userId = ""
+  private var password = ""
 
   def userText(id: String, label: String) = FocusOnLoad(SHtml.text(userId, (u) => userId = u.trim, attrs(id, label): _*))
 
@@ -31,7 +30,7 @@ class Authenticator extends FormHelper {
     "#submit"             #> SHtml.submit("Log In", () => {
       val opUser = AppSchema.users.where(user => user.login === userId and user.enabled === true).headOption
       if (opUser.nonEmpty && (isDemo || opUser.exists(user => BCrypt.checkpw(password, user.epassword)))) {
-        RunState loggedInUser opUser
+        Authenticator svLoggedInUser opUser
         log.info(s"$userId logged in")
         S.redirectTo(groups.href)
       } else {
@@ -45,14 +44,17 @@ class Authenticator extends FormHelper {
   def organization = if (isDemo) ClearNodes else "#organization" #> Text(Authenticator.org)
 
   def logOut = {
-    RunState loggedInUser None
+    Authenticator svLoggedInUser None
     S.redirectTo(logIn.href)
   }
 
-  def goToLogin = Script(if (RunState.loggedInUser.is.nonEmpty) Noop else RedirectTo(logIn.href))
+  def goToLogin = Script(if (Authenticator.svLoggedInUser.is.nonEmpty) Noop else RedirectTo(logIn.href))
 }
 
 object Authenticator {
   val org = ~Props.get("organization").toOption
   val isDemo = org == "demo"
+  object svLoggedInUser extends SessionVar[Option[User]](None)
+  def loggedIn = svLoggedInUser.is.nonEmpty
+  def opLoggedInUser = svLoggedInUser.is
 }

@@ -14,14 +14,14 @@ import net.liftweb.http.js.JsCmds.{Focus, FocusOnLoad, Noop, JsShowId, JsHideId}
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import schema.AppSchema
-import com.dbschools.mgb.model._
+import model.{SelectedMusician, EnqueuedMusician, TestingMusician, Cache, Actors, ChatMessage, Terms}
 import model.testingState._
 import model.TestingManagerMessages._
 
 class Testing extends SelectedMusician {
   def render = {
     var selectedScheduledIds = Set[Int]()
-    val opUser = RunState.loggedInUser.is
+    val opUser = Authenticator.opLoggedInUser
 
     def queueRow(sm: EnqueuedMusician): CssSel = {
       val userName = ~opUser.map(_.last_name)
@@ -65,7 +65,7 @@ class Testing extends SelectedMusician {
         case msg =>
           Actors.testingManager ! Chat(ChatMessage(DateTime.now, opUser.get, msg))
           JsJqVal("#message", "")
-      }, "id" -> "message"
+      }, "id" -> "message", "size" -> "40", "placeholder" -> "Type chat message and press Enter"
     )) &
     ".messageRow" #> chatMessages.map(Testing.messageRow) &
     "#clearMessages" #> SHtml.ajaxButton("Clear", () => {

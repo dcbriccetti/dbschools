@@ -3,13 +3,17 @@ package model
 
 import akka.actor.Actor
 import org.joda.time.DateTime
-import comet.{StudentsCometDispatcher, StudentsCometActorMessages, TestingCometDispatcher, TestingCometActorMessages}
-import schema.{Musician, User}
+import comet.{NoticesDispatcher, StudentsCometDispatcher, StudentsCometActorMessages,
+  TestingCometDispatcher, TestingCometActorMessages}
+import schema.Musician
+import com.dbschools.mgb.schema.User
 
 class TestingManager extends Actor {
   import StudentsCometActorMessages._
   import TestingCometActorMessages.{ReloadPage, MoveMusician, UpdateAssessmentCount}
   import TestingManagerMessages._
+  import comet.NoticesMessages._
+
 
   def receive = {
 
@@ -51,11 +55,12 @@ class TestingManager extends Actor {
     case Chat(chatMessage) =>
       testingState.chatMessages ::= chatMessage
       TestingCometDispatcher ! TestingCometActorMessages.Chat(chatMessage)
+      NoticesDispatcher ! NumChatMsgs(testingState.chatMessages.size)
 
     case ClearChat =>
       testingState.chatMessages = Nil
       TestingCometDispatcher ! TestingCometActorMessages.ClearChat
-
+      NoticesDispatcher ! NumChatMsgs(0)
   }
 
   private def updateStudentsPage(): Unit =

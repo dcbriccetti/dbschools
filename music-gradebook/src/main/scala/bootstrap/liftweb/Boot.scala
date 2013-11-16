@@ -8,8 +8,9 @@ import Loc._
 import net.liftmodules.widgets.flot.Flot
 import net.liftmodules.FoBo
 
-import com.dbschools.mgb.model.{RunState, Cache}
+import com.dbschools.mgb.model.Cache
 import com.dbschools.mgb.dbconn.Db
+import com.dbschools.mgb.snippet.Authenticator
 
 class Boot {
   def boot(): Unit = {
@@ -18,8 +19,8 @@ class Boot {
     // where to search snippet
     LiftRules.addToPackages("com.dbschools.mgb")
 
-    val loggedIn    = If(() => RunState.loggedIn,   "Not logged in")
-    val notLoggedIn = If(() => ! RunState.loggedIn, "Already logged in")
+    val loggedIn    = If(() => Authenticator.loggedIn,   "Not logged in")
+    val notLoggedIn = If(() => ! Authenticator.loggedIn, "Already logged in")
 
     // Build SiteMap
     def sitemap = SiteMap(
@@ -61,7 +62,7 @@ class Boot {
     LiftRules.early.append(_.setCharacterEncoding("UTF-8"))
 
     // What is the function to test if a user is logged in?
-    LiftRules.loggedInTest = Full(() => RunState.loggedIn)
+    LiftRules.loggedInTest = Full(() => Authenticator.loggedIn)
 
     // Use HTML5 for rendering
     LiftRules.htmlProperties.default.set((r: Req) => new Html5Properties(r.userAgent))

@@ -17,7 +17,7 @@ import http.js.JE.JsRaw
 import net.liftweb.common.{Empty, Full}
 import JqJsCmds.{FadeOut, PrependHtml}
 import schema.{Assessment, AssessmentTag, AppSchema, Musician, User}
-import model.{Actors, AssessmentState, AssessmentRow, Cache, LastPassFinder, SelectedMusician, RunState}
+import model.{Actors, AssessmentState, AssessmentRow, Cache, LastPassFinder, SelectedMusician}
 import model.TestingManagerMessages.IncrementMusicianAssessmentCount
 import comet.ActivityCometDispatcher
 import comet.ActivityCometActorMessages._
@@ -106,7 +106,7 @@ class NewAssessment extends SelectedMusician {
         musician  <- opMusician
         iid       <- s.opSelInstId
         pid       <- s.opSelPieceId
-        user      <- RunState.loggedInUser.is
+        user      <- Authenticator.opLoggedInUser
       } yield {
         val asmtTime = DateTime.now
         val asmt = Assessment(
