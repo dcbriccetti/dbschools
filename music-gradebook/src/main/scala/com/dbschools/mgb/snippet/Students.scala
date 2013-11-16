@@ -26,7 +26,7 @@ class Students extends SelectedMusician with Loggable {
 
   private def replaceContents = {
     val elemId = "dynamicSection"
-    Replace(elemId, elemFromTemplate("students", "#$elemId"))
+    Replace(elemId, elemFromTemplate("students", s"#$elemId"))
   }
 
   selectors.opCallback = Some(() => replaceContents)
