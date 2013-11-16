@@ -24,6 +24,7 @@ body {
 
 #navList ul {
     padding-left: inherit;
+    display: inline;
 }
 
 #navList ul li {
@@ -69,12 +70,13 @@ td {
 </head>
 <body>
 <div class="container">
-    <h1>DBSchools Music Gradebook<img alt="" id="ajax-loader"
-                                      style="display:none; margin-bottom: 0; margin-left: 5px"
-                                      src="/images/ajax-loader.gif"></h1>
+    <h2>DBSchools Music Gradebook <span id="ajax-loader" style='display: none;'>&#x1D110;</span></h2>
 
     <div id="navList">
         <span data-lift="Menu.builder"></span>
+        <span id='messagesNotice' data-lift='comet?type=Notices' style='margin-left: 1.5em;'>
+            <a href="testing">Messages: <span id='numChatMsgs' class='badge'>0</span></a>
+        </span>
     </div>
     <div data-lift="Msgs"></div>
     <div id="content"></div>
