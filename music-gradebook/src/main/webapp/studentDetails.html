@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:lift="http://www.w3.org/1999/xhtml">
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
     <div data-lift="NewAssessment">
@@ -70,7 +70,7 @@
                             <span id="piece"></span>
                             <input id="metronome" class="btn btn-lg" type="button" value="Metronome"
                                    onclick="metro()"/>
-                            <span id="tempo"></span> beats per minute
+                            <input id="tempo" type="number" onChange="tempoBpm = this.value;"></input> beats per minute
                         </div>
                         <div style="margin-top: .7em; margin-bottom: 1em">
                             <span id="instrument"></span> <span id="subinstrument"></span>

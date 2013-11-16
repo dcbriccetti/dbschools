@@ -17,6 +17,4 @@ class AssessmentState(lastPassFinder: LastPassFinder) extends SelectedMusician {
     // First look for a tempo for the specific instrument
     Cache.tempos.find(t => t.instrumentId == opSelInstId && t.pieceId == selPieceId) orElse
     Cache.tempos.find(_.pieceId == selPieceId)).map(_.tempo) | 0
-
-  var tempo = tempoFromPiece
 }

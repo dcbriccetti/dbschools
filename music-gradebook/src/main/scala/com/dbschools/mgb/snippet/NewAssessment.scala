@@ -30,21 +30,20 @@ class NewAssessment extends SelectedMusician {
   def render = {
     var s = new AssessmentState(lastPassFinder)
 
-    def jsTempo = JsRaw(s"tempoBpm = ${s.tempo}").cmd
+    def jsTempo = JsRaw(s"tempoBpm = ${s.tempoFromPiece}").cmd
 
-    def tempoControl = SHtml.ajaxText(s.tempo.toString, (t) => asInt(t).map(ti => {
-      s.tempo = ti
-      jsTempo
-    }) getOrElse Noop, "id" -> "tempo", "size" -> "3")
+    def tempoControl = SHtml.number(s.tempoFromPiece, (t: Int) => {}, min = 30, max = 180)
 
-    def sendTempo = SetHtml("tempo", tempoControl) & jsTempo
+    def sendTempo: JsCmd = {
+      val tempo = s.tempoFromPiece
+      JsJqVal("#tempo", tempo) & JsRaw(s"tempoBpm = $tempo;")
+    }
 
     def selPiece = {
       val initialSel = s.opSelPieceId.map(p => Full(p.toString)) getOrElse Empty
       SHtml.ajaxSelect(Cache.pieces.map(p => p.id.toString -> p.name.get),
         initialSel, (p) => {
           s.opSelPieceId = Some(p.toInt)
-          s.tempo = s.tempoFromPiece
           sendTempo
         })
     }
@@ -147,7 +146,7 @@ class NewAssessment extends SelectedMusician {
     "#instrument"     #> selInst &
     s"#$subinstId"    #> selSubinst &
     "#piece"          #> selPiece &
-    "#tempo *"        #> tempoControl &
+    "#tempo"          #> tempoControl &
     "#setTempo"       #> Script(jsTempo) &
     "#checkbox1 *"    #> checkboxes(0) &
     "#checkbox2 *"    #> checkboxes(1) &
