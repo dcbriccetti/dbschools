@@ -1,7 +1,6 @@
 package com.dbschools.mgb
 package snippet
 
-import scala.xml.Text
 import scalaz._
 import Scalaz._
 import org.squeryl.PrimitiveTypeMode._

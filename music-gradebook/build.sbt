@@ -1,6 +1,6 @@
 name := "Music Gradebook"
 
-version := "3.5.1"
+version := "3.6.0"
 
 organization := "com.dbschools"
 
@@ -25,7 +25,7 @@ libraryDependencies ++= {
     "net.liftweb"       %% "lift-record"        % liftVersion,
     "net.liftweb"       %% "lift-squeryl-record" % liftVersion exclude("org.squeryl","squeryl"),
     "net.liftmodules"   %% "widgets_2.5" % "1.3" % "compile->default" withSources(),
-    "net.liftmodules"   %% "fobo_2.6"           % "1.1-SNAPSHOT"     % "compile",
+    "net.liftmodules"   %% "fobo_2.6"           % "1.1"     % "compile",
     "org.eclipse.jetty" %  "jetty-webapp"       % "8.1.7.v20120910"  % "container,test",
     "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "container,test" artifacts Artifact("javax.servlet", "jar", "jar"),
     "log4j"             %  "log4j"              % "1.2.17",
