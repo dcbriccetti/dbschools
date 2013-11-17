@@ -9,7 +9,7 @@ import net.liftweb._
 import common.{Full, Loggable}
 import util._
 import Helpers._
-import com.dbschools.mgb.model.{Stats, LastPassFinder, Terms}
+import com.dbschools.mgb.model.{LastPass, Stats, LastPassFinder, Terms}
 import com.dbschools.mgb.schema.{AppSchema, MusicianGroup}
 
 class Graphs extends Loggable {
@@ -63,7 +63,7 @@ class Graphs extends Loggable {
   }
 
   private def createFlotSeries: FlotSerie = {
-    val d1 = lastPasses.groupBy(_.pieceId).map {case (pieceId, value) => (pieceId.toDouble, value.size.toDouble)}.toList
+    val d1 = lastPasses.groupBy(_.piece.id).map {case (pieceId, value) => (pieceId.toDouble, value.size.toDouble)}.toList
 
     new FlotSerie() {
       override val data = d1
@@ -73,7 +73,7 @@ class Graphs extends Loggable {
     }
   }
 
-  private def lastPasses: Iterable[LastPassFinder#LastPass] = {
+  private def lastPasses: Iterable[LastPass] = {
     val lpf = new LastPassFinder()
     val musicianIds = selectors.musicianGroups.map(_.m.musician_id.get).toSet
     val opTermEnd = selectors.opSelectedTerm.map(Terms.termEnd)

@@ -69,7 +69,8 @@ class Students extends SelectedMusician with Loggable {
   def render = {
     val fmt = DateTimeFormat.forStyle("S-")
 
-    val groupAssignments = sortedStudents
+    val groupAssignments = GroupAssignments.sorted(lastPassesByMusician)
+    svGroupAssignments(groupAssignments)
 
     def disableIf(b: Boolean) = if (b) "disabled" -> "disabled" else "" -> ""
 
@@ -128,31 +129,13 @@ class Students extends SelectedMusician with Loggable {
     })))
   }
 
-  private def sortedStudents = {
-    val longAgo = new DateTime("1000-01-01").toDate
-
-    val byYear = GroupAssignments(None, svSelectors.opSelectedTerm, svSelectors.opSelectedGroupId,
-      svSelectors.opSelectedInstId).toSeq.sortBy(_.musicianGroup.school_year)
-
-    svSortingStudentsBy.is match {
-      case SortStudentsBy.Name =>
-        byYear.sortBy(_.musician.name)
-      case SortStudentsBy.LastAssessment =>
-        byYear.sortBy(ga => lastAssTimeByMusician.get(ga.musician.id).map(_.toDate) | longAgo)
-      case SortStudentsBy.LastPiece =>
-        def pos(id: Int) =
-          lastPassesByMusician.get(id).toList.flatten.sortBy(-_.testOrder).lastOption.map(_.testOrder) | 0
-        byYear.sortBy(ga => -pos(ga.musician.id))
-    }
-  }
-
-  private def formatLastPasses(opLastPasses: Option[Iterable[LastPassFinder#LastPass]]): NodeSeq = {
-    val lastPasses = opLastPasses.getOrElse(Seq[LastPassFinder#LastPass]()).map(lp => Text(lp.toString))
+  private def formatLastPasses(opLastPasses: Option[Iterable[LastPass]]): NodeSeq = {
+    val lastPasses = opLastPasses.getOrElse(Seq[LastPass]()).map(lp => Text(lp.toString))
     lastPasses.fold(NodeSeq.Empty)(_ ++ <br/> ++ _).drop(1)
   }
 
   def next = {
-    val groupAssignments = sortedStudents
+    val groupAssignments = svGroupAssignments.is
     val opElem = for {
       m <- opMusician
       idxThis = groupAssignments.indexWhere(_.musician == m)
@@ -184,8 +167,7 @@ class Students extends SelectedMusician with Loggable {
       val opNextPieceName = for {
         lastPasses  <- lastPassesByMusician.get(musician.id)
         lastPass    <- lastPasses.headOption
-        piece       <- Cache.pieces.find(_.id == lastPass.pieceId)
-        nextPiece    = Cache.nextPiece(piece)
+        nextPiece    = Cache.nextPiece(lastPass.piece)
       } yield nextPiece.name.get
       val longAgo = 60L * 60 * 24 * 365 * 100
       val secondsSince = lastAsmtTime.map(la => Seconds.secondsBetween(la, now).getSeconds.toLong) | longAgo
@@ -208,3 +190,5 @@ object Students {
 object svSortingStudentsBy extends SessionVar[SortStudentsBy.Value](SortStudentsBy.Name)
 
 object svSelectors extends SessionVar[Selectors](new Selectors())
+
+object svGroupAssignments extends SessionVar[Seq[GroupAssignment]](Nil)

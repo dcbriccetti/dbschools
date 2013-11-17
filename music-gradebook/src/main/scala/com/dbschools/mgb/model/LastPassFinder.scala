@@ -8,10 +8,8 @@ import com.dbschools.mgb.schema._
 import Terms.toTs
 
 class LastPassFinder {
-  def instrumentName(id: Int) = Cache.instruments.find(_.id == id).map(_.name.get)
-  val subinstruments  = AppSchema.subinstruments.map(i => i.id -> i).toMap
   val pieces = Cache.pieces
-  val pieceNames = pieces.map(p => p.id -> p.name.get).toMap
+  val piecesById = pieces.map(p => p.id -> p).toMap
   val pieceOrderToId = pieces.map(p => p.testOrder.get -> p.id).toMap
   val numPieces = pieces.size
   lazy val pieceIdToPosition = pieces.sortBy(_.testOrder.get).map(_.id).zipWithIndex.toMap
@@ -26,19 +24,23 @@ class LastPassFinder {
         a.pieceId === p.id and a.assessment_time < upTo.map(toTs).?)
       groupBy(a.musician_id, a.instrument_id, a.subinstrument_id)
       compute max(p.testOrder.get)
-      orderBy(max(p.testOrder.get) desc)
+      orderBy max(p.testOrder.get).desc
     ).map(group => {
       val testOrder = group.measures.get
       val pieceId = pieceOrderToId(testOrder)
-      LastPass(group.key._1, group.key._2, group.key._3, pieceId, testOrder, pieceIdToPosition(pieceId))
+      LastPass(group.key._1, group.key._2, group.key._3, piecesById(pieceId),
+        testOrder, pieceIdToPosition(pieceId))
     })
   }
+}
 
-  case class LastPass(musicianId: Int, instrumentId: Int, opSubinstrumentId: Option[Int],
-      pieceId: Int, testOrder: Int, position: Int) {
-    override def toString = {
-      val opSi = opSubinstrumentId.map(subinstruments)
-      pieceNames(pieceId) + " on " + ~instrumentName(instrumentId) + ~opSi.map(Subinstrument.suffix)
-    }
+case class LastPass(musicianId: Int, instrumentId: Int, opSubinstrumentId: Option[Int],
+    piece: Piece, testOrder: Int, position: Int) {
+  val subinstruments  = AppSchema.subinstruments.map(i => i.id -> i).toMap
+  def instrumentName(id: Int) = Cache.instruments.find(_.id == id).map(_.name.get)
+  override def toString = {
+    val opSi = opSubinstrumentId.map(subinstruments)
+    piece.name.get + " on " + ~instrumentName(instrumentId) + ~opSi.map(Subinstrument.suffix)
   }
 }
+

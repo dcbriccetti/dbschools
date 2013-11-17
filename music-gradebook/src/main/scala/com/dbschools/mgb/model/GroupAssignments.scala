@@ -2,11 +2,16 @@ package com.dbschools.mgb
 package model
 
 import org.squeryl.PrimitiveTypeMode._
+import scalaz._
+import Scalaz._
 import net.liftweb.common.Loggable
 import schema.{AppSchema, Instrument}
 import schema.Group
 import schema.Musician
 import schema.MusicianGroup
+import org.joda.time.DateTime
+import snippet.{svSortingStudentsBy, svSelectors}
+import Cache.lastAssTimeByMusician
 
 case class GroupAssignment(musician: Musician, group: Group, musicianGroup: MusicianGroup, instrument: Instrument)
 
@@ -50,6 +55,24 @@ object GroupAssignments extends Loggable {
           ).toSeq
         )
       }
+    }
+  }
+
+  def sorted(lastPassesByMusician: Map[Int, Iterable[LastPass]]) = {
+    val longAgo = new DateTime("1000-01-01").toDate
+
+    val byYear = GroupAssignments(None, svSelectors.opSelectedTerm, svSelectors.opSelectedGroupId,
+      svSelectors.opSelectedInstId).toSeq.sortBy(_.musicianGroup.school_year)
+
+    svSortingStudentsBy.is match {
+      case SortStudentsBy.Name =>
+        byYear.sortBy(_.musician.name)
+      case SortStudentsBy.LastAssessment =>
+        byYear.sortBy(ga => lastAssTimeByMusician.get(ga.musician.id).map(_.toDate) | longAgo)
+      case SortStudentsBy.LastPiece =>
+        def pos(id: Int) =
+          lastPassesByMusician.get(id).toList.flatten.sortBy(-_.testOrder).lastOption.map(_.testOrder) | 0
+        byYear.sortBy(ga => -pos(ga.musician.id))
     }
   }
 }

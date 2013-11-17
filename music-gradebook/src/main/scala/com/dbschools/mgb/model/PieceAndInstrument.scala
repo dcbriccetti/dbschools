@@ -14,8 +14,7 @@ object PieceAndInstrument extends SelectedMusician {
       musician      <- opMusician
       allLastPassed =  lastPassFinder.lastPassed(Some(musician.id))
       lastPass      <- allLastPassed.find(lp => currentInstIds contains lp.instrumentId)
-      piece         <- Cache.pieces.find(_.id == lastPass.pieceId)
-      nextPiece     =  Cache.nextPiece(piece)
+      nextPiece     =  Cache.nextPiece(lastPass.piece)
     } yield PieceAndInstrument(nextPiece, lastPass.instrumentId, lastPass.opSubinstrumentId)
 
     pi orElse currentGroups.headOption.map(ga => PieceAndInstrument(Cache.pieces.head, ga.instrument.id))
