@@ -3,7 +3,7 @@ package model
 
 import akka.actor.Actor
 import org.joda.time.DateTime
-import comet.{NoticesDispatcher, StudentsCometDispatcher, StudentsCometActorMessages,
+import comet.{NoticesDispatcher, StudentCometDispatcher, StudentsCometDispatcher, StudentsCometActorMessages,
   TestingCometDispatcher, TestingCometActorMessages}
 import schema.Musician
 import com.dbschools.mgb.schema.User
@@ -12,7 +12,9 @@ class TestingManager extends Actor {
   import StudentsCometActorMessages._
   import TestingCometActorMessages.{ReloadPage, MoveMusician, UpdateAssessmentCount}
   import TestingManagerMessages._
+  import TestingManager._
   import comet.NoticesMessages._
+  import comet.StudentMessages._
 
 
   def receive = {
@@ -21,6 +23,7 @@ class TestingManager extends Actor {
       testingState.enqueuedMusicians ++= scheds
       TestingCometDispatcher ! ReloadPage
       updateStudentsPage()
+      StudentCometDispatcher ! Next(opNext)
 
     case DequeueMusicians(ids) =>
       val idsSet = ids.toSet
@@ -29,14 +32,17 @@ class TestingManager extends Actor {
         testingState.enqueuedMusicians --= sms
         TestingCometDispatcher ! ReloadPage
         updateStudentsPage()
+        StudentCometDispatcher ! Next(opNext)
       }
 
     case TestMusician(testingMusician) =>
       testingState.enqueuedMusicians.find(_.musician == testingMusician.musician).foreach(sm => {
         testingState.enqueuedMusicians -= sm
-        val opNextId = testingState.enqueuedMusicians.toSeq.sortBy(_.sortOrder).headOption.map(_.musician.id)
+        val on = opNext
+        val opNextId = on.map(_.musician.id)
         testingState.testingMusicians += testingMusician
         TestingCometDispatcher ! MoveMusician(testingMusician, opNextId)
+        StudentCometDispatcher ! Next(on)
       })
       updateStudentsPage()
 
@@ -51,6 +57,7 @@ class TestingManager extends Actor {
       testingState.testingMusicians = testingState.testingMusicians.empty
       TestingCometDispatcher ! ReloadPage
       updateStudentsPage()
+      StudentCometDispatcher ! Next(None)
 
     case Chat(chatMessage) =>
       testingState.chatMessages ::= chatMessage
@@ -65,6 +72,15 @@ class TestingManager extends Actor {
 
   private def updateStudentsPage(): Unit =
     StudentsCometDispatcher ! QueueSize(testingState.enqueuedMusicians.size)
+}
+
+object TestingManager {
+
+  def opNext = sortedEnqueued.headOption
+
+  def sortedEnqueued: Seq[EnqueuedMusician] = {
+    testingState.enqueuedMusicians.toSeq.sortBy(_.sortOrder)
+  }
 }
 
 case class EnqueuedMusician(musician: Musician, sortOrder: Long, nextPieceName: String)

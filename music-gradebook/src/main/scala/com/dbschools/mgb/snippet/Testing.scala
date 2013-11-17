@@ -13,7 +13,7 @@ import net.liftweb.http.SHtml
 import net.liftweb.http.js.JsCmds.{Focus, FocusOnLoad, Noop, JsShowId, JsHideId}
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
-import schema.AppSchema
+import com.dbschools.mgb.schema.{Musician, AppSchema}
 import model.{SelectedMusician, EnqueuedMusician, TestingMusician, Cache, Actors, ChatMessage, Terms}
 import model.testingState._
 import model.TestingManagerMessages._
@@ -21,10 +21,8 @@ import model.TestingManagerMessages._
 class Testing extends SelectedMusician {
   def render = {
     var selectedScheduledIds = Set[Int]()
-    val opUser = Authenticator.opLoggedInUser
 
     def queueRow(sm: EnqueuedMusician): CssSel = {
-      val userName = ~opUser.map(_.last_name)
       val m = sm.musician
       val mgs = AppSchema.musicianGroups.where(mg => mg.musician_id === m.id and mg.school_year === Terms.currentTerm)
       val instrumentNames =
@@ -32,13 +30,6 @@ class Testing extends SelectedMusician {
           instrumentId  <- mgs.map(_.instrument_id)
           instrument    <- Cache.instruments.find(_.id == instrumentId)
         } yield instrument.name.get
-
-      def studentNameTestLink = {
-        SHtml.link(ApplicationPaths.studentDetails.href, () => {
-          svSelectedMusician(Some(m))
-          Actors.testingManager ! TestMusician(TestingMusician(m, userName, DateTime.now))
-        }, Text(m.first_name.get + " " + m.last_name))
-      }
 
       "tr [id]"     #> Testing.queueRowId(m.id) &
       "#qrsel *"    #> SHtml.ajaxCheckbox(false, (b) => {
@@ -48,7 +39,7 @@ class Testing extends SelectedMusician {
           selectedScheduledIds -= sm.musician.id
         JsShowIdIf("queueDelete", selectedScheduledIds.nonEmpty)
       }) &
-      "#qrstu *"    #> studentNameTestLink &
+      "#qrstu *"    #> Testing.studentNameLink(m, test = true) &
       "#qrinst *"   #> instrumentNames.toSet /* no dups */ .toSeq.sorted.mkString(", ") &
       "#qrpiece *"  #> sm.nextPieceName
     }
@@ -63,7 +54,7 @@ class Testing extends SelectedMusician {
       _.trim match {
         case "" => Focus("message") // Otherwise focus moves elsewhere
         case msg =>
-          Actors.testingManager ! Chat(ChatMessage(DateTime.now, opUser.get, msg))
+          Actors.testingManager ! Chat(ChatMessage(DateTime.now, Authenticator.opLoggedInUser.get, msg))
           JsJqVal("#message", "")
       }, "id" -> "message", "size" -> "40", "placeholder" -> "Type message and press Enter"
     )) &
@@ -75,9 +66,23 @@ class Testing extends SelectedMusician {
   }
 }
 
-object Testing {
+object Testing extends SelectedMusician {
 
   private val tmf = DateTimeFormat.forStyle("-M")
+
+  def studentNameLink(m: Musician, test: Boolean) = {
+    val title = if (test)
+      "Test this student and remove from the testing queue"
+    else
+      "See the details for this student (without affecting the testing queue)"
+
+    SHtml.link(ApplicationPaths.studentDetails.href, () => {
+      svSelectedMusician(Some(m))
+      if (test)
+        Actors.testingManager ! TestMusician(TestingMusician(m,
+          ~Authenticator.opLoggedInUser.map(_.last_name), DateTime.now))
+    }, <span title={title}>{m.first_name.get + " " + m.last_name}</span>)
+  }
 
   def sessionRow(show: Boolean)(tm: TestingMusician): CssSel = {
     val m = tm.musician

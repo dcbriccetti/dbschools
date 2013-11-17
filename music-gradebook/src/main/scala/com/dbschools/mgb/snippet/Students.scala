@@ -151,6 +151,20 @@ class Students extends SelectedMusician with Loggable {
     lastPasses.fold(NodeSeq.Empty)(_ ++ <br/> ++ _).drop(1)
   }
 
+  def next = {
+    val groupAssignments = sortedStudents
+    val opElem = for {
+      m <- opMusician
+      idxThis = groupAssignments.indexWhere(_.musician == m)
+      if idxThis >= 0
+      idxNext = idxThis + 1
+      if idxNext < groupAssignments.size
+    } yield {
+      Testing.studentNameLink(groupAssignments(idxNext).musician, test = false)
+    }
+    opElem.map(elem => "#nextInGroup *" #> elem) getOrElse ClearNodes
+  }
+
   def inNoGroups = {
     val musicians = join(AppSchema.musicians, AppSchema.musicianGroups.leftOuter)((m, mg) =>
       where(mg.map(_.id).isNull) select m on (m.musician_id.get === mg.map(_.musician_id)))

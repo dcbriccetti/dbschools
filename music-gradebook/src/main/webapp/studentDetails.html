@@ -8,22 +8,32 @@
     </div>
 
     <div id="student" data-lift="StudentDetails">
-        <h2><span class="firstName"></span> <span class="lastName"></span></h2>
-        <table class="autoWidth noShade">
-            <tr>
-                <td class="alignRight">Grade:</td>
-                <td><span class="grade"/></td>
-            </tr>
-            <tr>
-                <td class="alignRight">Student ID:</td>
-                <td><span class="stuId"/></td>
-            </tr>
-            <tr>
-                <td class="alignRight">Last piece passed:</td>
-                <td><span id="lastPiece"></span></td>
-            </tr>
-        </table>
-        <p/>
+        <div class="row">
+            <div class="col-md-5">
+                <span class='h3'><span class="firstName"></span> <span class="lastName"></span></span>
+                <table>
+                    <tr>
+                        <td class="alignRight">Grade:</td>
+                        <td><span class="grade"/></td>
+                    </tr>
+                    <tr>
+                        <td class="alignRight">Student ID:</td>
+                        <td><span class="stuId"/></td>
+                    </tr>
+                    <tr>
+                        <td class="alignRight">Last piece passed:</td>
+                        <td><span id="lastPiece"></span></td>
+                    </tr>
+                </table>
+                <p/>
+            </div>
+            <div class="col-md-5">
+                <div class='well'>
+                    <div>Next student in testing queue: <span data-lift='comet?type=Student' id='nextTesting'></span></div>
+                    <div>Next student on the Students Page: <span data-lift='Students.next' id='nextInGroup'></span></div>
+                </div>
+            </div>
+        </div>
 
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -70,7 +80,7 @@
                             <span id="piece"></span>
                             <input id="metronome" class="btn btn-lg" type="button" value="Metronome"
                                    onclick="metro()"/>
-                            <input id="tempo" type="number" onChange="tempoBpm = this.value;"></input> beats per minute
+                            <input id="tempo" type="number" onChange="tempoBpm = this.value;"> beats per minute
                         </div>
                         <div style="margin-top: .7em; margin-bottom: 1em">
                             <span id="instrument"></span> <span id="subinstrument"></span>
@@ -81,7 +91,7 @@
                                 <div class="panel-heading">
                                     <h5 class="panel-title">Comments</h5>
                                 </div>
-                                <div class="panel-body">
+                                <div class="panel-body" style='padding-top: 0;'>
                                     <div class="row">
                                         <div class="col-md-2">
                                             <span id="checkbox1"></span>
@@ -92,7 +102,7 @@
                                     </div>
                                     <div class="row">
                                         <div id="commentTextDiv" class="col-md-10">
-                                            <textarea id="commentText" rows="3" style="width: 30em;"
+                                            <textarea id="commentText" rows="3" style="width: 100%;"
                                                 placeholder="Additional comments"></textarea>
                                         </div>
                                     </div>
