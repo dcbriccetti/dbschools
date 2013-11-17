@@ -2,8 +2,7 @@ package com.dbschools.mgb
 package comet
 
 import scala.language.postfixOps
-import org.joda.time.format.DateTimeFormat
-import net.liftweb.http.{Templates, CometListener, CometActor}
+import net.liftweb.http.{CometListener, CometActor}
 import net.liftweb.http.js.JsCmds.{After, Noop, Reload}
 import net.liftweb.http.js.jquery.JqJsCmds.{FadeIn, FadeOut}
 import net.liftweb.util.{Helpers, PassThru}
@@ -12,7 +11,6 @@ import com.dbschools.mgb.model.{ChatMessage, TestingMusician}
 import snippet.Testing
 import snippet.LiftExtensions._
 import Testing.{queueRowId, sessionRowId, sessionRow}
-import model.BoxOpener._
 
 class TestingCometActor extends CometActor with CometListener {
   import TestingCometActorMessages._
