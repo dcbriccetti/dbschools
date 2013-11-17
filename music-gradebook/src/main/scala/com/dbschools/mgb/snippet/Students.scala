@@ -96,7 +96,7 @@ class Students extends SelectedMusician with Loggable {
     def clearScheduleButton = SHtml.ajaxButton("Clear", () => {
       Actors.testingManager ! ClearQueue
       Noop
-    }, disableIf(model.testingState.enqueuedMusicians.isEmpty))
+    }, disableIf(model.testingState.enqueuedMusicians.isEmpty && model.testingState.testingMusicians.isEmpty))
 
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
