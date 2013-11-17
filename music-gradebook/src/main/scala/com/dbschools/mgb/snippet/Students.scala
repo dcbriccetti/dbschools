@@ -72,8 +72,6 @@ class Students extends SelectedMusician with Loggable {
     val groupAssignments = GroupAssignments.sorted(lastPassesByMusician)
     svGroupAssignments(groupAssignments)
 
-    def disableIf(b: Boolean) = if (b) "disabled" -> "disabled" else "" -> ""
-
     def cbId(musicianId: Int) = "mcb" + musicianId
 
     def enableButtons =

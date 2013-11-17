@@ -145,14 +145,14 @@ class NewAssessment extends SelectedMusician {
       s.opSelInstId = Some(instId)
       val sels = subinstSels(instId)
       sels.headOption.foreach(sel => s.opSelSubinstId = Some(sel._1.toInt))
-      ReplaceOptions(subinstId, sels, Empty)
+      ReplaceOptions(subinstId, sels, Empty) & JsShowIdIf(subinstId, sels.nonEmpty)
     })
 
     def selSubinst = {
       val opts = s.opSelInstId.map(subinstSels) getOrElse Seq[(String, String)]()
       def setSubinstId(idString: String) { s.opSelSubinstId = Some(idString.toInt) }
       opts.headOption.foreach(sel => setSubinstId(sel._1))
-      SHtml.select(opts, Empty, setSubinstId)
+      SHtml.select(opts, Empty, setSubinstId, displayNoneIf(opts.isEmpty))
     }
 
     "#instrument"     #> selInst &

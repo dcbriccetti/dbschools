@@ -26,6 +26,11 @@ object LiftExtensions {
     cssGetTr(template)
   }
 
+  def displayNoneIf(condition: Boolean): Helpers.TheStrBindParam =
+    "style" -> (if (condition) "display: none;" else "")
+
+  def disableIf(b: Boolean) = if (b) "disabled" -> "disabled" else "" -> ""
+
   private def JsJqFn0(selector: String, fn: String): JsCmd = JsRaw(s"jQuery('$selector').$fn()").cmd
   private def JsJqFn1[A](selector: String, fn: String, value: A): JsCmd = JsRaw(s"jQuery('$selector').$fn('${value.toString}')").cmd
   private def JsJqFn2[A, B](selector: String, fn: String, value1: A, value2: B): JsCmd =
