@@ -12,6 +12,8 @@ import com.dbschools.mgb.schema.{Instrument, AppSchema}
 import com.dbschools.mgb.model.{Cache, Terms}
 
 class GroupsSummary {
+  private val href = ApplicationPaths.students.href
+
   def render = {
     case class Count(groupId: Int, instrumentId: Int, count: Long)
     val q = from(AppSchema.musicianGroups)(mg =>
@@ -48,7 +50,7 @@ class GroupsSummary {
     def detailRows = instRows.map(iRow =>
       <tr>
         <th>{
-          SHtml.link(ApplicationPaths.students.href, () => {
+          SHtml.link(href, () => {
             selectors.opSelectedGroupId = None
             selectors.opSelectedInstId = Some(iRow.instrument.id)
             }, Text(iRow.instrument.name.get))
@@ -58,7 +60,7 @@ class GroupsSummary {
             {iRow.counts(g) match {
               case 0 => ""
               case n =>
-                SHtml.link(ApplicationPaths.students.href, () => {
+                SHtml.link(href, () => {
                   selectors.opSelectedGroupId = Some(groupPeriods(g).group.id)
                   selectors.opSelectedInstId = Some(iRow.instrument.id)
                 }, Text(n.toString))
@@ -72,14 +74,18 @@ class GroupsSummary {
     def totalsRow =
       <tr>
         <th>Totals</th>{totals.map(t => <th class="alignRight"> {t} </th>)}
-        <th class="alignRight">{totals.sum}</th>
+        <th class="alignRight">{SHtml.link(href, () => {
+          selectors.opSelectedGroupId = None
+          selectors.opSelectedInstId = None
+          }, Text(totals.sum.toString))
+        }</th>
       </tr>
 
     def heading = {
       <tr>
         <th>Instrument</th>{groupPeriods.map(gp => <th>
         {
-        SHtml.link(ApplicationPaths.students.href, () => {
+        SHtml.link(href, () => {
           selectors.opSelectedGroupId = Some(gp.group.id)
           selectors.opSelectedInstId = None
           }, Text(gp.group.shortName | gp.group.name))
