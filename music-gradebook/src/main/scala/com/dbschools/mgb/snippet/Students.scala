@@ -12,6 +12,7 @@ import common.{Full, Loggable}
 import util._
 import Helpers._
 import net.liftweb.http.{SessionVar, SHtml}
+import SHtml.{ElemAttr, text, number, onSubmitUnit, ajaxRadio, ajaxButton, ajaxCheckbox, link}
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JsCmds.Replace
 import LiftExtensions._
@@ -41,7 +42,7 @@ class Students extends SelectedMusician with Loggable {
 
   def sortBy = {
     val orders = Seq(SortStudentsBy.Name, SortStudentsBy.LastAssessment, SortStudentsBy.LastPiece)
-    SHtml.ajaxRadio[SortStudentsBy.Value](orders, Full(svSortingStudentsBy.is), (s) => {
+    ajaxRadio[SortStudentsBy.Value](orders, Full(svSortingStudentsBy.is), (s) => {
       svSortingStudentsBy(s)
       replaceContents
     }).flatMap(item => <label style="margin-right: .5em;">{item.xhtml} {item.key.toString} </label>)
@@ -59,11 +60,11 @@ class Students extends SelectedMusician with Loggable {
       Noop
     }
 
-    "#studentId" #> SHtml.text(if (newId == 0) "" else newId.toString,
+    "#studentId" #> text(if (newId == 0) "" else newId.toString,
                       id => Helpers.asInt(id).foreach(intId => newId = intId)) &
-    "#grade"     #> SHtml.number(grade, grade = _, grade, 8) &
-    "#name"      #> SHtml.text(name, name = _) &
-    "#save"      #> SHtml.onSubmitUnit(() => saveStudent)
+    "#grade"     #> number(grade, grade = _, grade, 8) &
+    "#name"      #> text(name, name = _) &
+    "#save"      #> onSubmitUnit(() => saveStudent)
   }
 
   def render = {
@@ -77,7 +78,7 @@ class Students extends SelectedMusician with Loggable {
     def enableButtons =
       JsEnableIf("#schedule", selectedMusicians.nonEmpty) & Students.adjustButtons
 
-    def autoSelectButton = SHtml.ajaxButton("Check 5", () => {
+    def autoSelectButton = ajaxButton("Check 5", () => {
       val indexOfLastChecked = LastCheckedIndex.find(
         groupAssignments.map(_.musician), selectedMusicians)
       groupAssignments.drop(indexOfLastChecked + 1).take(5).map(row => {
@@ -86,19 +87,27 @@ class Students extends SelectedMusician with Loggable {
       }).reduce(_ & _) & enableButtons
     })
 
-    def scheduleButton = SHtml.ajaxButton("Add Checked", () => {
-      scheduleSelectedMusicians()
-      Noop
-    }, disableIf(selectedMusicians.isEmpty))
+    def flattrs(attrs: Option[TheStrBindParam]*): Seq[ElemAttr] = attrs.flatten
 
-    def testButton = SHtml.ajaxButton("Test", () => {
-      RedirectTo(ApplicationPaths.testing.href)
-    }, disableIf(model.testingState.enqueuedMusicians.isEmpty))
+    def scheduleButton =
+      ajaxButton("Add Checked", () => {
+        scheduleSelectedMusicians()
+        Noop
+      }, flattrs(disableIf(selectedMusicians.isEmpty)): _*)
 
-    def clearScheduleButton = SHtml.ajaxButton("Clear", () => {
-      Actors.testingManager ! ClearQueue
-      Noop
-    }, disableIf(model.testingState.enqueuedMusicians.isEmpty && model.testingState.testingMusicians.isEmpty))
+    def testButton = {
+      val empty = model.testingState.enqueuedMusicians.isEmpty
+      ajaxButton("Test", () => {
+        RedirectTo(ApplicationPaths.testing.href)
+      }, flattrs(disableIf(empty), classIf("btn-primary", ! empty)): _*)
+    }
+
+    def clearScheduleButton =
+      ajaxButton("Clear", () => {
+        Actors.testingManager ! ClearQueue
+        Noop
+      }, flattrs(disableIf(model.testingState.enqueuedMusicians.isEmpty &&
+        model.testingState.testingMusicians.isEmpty)): _*)
 
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
@@ -110,7 +119,7 @@ class Students extends SelectedMusician with Loggable {
     "#clearSchedule"          #> clearScheduleButton &
     ".studentRow"             #> {
       def selectionCheckbox(musician: Musician) =
-        SHtml.ajaxCheckbox(false, checked => {
+        ajaxCheckbox(false, checked => {
           if (checked) selectedMusicians += musician
           else selectedMusicians -= musician
           enableButtons
@@ -189,7 +198,7 @@ class Students extends SelectedMusician with Loggable {
   }
 
   private def studentLink(m: Musician) = {
-    SHtml.link(ApplicationPaths.studentDetails.href, () => {
+    link(ApplicationPaths.studentDetails.href, () => {
       svSelectedMusician(Some(m))
     }, Text(m.name))
   }
@@ -198,7 +207,8 @@ class Students extends SelectedMusician with Loggable {
 object Students {
   def adjustButtons = {
     val ne = model.testingState.enqueuedMusicians.nonEmpty
-    JsEnableIf("#clearSchedule", ne) & JsEnableIf("#test", ne)
+    val testSel = "#test"
+    JsEnableIf("#clearSchedule", ne) & JsEnableIf(testSel, ne) & JsClassIf(testSel, "btn-primary", ne)
   }
 }
 

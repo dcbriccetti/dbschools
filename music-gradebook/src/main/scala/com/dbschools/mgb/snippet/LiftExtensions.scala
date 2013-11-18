@@ -13,6 +13,8 @@ object LiftExtensions {
   def JsShowIdIf(what: String, condition: Boolean) = if (condition) JsShowId(what) else JsHideId(what)
   def JsPropIf    (selector: String, prop: String, condition: Boolean) =  JsJqFn2(selector, "prop", prop, condition)
   def JsEnableIf  (selector: String, condition: Boolean) =  JsPropIf(selector, "disabled", ! condition)
+  def JsClassIf   (selector: String, classNames: String, condition: Boolean) =
+    JsJqFn1(selector, if (condition) "addClass" else "removeClass", classNames)
   def JsCheckIf   (selector: String, condition: Boolean) =  JsPropIf(selector, "checked", condition)
   def JsJqHtml    [A](selector: String, value: A): JsCmd = JsJqFn1(selector, "html", value)
   def JsJqVal     [A](selector: String, value: A): JsCmd = JsJqFn1(selector, "val", value)
@@ -29,7 +31,8 @@ object LiftExtensions {
   def displayNoneIf(condition: Boolean): Helpers.TheStrBindParam =
     "style" -> (if (condition) "display: none;" else "")
 
-  def disableIf(b: Boolean) = if (b) "disabled" -> "disabled" else "" -> ""
+  def disableIf(b: Boolean) = if (b) Some("disabled" -> "disabled") else None
+  def classIf(classNames: String, b: Boolean) = if (b) Some("class" -> classNames) else None
 
   private def JsJqFn0(selector: String, fn: String): JsCmd = JsRaw(s"jQuery('$selector').$fn()").cmd
   private def JsJqFn1[A](selector: String, fn: String, value: A): JsCmd = JsRaw(s"jQuery('$selector').$fn('${value.toString}')").cmd
