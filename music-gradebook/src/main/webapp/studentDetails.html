@@ -29,8 +29,11 @@
             </div>
             <div class="col-md-6">
                 <div class='well'>
-                    <div>Next student in testing queue: <span data-lift='comet?type=Student' id='nextTesting'></span></div>
-                    <div>Next student on the Students Page: <span data-lift='Students.next' id='nextInGroup'> </span></div>
+                    <div>Next testing student: <span data-lift='comet?type=Student' id='nextTesting'></span></div>
+                    <div data-lift='Students.next'>Next
+                        <span id='snGroup'></span><span id='snInstrument'></span>student:
+                        <span id='snLink'></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -45,7 +48,7 @@
                 <div data-lift="StudentDetails" class="panel-body">
                     <table class="autoWidth noShade">
                         <tr>
-                            <th>Sel</th>
+                            <th></th>
                             <th>Year</th>
                             <th>Group</th>
                             <th>Instrument</th>
@@ -76,14 +79,13 @@
             <div id="collapse1" class="panel-collapse collapse">
                 <div class="panel-body">
                     <div data-lift="NewAssessment">
-                        <div>
-                            <span id="piece"></span>
-                            <input id="metronome" class="btn btn-lg" type="button" value="Metronome"
-                                   onclick="metro()"/>
-                            <input id="tempo" type="number" onChange="tempoBpm = this.value;"> beats per minute
-                        </div>
-                        <div style="margin-top: .7em; margin-bottom: 1em">
-                            <span id="instrument"></span> <span id="subinstrument"></span>
+                        <div style="margin-bottom: 1em">
+                            <span id="piece" class="input-lg"></span>
+                            <input id="metronome" class="btn btn-lg" style='margin-bottom: 3px; margin-left: 1em;'
+                                   type="button" value="Metronome" onclick="metro()"/>
+                            <input id="tempo" type="number" style='font-size: 120%' onChange="tempoBpm = this.value;">
+                            <span id="instrument" class='input-lg' style='margin-left: 1em;'></span>
+                            <span id="subinstrument" class='input-lg'></span>
                         </div>
 
                         <form data-lift="form.ajax">

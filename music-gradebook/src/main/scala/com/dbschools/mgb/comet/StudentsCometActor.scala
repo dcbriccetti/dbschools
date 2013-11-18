@@ -16,7 +16,7 @@ class StudentsCometActor extends CometActor with CometListener {
 
     case QueueSize(queueSize) =>
       partialUpdate(SetHtml("count", Text(queueSize.toString)) &
-        Students.showClearScheduleButton)
+        Students.adjustButtons)
 
     case Start =>
   }
