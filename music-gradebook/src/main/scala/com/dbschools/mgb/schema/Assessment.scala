@@ -14,5 +14,6 @@ case class Assessment(
   @Column("piece_id")
   pieceId:          Int,
   pass:             Boolean,
+  @Column(length = 10000)
   notes:            String
 ) extends KeyedEntity[Int]
