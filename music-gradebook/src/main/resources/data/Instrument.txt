@@ -18,4 +18,4 @@ Trombone
 Baritone Horn
 Tuba
 String Bass
-Percussion	Mallots	Snare Drum
+Percussion	Mallets	Snare Drum
