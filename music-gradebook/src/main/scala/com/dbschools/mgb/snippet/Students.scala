@@ -165,7 +165,7 @@ class Students extends SelectedMusician with Loggable {
       val opNextPieceName = for {
         lastPasses  <- lastPassesByMusician.get(musician.id)
         lastPass    <- lastPasses.headOption
-        nextPiece    = Cache.nextPiece(lastPass.piece)
+        nextPiece   <- Cache.nextPiece(lastPass.piece)
       } yield nextPiece.name.get
       val longAgo = 60L * 60 * 24 * 365 * 100
       val secondsSince = lastAsmtTime.map(la => Seconds.secondsBetween(la, now).getSeconds.toLong) | longAgo

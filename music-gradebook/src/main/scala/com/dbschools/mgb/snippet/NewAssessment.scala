@@ -28,7 +28,7 @@ class NewAssessment extends SelectedMusician {
   val lastPassFinder = new LastPassFinder()
 
   def render = {
-    var s = new AssessmentState(lastPassFinder)
+    val s = new AssessmentState(lastPassFinder)
 
     def jsTempo = JsRaw(s"tempoBpm = ${s.tempoFromPiece}").cmd
 
@@ -72,9 +72,9 @@ class NewAssessment extends SelectedMusician {
 
     val pieceNames = Cache.pieces.map(p => p.id -> p.name.get).toMap
 
-    def updatePageForNextAssessment(row: AssessmentRow, asmt: Assessment) =
+    def updatePageForNextAssessment(row: AssessmentRow, curAsmt: Assessment) =
       PrependHtml("assessmentsBody", Assessments.createRow(row, keepStudent = false)) &
-      SetHtml("lastPiece", Text(StudentDetails.lastPiece(lastPassFinder, asmt.musician_id))) &
+      SetHtml("lastPiece", Text(StudentDetails.lastPiece(lastPassFinder, curAsmt.musician_id))) &
       (s.opSelPieceId.map(id => JsJqVal("#piece", id)) getOrElse Noop) &
       sendTempo &
       SetValById("commentText", "") &
@@ -82,8 +82,8 @@ class NewAssessment extends SelectedMusician {
       SetHtml("checkbox2", checkboxes(1)) &
       {
         val id = "passFailConfirmation"
-        val msg = if (asmt.pass) "Passed " else "Failed "
-        SetHtml(id, Text(msg + pieceNames(asmt.pieceId))) & JqJsCmds.Show(id) & FadeOut(id)
+        val msg = if (curAsmt.pass) "Passed " else "Failed "
+        SetHtml(id, Text(msg + pieceNames(curAsmt.pieceId))) & JqJsCmds.Show(id) & FadeOut(id)
       }
 
     def createAssessmentRow(asmt: Assessment, asmtTime: DateTime, musician: Musician, user: User): AssessmentRow = {
@@ -128,7 +128,7 @@ class NewAssessment extends SelectedMusician {
         val row = createAssessmentRow(asmt, asmtTime, musician, user)
         ActivityCometDispatcher ! ActivityStatusUpdate(row)
         Actors.testingManager ! IncrementMusicianAssessmentCount(musician.id)
-        s = new AssessmentState(lastPassFinder)
+        s.next(pass = pass)
 
         updatePageForNextAssessment(row, asmt)
       }) | Noop
@@ -150,9 +150,11 @@ class NewAssessment extends SelectedMusician {
 
     def selSubinst = {
       val opts = s.opSelInstId.map(subinstSels) getOrElse Seq[(String, String)]()
-      def setSubinstId(idString: String) { s.opSelSubinstId = Some(idString.toInt) }
-      opts.headOption.foreach(sel => setSubinstId(sel._1))
-      SHtml.select(opts, Empty, setSubinstId, displayNoneIf(opts.isEmpty))
+      opts.headOption.foreach(sel => s.opSelSubinstId = Some(sel._1.toInt))
+      SHtml.ajaxUntrustedSelect(opts, Empty, (idString) => {
+        s.opSelSubinstId = Some(idString.toInt)
+        Noop
+      }, displayNoneIf(opts.isEmpty))
     }
 
     "#instrument"     #> selInst &

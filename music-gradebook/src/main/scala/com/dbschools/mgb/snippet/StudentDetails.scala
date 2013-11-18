@@ -10,7 +10,7 @@ import util._
 import http._
 import js.JsCmds._
 import Helpers._
-import net.liftweb.http.js.JsCmds.{Confirm, SetHtml}
+import net.liftweb.http.js.JsCmds.{Confirm, SetHtml, Reload}
 import model.{Cache, GroupAssignment, GroupAssignments, LastPassFinder, SelectedMusician, TagCounts, Terms}
 import schema.{Assessment, AppSchema, Musician, MusicianGroup}
 
@@ -108,7 +108,7 @@ class StudentDetails extends TagCounts with Collapsible with SelectedMusician {
       Full(ga.musicianGroup.instrument_id.toString), iid => {
         AppSchema.musicianGroups.update(mg => where(mg.id === ga.musicianGroup.id)
           set (mg.instrument_id := iid.toInt))
-        Noop
+        Reload // Todo Instead, update the instrument(s) to test on
       })
 
   def groupAssignments = {

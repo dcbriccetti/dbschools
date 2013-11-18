@@ -48,7 +48,7 @@ object Cache {
 
   def invalidateTempos(): Unit = { tempos = readTempos }
 
-  def nextPiece(piece: Piece) = pieces.find(_.testOrder.get.compareTo(piece.testOrder.get) > 0) | pieces.head
+  def nextPiece(piece: Piece) = pieces.find(_.testOrder.get.compareTo(piece.testOrder.get) > 0)
 
   case class GroupPeriod(group: Group, period: Int)
   
