@@ -11,10 +11,14 @@ object AppSchema extends Schema {
   on(groupTerms)(gt => declare(columns(gt.groupId, gt.term) are (unique, indexed("GroupTerm_groupId_term"))))
   val pieces              = table[Piece]              ("piece")
   val musicianGroups      = table[MusicianGroup]      ("musician_group")
+  on(musicianGroups)(t => declare(t.musician_id is indexed("musician_group_musician_id")))
   val instruments         = table[Instrument]         ("instrument")
   val subinstruments      = table[Subinstrument]      ("subinstrument")
   val assessments         = table[Assessment]         ("assessment")
-  on(assessments)(a => declare(a.assessment_time is indexed("assessments_assessment_time")))
+  on(assessments)(a => declare(
+    a.assessment_time is indexed("assessments_assessment_time"),
+    a.musician_id is indexed("assessments_musician_id")
+  ))
   val assessmentTags      = table[AssessmentTag]      ("assessment_tag")
   val predefinedComments  = table[PredefinedComment]  ("predefined_comment")
   val rejectionReasons    = table[RejectionReason]    ("rejection_reason")

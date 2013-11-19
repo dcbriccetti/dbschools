@@ -3,7 +3,6 @@ package snippet
 
 import java.sql.Timestamp
 import scala.xml.Text
-import org.apache.log4j.Logger
 import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
@@ -24,7 +23,6 @@ import comet.ActivityCometActorMessages._
 import LiftExtensions._
 
 class NewAssessment extends SelectedMusician {
-  private val log = Logger.getLogger(getClass)
   val lastPassFinder = new LastPassFinder()
 
   def render = {
@@ -88,7 +86,7 @@ class NewAssessment extends SelectedMusician {
 
     def createAssessmentRow(asmt: Assessment, asmtTime: DateTime, musician: Musician, user: User): AssessmentRow = {
       val inst = s.opSelInstId.flatMap(id => Cache.instruments.find(_.id == id)).map(_.name.get)
-      val subinst = s.opSelSubinstId.flatMap(id => Cache.subinstruments.values.flatten.find(_.id == id)).map(_.name.get)
+      val subinst = s.opSelSubinstId.flatMap(id => Cache.subinstruments.find(_.id == id)).map(_.name.get)
       def o(s: String) = if (s.isEmpty) None else Some(s)
       val expandedNotes = {
         val selIds = selectedCommentIds.toSet
@@ -138,7 +136,7 @@ class NewAssessment extends SelectedMusician {
     val initialInstrumentSel = s.opSelInstId.map(i => Full(i.toString)) getOrElse Empty
 
     def subinstSels(instId: Int): List[(String, String)] =
-      Cache.subinstruments.get(instId).toList.flatten.map(si => si.id.toString -> si.name.get)
+      Cache.subsByInstrument.get(instId).toList.flatten.map(si => si.id.toString -> si.name.get)
 
     def selInst = SHtml.ajaxSelect(Cache.instruments.map(i => i.id.toString -> i.name.get), initialInstrumentSel, (p) => {
       val instId = p.toInt

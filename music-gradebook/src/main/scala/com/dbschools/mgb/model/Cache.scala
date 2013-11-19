@@ -11,7 +11,7 @@ object Cache {
   var groups = readGroups
   var groupTerms = readGroupTerms
   var instruments = readInstruments
-  var subinstruments = readSubinstruments
+  var (subinstruments, subsByInstrument) = readSubinstruments
   var tags = readTags
   var pieces = readPieces
   var tempos = readTempos
@@ -26,8 +26,10 @@ object Cache {
   private def readGroups      = inT {AppSchema.groups.toSeq.sortBy(_.name)}
   private def readGroupTerms  = inT {AppSchema.groupTerms.toList}
   private def readInstruments = inT {AppSchema.instruments.toSeq.sortBy(_.sequence.get)}
-  private def readSubinstruments
-                              = inT {AppSchema.subinstruments.groupBy(_.instrumentId.get)}
+  private def readSubinstruments = inT {
+    val subs = AppSchema.subinstruments.toSeq
+    (subs, subs.groupBy(_.instrumentId.get))
+  }
   private def readTags        = inT {AppSchema.predefinedComments.toSeq.sortBy(_.commentText)}
   private def readPieces      = inT {AppSchema.pieces.toSeq.sortBy(_.testOrder.get)}
   private def readTempos      = inT {AppSchema.tempos.toSeq.sortBy(_.instrumentId)}
@@ -40,7 +42,11 @@ object Cache {
 
   def invalidateInstruments(): Unit = { instruments = readInstruments }
 
-  def invalidateSubinstruments(): Unit = { subinstruments = readSubinstruments }
+  def invalidateSubinstruments(): Unit = {
+    val (a, b) = readSubinstruments
+    subinstruments = a
+    subsByInstrument = b
+  }
 
   def invalidateTags(): Unit = { tags = readTags }
 

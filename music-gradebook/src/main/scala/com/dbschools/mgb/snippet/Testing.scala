@@ -55,7 +55,7 @@ class Testing extends SelectedMusician {
         case msg =>
           Actors.testingManager ! Chat(ChatMessage(DateTime.now, Authenticator.opLoggedInUser.get, msg))
           JsJqVal("#message", "")
-      }, "id" -> "message", "width" -> "100%", "placeholder" -> "Type message and press Enter"
+      }, "id" -> "message", "style" -> "width: 100%;", "placeholder" -> "Type message and press Enter"
     )) &
     ".messageRow" #> chatMessages.map(Testing.messageRow) &
     "#clearMessages" #> SHtml.ajaxButton("Clear", () => {

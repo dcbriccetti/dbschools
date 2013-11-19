@@ -36,10 +36,10 @@ class LastPassFinder {
 
 case class LastPass(musicianId: Int, instrumentId: Int, opSubinstrumentId: Option[Int],
     piece: Piece, testOrder: Int, position: Int) {
-  val subinstruments  = AppSchema.subinstruments.map(i => i.id -> i).toMap
+  def subinstruments(id: Int) = Cache.subinstruments.find(_.id == id)
   def instrumentName(id: Int) = Cache.instruments.find(_.id == id).map(_.name.get)
   override def toString = {
-    val opSi = opSubinstrumentId.map(subinstruments)
+    val opSi = opSubinstrumentId.flatMap(subinstruments)
     piece.name.get + " on " + ~instrumentName(instrumentId) + ~opSi.map(Subinstrument.suffix)
   }
 }

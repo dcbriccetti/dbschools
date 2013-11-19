@@ -1,24 +1,25 @@
 package com.dbschools.mgb
 package snippet
 
+import scala.xml.{NodeSeq, Text}
 import collection.mutable.{Set => MSet}
-import org.apache.log4j.Logger
-import org.joda.time.DateTimeComparator
 import scalaz._
 import Scalaz._
+import org.apache.log4j.Logger
+import org.joda.time.DateTimeComparator
 import org.scala_tools.time.Imports._
 import net.liftweb._
 import util._
 import Helpers._
 import net.liftweb.http.{RequestVar, SHtml}
 import net.liftweb.http.js.JsCmds._
-import com.dbschools.mgb.model.{SelectedMusician, AssessmentRow, AssessmentRows}
+import com.dbschools.mgb.model.{TagCounts, SelectedMusician, AssessmentRow, AssessmentRows}
 import schema.{Musician, Subinstrument}
 import LiftExtensions._
 
 object rvSelectedAsmts extends RequestVar[MSet[Int]](MSet[Int]())
 
-class Assessments extends SelectedMusician {
+class Assessments extends SelectedMusician with TagCounts {
   private val log = Logger.getLogger(getClass)
 
   def render = renderAllOrOne(opMusician)
@@ -28,6 +29,17 @@ class Assessments extends SelectedMusician {
   private def renderAllOrOne(opMusician: Option[Musician]) =
     Assessments.filterStudentColumn(opMusician.isEmpty) andThen
       Assessments.rowCssSel(AssessmentRows(opMusician.map(_.id)).toList)
+
+  def assessmentsSummary: NodeSeq = {
+    Text(~rvMusicianDetails.is.map(md => {
+      val (pass, fail) = md.assessments.partition(_.pass)
+      val tagCountsStr = tagCounts(md.musician.id) match {
+        case Nil => ""
+        case n => n.map(tc => s"${tc.tag}: ${tc.count}").mkString(", comments: ", ", ", "")
+      }
+      s"Passes: ${pass.size}, failures: ${fail.size}$tagCountsStr"
+    }))
+  }
 
   def delete = "#deleteAss" #> SHtml.ajaxButton("Delete", () => {
     val selAsses = rvSelectedAsmts.is.toIterable
