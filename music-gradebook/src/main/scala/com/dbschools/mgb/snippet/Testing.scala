@@ -9,7 +9,7 @@ import net.liftweb._
 import util._
 import Helpers._
 import net.liftweb.http.SHtml
-import net.liftweb.http.js.JsCmds.{Focus, FocusOnLoad, Noop, JsShowId, JsHideId}
+import net.liftweb.http.js.JsCmds.{Noop, JsShowId, JsHideId}
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import com.dbschools.mgb.schema.{Musician, AppSchema}
@@ -49,14 +49,14 @@ class Testing extends SelectedMusician {
     }) &
     ".queueRow"   #> enqueuedMusicians.toSeq.sortBy(_.sortOrder).map(queueRow) &
     ".sessionRow" #> testingMusicians.toSeq.sortBy(-_.time.millis).map(Testing.sessionRow(show = true)) &
-    "#message"    #> FocusOnLoad(SHtml.ajaxText("",
+    "#message"    #> SHtml.ajaxText("",
       _.trim match {
-        case "" => Focus("message") // Otherwise focus moves elsewhere
+        case "" => // Ignore
         case msg =>
           Actors.testingManager ! Chat(ChatMessage(DateTime.now, Authenticator.opLoggedInUser.get, msg))
           JsJqVal("#message", "")
       }, "id" -> "message", "style" -> "width: 100%;", "placeholder" -> "Type message and press Enter"
-    )) &
+    ) &
     ".messageRow" #> chatMessages.map(Testing.messageRow) &
     "#clearMessages" #> SHtml.ajaxButton("Clear", () => {
       Actors.testingManager ! ClearChat
@@ -100,7 +100,7 @@ object Testing extends SelectedMusician {
 
   def addMessage(chatMessage: ChatMessage) = JsJqPrepend("#messagesTable tbody",
     messageRow(chatMessage)(elemFromTemplate("testing", ".messageRow")).toString().encJs) &
-    JsShowId("clearMessages") & Focus("message")
+    JsShowId("clearMessages")
 
   def clearMessages = JsJqRemove("#messagesTable tbody *") & JsHideId("clearMessages")
 
