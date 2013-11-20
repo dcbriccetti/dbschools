@@ -52,11 +52,11 @@ class NewAssessment extends SelectedMusician {
     })
 
     def checkboxes(part: Int) = {
-      val grouped = Cache.tags.grouped(Cache.tags.size / 2).toSeq
+      val grouped = Cache.tags.grouped(math.ceil(Cache.tags.size / 2f).toInt).toSeq
       <div>{grouped(part).map(tag =>
         <div class="checkbox">
           <label>
-            {SHtml.checkbox(false, (checked) => s.commentTagSelections(tag.id) = checked)}{tag.commentText}
+            {SHtml.checkbox(false, s.commentTagSelections(tag.id) = _)}{tag.commentText}
           </label>
         </div>)}
       </div>
