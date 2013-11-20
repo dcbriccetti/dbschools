@@ -15,7 +15,7 @@ object ApplicationPaths {
   val stats             = new Path("Statistics",  "stats")
   val students          = new Path("Students",    "students")
   val testing           = new Path("Testing",     "testing")
-  val newStudent        = new Path("New Student", "newStudent")
+  val editStudent       = new Path("Edit Student", "editStudent")
   val studentDetails    = new Path("Student Details", "studentDetails")
 
   val history           = new Path("History",     "history")

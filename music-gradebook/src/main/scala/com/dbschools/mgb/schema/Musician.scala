@@ -1,10 +1,13 @@
 package com.dbschools.mgb.schema
 
+import scalaz._
+import Scalaz._
 import org.squeryl.annotations._
 import net.liftweb.record.{MetaRecord, Record}
-import net.liftweb.record.field.{StringField, IntField}
+import net.liftweb.record.field.{OptionalStringField, StringField, IntField}
 import net.liftweb.squerylrecord.KeyedRecord
 import net.liftweb.util.FieldError
+import com.dbschools.mgb.model.Terms
 
 case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
   override def meta = Musician
@@ -40,14 +43,20 @@ case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
     override def validations = valMinLen(1, "May not be blank") _ :: super.validations
   }
 
+  val nickname = new OptionalStringField(this, None) {
+    override def displayName = "Nickname"
+  }
+
   @Column("graduation_year")
-  val graduation_year = new IntField(this) {
+  val graduation_year = new IntField(this, Terms.currentTerm) {
     override def displayName = "Graduation Year"
   }
 
-  def name = last_name.get + ", " + first_name.get
+  def name = last_name.get + ", " + (nickname.get | first_name.get)
+
+  def nameFirstLast = (nickname.get | first_name.get) + " " + last_name.get
 }
 
 object Musician extends Musician with MetaRecord[Musician] {
-  override def fieldOrder = List(student_id, first_name, last_name, graduation_year)
+  override def fieldOrder = List(student_id, first_name, nickname, last_name, graduation_year)
 }

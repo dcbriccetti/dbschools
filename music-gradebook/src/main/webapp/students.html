@@ -2,10 +2,12 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
-    <div>School Years: <span><span data-lift="Students.yearSelector"/></span>
-    Groups: <span><span data-lift="Students.groupSelector"/></span>
-    Instruments: <span><span data-lift="Students.instrumentSelector"/></span>
-    <span><span data-lift="Students.createNew"/><a id="create" href="#">New Student</a></span></div>
+    <div>
+        School Years: <span><span data-lift="Students.yearSelector"/></span>
+        Groups: <span><span data-lift="Students.groupSelector"/></span>
+        Instruments: <span><span data-lift="Students.instrumentSelector"/></span>
+        <span><span data-lift="Students.createNew"/><span id="create"></span></span>
+    </div>
     <div style="margin-top: .8em;">Sort by: <span data-lift="Students.sortBy"></span></div>
 
     <div id="dynamicSection" data-lift="Students">

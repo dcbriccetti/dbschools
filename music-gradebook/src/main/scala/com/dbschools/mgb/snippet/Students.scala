@@ -38,7 +38,8 @@ class Students extends SelectedMusician with Loggable {
   private val lastPassFinder = new LastPassFinder()
   private val lastPassesByMusician = lastPassFinder.lastPassed().groupBy(_.musicianId)
 
-  def createNew = "#create [href]" #> ApplicationPaths.newStudent.href
+  def createNew = "#create" #> SHtml.link(ApplicationPaths.editStudent.href,
+    () => svSelectedMusician(None), Text("New Student"))
 
   def sortBy = {
     val orders = Seq(SortStudentsBy.Name, SortStudentsBy.LastAssessment, SortStudentsBy.LastPiece)

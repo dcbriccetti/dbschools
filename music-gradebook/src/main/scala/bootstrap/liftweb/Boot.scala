@@ -30,7 +30,7 @@ class Boot {
       noGroups.menu             >> loggedIn >> Hidden,
       students.menu             >> loggedIn,
       testing.menu              >> loggedIn,
-      newStudent.menu           >> loggedIn >> Hidden,
+      editStudent.menu          >> loggedIn >> Hidden,
       studentDetails.menu       >> loggedIn >> Hidden,
       activity.menu             >> loggedIn,
       graphs.menu               >> loggedIn >> Hidden,
