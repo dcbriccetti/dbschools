@@ -7,7 +7,7 @@ import util._
 import http._
 import Helpers._
 import bootstrap.liftweb.ApplicationPaths
-import model.{LastPassFinder, SelectedMusician, Terms}
+import com.dbschools.mgb.model.{testingState, LastPassFinder, SelectedMusician, Terms}
 
 class StudentDetails extends Collapsible with SelectedMusician {
   private object svCollapsibleShowing extends SessionVar[Array[Boolean]](Array(false, false, false))
@@ -24,7 +24,8 @@ class StudentDetails extends Collapsible with SelectedMusician {
       "#edit *"           #> SHtml.link(ApplicationPaths.editStudent.href, () => {}, Text("Edit")) &
       ".grade"            #> Terms.graduationYearAsGrade(m.graduation_year.get) &
       ".stuId"            #> m.student_id.toString() &
-      "#lastPiece *"      #> StudentDetails.lastPiece(lastPassFinder, m.id)
+      "#lastPiece *"      #> StudentDetails.lastPiece(lastPassFinder, m.id) &
+      "#inQueue"          #> (if (testingState.enqueuedMusicians.exists(_.musician.id == m.id)) PassThru else ClearNodes)
     }) getOrElse PassThru
   }
 
