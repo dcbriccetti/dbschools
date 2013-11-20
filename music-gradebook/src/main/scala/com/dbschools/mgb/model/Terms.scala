@@ -33,7 +33,7 @@ object Terms {
     s"${year.toString.substring(2)}$enDash${(year + 1).toString.substring(2)}"
   }
 
-  def allTerms = from(AppSchema.musicianGroups)(mg => select(mg.school_year) orderBy(mg.school_year desc)).distinct
+  def allTerms = from(AppSchema.musicianGroups)(mg => select(mg.school_year) orderBy(mg.school_year.desc)).distinct
 
   def toTs(dt: DateTime) = new Timestamp(dt.millis)
 

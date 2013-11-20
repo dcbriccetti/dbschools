@@ -20,7 +20,7 @@ object AssessmentRows {
         select AssessmentRow(a.id,
           new DateTime(a.assessment_time.getTime), m, u.last_name, p.name.get, i.name.get,
           s.map(_.name.get), a.pass, opStr(a.notes))
-        orderBy (a.assessment_time desc)
+        orderBy (a.assessment_time.desc)
         on(
           a.musician_id       === m.id,
           a.pieceId           === p.id,
