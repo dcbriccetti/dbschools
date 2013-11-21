@@ -6,8 +6,6 @@ import collection.mutable.{Set => MSet}
 import scalaz._
 import Scalaz._
 import org.apache.log4j.Logger
-import org.joda.time.DateTimeComparator
-import org.scala_tools.time.Imports._
 import net.liftweb._
 import util._
 import Helpers._
@@ -64,8 +62,6 @@ object Assessments {
 
   def rowCssSel(rows: Iterable[AssessmentRow]): CssSel = {
     ".assessmentRow" #> {
-      val dtf = DateTimeFormat.forStyle("SS")
-      val tmf = DateTimeFormat.forStyle("-S")
 
       def selectionCheckbox(row: AssessmentRow) =
         SHtml.ajaxCheckbox(false, checked => {
@@ -75,10 +71,9 @@ object Assessments {
           if (selectedAsses.isEmpty) JsHideId("deleteAss") else JsShowId("deleteAss")
         })
 
-      val c = DateTimeComparator.getDateOnlyInstance
       rows.map(ar =>
         ".sel         *"  #> selectionCheckbox(ar) &
-        ".date        *"  #> (if (c.compare(null, ar.date) == 0) tmf else dtf).print(ar.date) &
+        ".date        *"  #> AbbrevDate(ar.date) &
         ".tester      *"  #> ar.tester &
         ".student     *"  #> ar.musician.name &
         ".piece [class]"  #> (if (ar.pass) "pass" else "fail") &

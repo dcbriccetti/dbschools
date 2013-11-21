@@ -18,7 +18,7 @@ class AssessmentsSummary {
     val testerDays = query.groupBy(a => DayAndTester(
       new DateTime(a.assessment_time.getTime).withTimeAtStartOfDay, testersById(a.user_id)))
     val sortedTesterDays = testerDays.toSeq.sortBy(dt => (-dt._1.date.millis, dt._1.tester.last_name))
-    val dtf = DateTimeFormat.mediumDate()
+    var lastDate = new DateTime("1000-01-01")
 
     "#asmtsSumRow *"  #> sortedTesterDays.map {
       case (td, asmts) =>
@@ -26,8 +26,12 @@ class AssessmentsSummary {
         val numStudents = byStudent.size
         val meanPerStu = asmts.size / numStudents.toFloat
         val asmtCounts = byStudent.values.map(_.size.toDouble)
+        val dt = if (td.date == lastDate) "" else {
+          lastDate = td.date
+          AbbrevDate(td.date, dateOnly = true)
+        }
       
-        "#asrDate *"      #> dtf.print(td.date) &
+        "#asrDate *"      #> dt &
         "#asrTester *"    #> td.tester.last_name &
         "#asrStudents *"  #> numStudents &
         "#asrAsmts *"     #> asmts.size &
