@@ -6,8 +6,8 @@ case class User(
   id:         Int,
   login:      String,
   password:   String,
-  epassword:  String,
   first_name: String,
   last_name:  String,
-  enabled:    Boolean
+  enabled:    Boolean,
+  metronome:  Int
 ) extends KeyedEntity[Int]

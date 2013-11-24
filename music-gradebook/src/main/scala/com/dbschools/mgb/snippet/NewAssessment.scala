@@ -2,7 +2,7 @@ package com.dbschools.mgb
 package snippet
 
 import java.sql.Timestamp
-import scala.xml.Text
+import scala.xml.{NodeSeq, Text}
 import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
@@ -16,7 +16,8 @@ import http.js.JE.JsRaw
 import net.liftweb.common.{Empty, Full}
 import JqJsCmds.{FadeOut, PrependHtml}
 import schema.{Assessment, AssessmentTag, AppSchema, Musician, User}
-import model.{Actors, AssessmentState, AssessmentRow, Cache, LastPassFinder, SelectedMusician}
+import model.{Actors, AssessmentState, AssessmentRow, Cache, LastPassFinder,
+  MetroSounds, SelectedMusician}
 import model.TestingManagerMessages.IncrementMusicianAssessmentCount
 import comet.ActivityCometDispatcher
 import comet.ActivityCometActorMessages._
@@ -29,6 +30,8 @@ class NewAssessment extends SelectedMusician {
     val s = new AssessmentState(lastPassFinder)
 
     def jsTempo = JsRaw(s"tempoBpm = ${s.tempoFromPiece}").cmd
+
+    def jsMetroSoundNum = JsRaw(s"metroSoundNum = ${Authenticator.metronome};").cmd
 
     def tempoControl = SHtml.number(s.tempoFromPiece, (t: Int) => {}, min = 30, max = 180)
 
@@ -43,6 +46,15 @@ class NewAssessment extends SelectedMusician {
         initialSel, (p) => {
           s.opSelPieceId = Some(p.toInt)
           sendTempo
+        })
+    }
+
+    def selMetroSound = {
+      val sortedSounds = MetroSounds.values.toSeq.sortBy(_.id)
+      SHtml.ajaxSelect(sortedSounds.map(s => s.id.toString -> s.toString.replace("_", " ")),
+        Full(Authenticator.metronome.toString), (p) => {
+          Authenticator.metronome(p.toInt)
+          jsMetroSoundNum
         })
     }
 
@@ -158,12 +170,23 @@ class NewAssessment extends SelectedMusician {
     "#instrument"     #> selInst &
     s"#$subinstId"    #> selSubinst &
     "#piece"          #> selPiece &
+    "#metroSound"     #> selMetroSound &
     "#tempo"          #> tempoControl &
     "#setTempo"       #> Script(jsTempo) &
+    "#setMetroSoundNum" #> Script(jsMetroSoundNum) &
     "#checkbox1 *"    #> checkboxes(0) &
     "#checkbox2 *"    #> checkboxes(1) &
     "#commentText"    #> commentText &
     "#passButton"     #> SHtml.ajaxSubmit("Pass", () => { recordAss(pass = true ) }) &
     "#failButton"     #> SHtml.ajaxSubmit("Fail", () => { recordAss(pass = false) })
+  }
+
+  def audioControls = {
+    MetroSounds.values.map(s => {
+      val filename = s.toString + ".wav"
+      <audio id={s"audioControl${s.id}"} src={s"assets/audio/$filename"} preload="auto">
+        Please use a standards-compliant browser.
+      </audio>
+    }).foldLeft(NodeSeq.Empty)(_ ++ _)
   }
 }

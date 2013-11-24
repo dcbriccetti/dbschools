@@ -4,7 +4,8 @@
 <div id="main" class="lift:surround?with=default;at=content">
     <div data-lift="NewAssessment">
         <script language="JavaScript" src="js/metronome.js"></script>
-        <span id="setTempo"/>
+        <span id="setTempo"></span>
+        <span id="setMetroSoundNum"></span>
     </div>
 
     <div data-lift="StudentDetails">
@@ -34,7 +35,6 @@
                 </div>
             </div>
         </div>
-
 
         <div id='inQueue' class='well' style='color: red'>
             <h3>If you are testing this student, please select
@@ -84,6 +84,7 @@
                             <span id="piece" class="input-lg"></span>
                             <input id="metronome" class="btn btn-lg" style='margin-bottom: 3px; margin-left: 1em;'
                                    type="button" value="Metronome" onclick="metro()"/>
+                            <span id="metroSound" class="input-lg"></span>
                             <input id="tempo" type="number" style='font-size: 120%' onChange="tempoBpm = this.value;">
                             <span id="instrument" class='input-lg' style='margin-left: 1em;'></span>
                             <span id="subinstrument" class='input-lg'></span>
@@ -143,9 +144,7 @@
 
         <span data-lift='StudentDetails.js'></span>
 
-        <audio id="audioControl" src="assets/audio/metronome.wav" preload="auto">Please use a standards-compliant
-            browser.
-        </audio>
+        <span data-lift="NewAssessment.audioControls"></span>
     </div>
 </div>
 </body>

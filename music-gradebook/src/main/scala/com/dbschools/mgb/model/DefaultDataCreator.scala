@@ -33,7 +33,8 @@ object DefaultDataCreator extends Loggable {
   private def createUser(): Unit = {
     AppSchema.users.insert(getLines("User").map(line => {
       val fields = line.split("\t")
-      User(0, fields(0), fields(1), EncryptPasswords.encrypt(fields(1)), fields(2), fields(3), enabled = true)
+      User(0, fields(0), EncryptPasswords.encrypt(fields(1)), fields(2), fields(3),
+        enabled = true, metronome = 1)
     }))
   }
 

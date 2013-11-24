@@ -1,5 +1,6 @@
 var go = false;
 var tempoBpm = 60;
+var metroSoundNum = 1;
 
 function metro() {
     var metronome = $('#metronome');
@@ -15,7 +16,7 @@ function metro() {
 function beep() {
     if (go) {
         var startTime = new Date().getTime();
-        document.getElementById('audioControl').play();
+        document.getElementById('audioControl' + metroSoundNum).play();
         var elapsed = new Date().getTime() - startTime;
         var bps = tempoBpm == 0 ? 1 : tempoBpm / 60.0;
         var msDelay = 1000 / bps;

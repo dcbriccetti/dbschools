@@ -29,7 +29,7 @@ class Authenticator extends FormHelper {
     "#passwordFormGroup"  #> addFormGroup("password", "Password", passwordText) &
     "#submit"             #> SHtml.submit("Log In", () => {
       val opUser = AppSchema.users.where(user => user.login === userId and user.enabled === true).headOption
-      if (opUser.nonEmpty && (isDemo || opUser.exists(user => BCrypt.checkpw(password, user.epassword)))) {
+      if (opUser.nonEmpty && (isDemo || opUser.exists(user => BCrypt.checkpw(password, user.password)))) {
         Authenticator svLoggedInUser opUser
         log.info(s"$userId logged in")
         S.redirectTo(groups.href)
@@ -57,4 +57,14 @@ object Authenticator {
   object svLoggedInUser extends SessionVar[Option[User]](None)
   def loggedIn = svLoggedInUser.is.nonEmpty
   def opLoggedInUser = svLoggedInUser.is
+
+  def metronome(num: Int): Unit = {
+    opLoggedInUser.foreach(user => {
+      val newUser = user.copy(metronome = num)
+      AppSchema.users.update(newUser)
+      svLoggedInUser(Some(newUser))
+    })
+  }
+
+  def metronome = opLoggedInUser.map(_.metronome) | 1
 }

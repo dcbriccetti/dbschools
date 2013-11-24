@@ -11,9 +11,9 @@ object EncryptPasswords extends Loggable {
   def apply(): Unit = {
     Db.initialize()
     transaction {
-      val query = AppSchema.users.where(_.epassword === "")
+      val query = AppSchema.users.where(_.password === "")
       val updatedUsers = query.map(u => {
-        u.copy(epassword = encrypt(u.password))
+        u.copy(password = encrypt(u.password))
       })
       if (updatedUsers.isEmpty)
         logger.info("All passwords are already encrypted")
