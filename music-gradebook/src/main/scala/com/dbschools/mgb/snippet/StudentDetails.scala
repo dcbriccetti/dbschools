@@ -18,14 +18,17 @@ class StudentDetails extends Collapsible with SelectedMusician {
     val lastPassFinder = new LastPassFinder
     opMusician.map(m => {
       val collapseSels = (0 to 2).map(n => s"#collapse$n [class+]" #> (if (collapsibleShowing(n)) "in" else ""))
+      val qEmpty = testingState.enqueuedMusicians.isEmpty
 
       collapseSels.reduce(_ & _) &
-      "#name *"           #> m.nameFirstLast &
-      "#edit *"           #> SHtml.link(ApplicationPaths.editStudent.href, () => {}, Text("Edit")) &
-      ".grade"            #> Terms.graduationYearAsGrade(m.graduation_year.get) &
-      ".stuId"            #> m.student_id.toString() &
-      "#lastPiece *"      #> StudentDetails.lastPiece(lastPassFinder, m.id) &
-      "#inQueue"          #> (if (testingState.enqueuedMusicians.exists(_.musician.id == m.id)) PassThru else ClearNodes)
+      "#nextStu1 [class+]"  #> (if (qEmpty) "hide" else "show") &
+      "#nextStu2 [class+]"  #> (if (qEmpty) "show" else "hide") &
+      "#name *"             #> m.nameFirstLast &
+      "#edit *"             #> SHtml.link(ApplicationPaths.editStudent.href, () => {}, Text("Edit")) &
+      ".grade"              #> Terms.graduationYearAsGrade(m.graduation_year.get) &
+      ".stuId"              #> m.student_id.toString() &
+      "#lastPiece *"        #> StudentDetails.lastPiece(lastPassFinder, m.id) &
+      "#inQueue"            #> (if (testingState.enqueuedMusicians.exists(_.musician.id == m.id)) PassThru else ClearNodes)
     }) getOrElse PassThru
   }
 
