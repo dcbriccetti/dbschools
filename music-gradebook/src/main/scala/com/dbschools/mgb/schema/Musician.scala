@@ -52,9 +52,11 @@ case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
     override def displayName = "Graduation Year"
   }
 
-  def name = last_name.get + ", " + (nickname.get | first_name.get)
+  def name = last_name.get + ", " + first_name.get + nickOrBlank
 
-  def nameFirstLast = (nickname.get | first_name.get) + " " + last_name.get
+  def nameFirstLast = first_name.get + nickOrBlank + " " + last_name.get
+
+  private def nickOrBlank = ~nickname.get.map(n => s" ($n)")
 }
 
 object Musician extends Musician with MetaRecord[Musician] {
