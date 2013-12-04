@@ -102,8 +102,7 @@ object Testing extends SelectedMusician {
     fnum.setMaximumFractionDigits(2)
 
     def apply(user: schema.User): SessionStats = {
-      val rows = testingMusicians.filter(_.tester == user).toSeq.
-        sortBy(-_.time.millis).take(Testing.SessionsToShowPerTester)
+      val rows = testingMusicians.filter(_.tester == user).toSeq.sortBy(-_.time.millis)
       val n = rows.size
       val lengths = if (n < 2) List[Double]() else
         for {
@@ -111,7 +110,8 @@ object Testing extends SelectedMusician {
         } yield (rows(i - 1).time.getMillis - rows(i).time.getMillis) / 1000.0 / 60
       val avgMins = if (n < 2) None else Some(lengths.sum / (n - 1))
       val opσ = avgMins.map(am => Stats.stdev(lengths, am))
-      SessionStats(rows, n, avgMins, ~avgMins.map(fnum.format), opσ, ~opσ.map(fnum.format))
+      SessionStats(rows.take(Testing.SessionsToShowPerTester), n,
+        avgMins, ~avgMins.map(fnum.format), opσ, ~opσ.map(fnum.format))
     }
   }
 
@@ -133,7 +133,7 @@ object Testing extends SelectedMusician {
     val m = tm.musician
     "tr [id]"     #> Testing.sessionRowId(m.id) &
     "tr [style+]" #> (if (show) "" else "display: none;") &
-    "#srstu *"    #> (m.first_name.get + " " + m.last_name) &
+    "#srstu *"    #> m.nameFirstLast &
     "#srtester *" #> tm.tester.last_name &
     "#srtime *"   #> tmf.print(tm.time) &
     ".srasmts *"  #> tm.numAsmts
