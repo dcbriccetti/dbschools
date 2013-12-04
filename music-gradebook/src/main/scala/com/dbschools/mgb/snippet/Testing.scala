@@ -126,7 +126,7 @@ object Testing extends SelectedMusician {
       if (test)
         Authenticator.opLoggedInUser.foreach(user =>
           Actors.testingManager ! TestMusician(TestingMusician(m, user, DateTime.now)))
-    }, <span title={title}>{m.first_name.get + " " + m.last_name}</span>)
+    }, <span title={title}>{m.nameFirstLast}</span>)
   }
 
   def sessionRow(show: Boolean)(tm: TestingMusician): CssSel = {
