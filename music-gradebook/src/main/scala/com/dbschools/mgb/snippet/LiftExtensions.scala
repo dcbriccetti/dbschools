@@ -19,6 +19,7 @@ object LiftExtensions {
   def JsJqHtml    [A](selector: String, value: A): JsCmd = JsJqFn1(selector, "html", value)
   def JsJqVal     [A](selector: String, value: A): JsCmd = JsJqFn1(selector, "val", value)
   def JsJqPrepend [A](selector: String, value: A): JsCmd = JsJqFn1(selector, "prepend", value)
+  def JsJqDelRows    (selector: String, delAfter: Int): JsCmd = JsRaw(s"jQuery('$selector').find('tr:gt($delAfter)').remove();")
   def JsJqRemove(selector: String): JsCmd = JsJqFn0(selector, "remove")
   def JsJqHilite(selector: String, ms: Int = 3000): JsCmd = JsRaw(s"jQuery('$selector').effect('highlight', {}, $ms);").cmd
 

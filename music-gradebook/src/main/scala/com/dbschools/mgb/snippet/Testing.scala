@@ -1,6 +1,7 @@
 package com.dbschools.mgb
 package snippet
 
+import java.text.NumberFormat
 import scalaz._
 import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
@@ -13,6 +14,7 @@ import net.liftweb.http.js.JsCmds.{Noop, JsShowId, JsHideId}
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import com.dbschools.mgb.schema.{Musician, AppSchema}
+import AppSchema.{users}
 import model.{SelectedMusician, EnqueuedMusician, TestingMusician, Cache, Actors, ChatMessage, Terms}
 import model.testingState._
 import model.TestingManagerMessages._
@@ -43,12 +45,26 @@ class Testing extends SelectedMusician {
       "#qrpiece *"  #> sm.nextPieceName
     }
 
+    def testerSessions: List[CssSel] = {
+      users.filter(_.enabled).toList.sortBy(_.last_name).map(user => {
+        val ss = Testing.SessionStats(user)
+        val rowSels = ss.rows.map(Testing.sessionRow(show = true))
+
+        ".testerName *"             #> user.last_name &
+        ".numSessions *"            #> ss.num &
+        ".avgMins *"                #> ss.avgMinsStr &
+        "#testerSessions [id]"      #> s"user${user.id}" &
+        "#testerSessions [style+]"  #> (if (ss.rows.isEmpty) "display: none" else "") &
+        ".sessionRow"               #> rowSels
+      })
+    }
+
     "#queueDelete" #> SHtml.ajaxButton("Remove Selected", () => {
       Actors.testingManager ! DequeueMusicians(selectedScheduledIds)
       Noop
     }) &
     ".queueRow"   #> enqueuedMusicians.toSeq.sortBy(_.sortOrder).map(queueRow) &
-    ".sessionRow" #> testingMusicians.toSeq.sortBy(-_.time.millis).map(Testing.sessionRow(show = true)) &
+    "#testerSessionsOuter" #> testerSessions &
     "#message"    #> SHtml.ajaxText("",
       _.trim match {
         case "" => // Ignore
@@ -67,7 +83,24 @@ class Testing extends SelectedMusician {
 
 object Testing extends SelectedMusician {
 
+  val SessionsToShowPerTester = 3
   private val tmf = DateTimeFormat.forStyle("-M")
+
+  case class SessionStats(rows: Seq[TestingMusician], num: Int, avgMins: Option[Double], avgMinsStr: String)
+
+  object SessionStats {
+    private val fnum = NumberFormat.getNumberInstance
+    fnum.setMaximumFractionDigits(2)
+
+    def apply(user: schema.User): SessionStats = {
+      val rows = testingMusicians.filter(_.tester == user).toSeq.
+        sortBy(-_.time.millis).take(Testing.SessionsToShowPerTester)
+      val n = rows.size
+      val avgMins = if (n < 2) None else
+        Some((rows(0).time.getMillis - rows(n - 1).time.getMillis) / (n - 1) / 1000.0 / 60)
+      SessionStats(rows, n, avgMins, ~avgMins.map(fnum.format))
+    }
+  }
 
   def studentNameLink(m: Musician, test: Boolean) = {
     val title = if (test)
@@ -78,8 +111,8 @@ object Testing extends SelectedMusician {
     SHtml.link(ApplicationPaths.studentDetails.href, () => {
       svSelectedMusician(Some(m))
       if (test)
-        Actors.testingManager ! TestMusician(TestingMusician(m,
-          ~Authenticator.opLoggedInUser.map(_.last_name), DateTime.now))
+        Authenticator.opLoggedInUser.foreach(user =>
+          Actors.testingManager ! TestMusician(TestingMusician(m, user, DateTime.now)))
     }, <span title={title}>{m.first_name.get + " " + m.last_name}</span>)
   }
 
@@ -88,7 +121,7 @@ object Testing extends SelectedMusician {
     "tr [id]"     #> Testing.sessionRowId(m.id) &
     "tr [style+]" #> (if (show) "" else "display: none;") &
     "#srstu *"    #> (m.first_name.get + " " + m.last_name) &
-    "#srtester *" #> tm.testerName &
+    "#srtester *" #> tm.tester.last_name &
     "#srtime *"   #> tmf.print(tm.time) &
     ".srasmts *"  #> tm.numAsmts
   }

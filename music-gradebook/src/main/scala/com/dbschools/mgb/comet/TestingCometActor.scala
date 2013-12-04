@@ -3,7 +3,7 @@ package comet
 
 import scala.language.postfixOps
 import net.liftweb.http.{CometListener, CometActor}
-import net.liftweb.http.js.JsCmds.{After, Noop, Reload}
+import net.liftweb.http.js.JsCmds.{After, Noop, Reload, JsShowId}
 import net.liftweb.http.js.jquery.JqJsCmds.{FadeIn, FadeOut}
 import net.liftweb.util.{Helpers, PassThru}
 import Helpers._
@@ -11,6 +11,8 @@ import com.dbschools.mgb.model.{ChatMessage, TestingMusician}
 import snippet.Testing
 import snippet.LiftExtensions._
 import Testing.{queueRowId, sessionRowId, sessionRow}
+import com.dbschools.mgb.schema.User
+import scala.xml.Text
 
 class TestingCometActor extends CometActor with CometListener {
   import TestingCometActorMessages._
@@ -32,7 +34,10 @@ class TestingCometActor extends CometActor with CometListener {
       partialUpdate(
         FadeOut(queueRowId(id), 0 seconds, fadeTime) &
         After(fadeTime, JsJqRemove(queueRowSel)) &
+        showSessionsTable(testingMusician.tester) &
         prependRowToSessionsTable(testingMusician) &
+        clearOldSessionsTableRows(testingMusician.tester) &
+        updateStats(testingMusician.tester) &
         FadeIn(sessionRowId(id), 0 seconds, fadeTime) &
         After(fadeTime, JsJqHilite(sessRowSel)) &
         (opNextMusicianId.map(nextId => After(fadeTime, JsJqHilite("#" + queueRowId(nextId), 60000))) getOrElse Noop)
@@ -55,10 +60,24 @@ class TestingCometActor extends CometActor with CometListener {
     case Start =>
   }
 
+  private def uid(user: User) = s"#user${user.id}"
+
+  private def updateStats(user: User) = {
+    val ss = Testing.SessionStats(user)
+    val id = uid(user)
+    JsJqHtml(s"$id .avgMins", Text(ss.avgMinsStr)) &
+    JsJqHtml(s"$id .numSessions", Text(ss.num.toString))
+  }
+
+  private def showSessionsTable(user: User) = JsShowId(s"user${user.id}")
+
+  private def clearOldSessionsTableRows(user: User) = JsJqDelRows(s"${uid(user)} table",
+    Testing.SessionsToShowPerTester)
+
   private def prependRowToSessionsTable(testingMusician: TestingMusician) = {
     val row = elemFromTemplate("testing", ".sessionRow")
     val cssSelProcessRow = sessionRow(show = false)(testingMusician)
-    JsJqPrepend("#testingTable tbody", cssSelProcessRow(row).toString().encJs)
+    JsJqPrepend(s"${uid(testingMusician.tester)} table tbody", cssSelProcessRow(row).toString().encJs)
   }
 
   def render = PassThru

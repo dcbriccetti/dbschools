@@ -85,7 +85,7 @@ object TestingManager {
 
 case class EnqueuedMusician(musician: Musician, sortOrder: Long, nextPieceName: String)
 
-case class TestingMusician(musician: Musician, testerName: String, time: DateTime) {
+case class TestingMusician(musician: Musician, tester: User, time: DateTime) {
   var numAsmts = 0
 }
 

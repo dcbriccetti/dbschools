@@ -55,25 +55,32 @@
                     <input type="button" id="clearMessages" class="btn" style="display: none;"/>
                 </div>
 
-                <div style="margin-top: 1.5em;"><span class='h3'>Sessions</span></div>
-                <table id='testingTable' class="table">
-                    <thead>
-                    <tr id="testingTableHead">
-                        <th>Student</th>
-                        <th>Tester</th>
-                        <th>Time In</th>
-                        <th>Asmts</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr class='sessionRow'>
-                      <td id="srstu"></td>
-                      <td id="srtester"></td>
-                      <td id="srtime"></td>
-                      <td class='srasmts text-right'></td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div style="margin-top: 1.5em; margin-bottom: 1em;"><span class='h3'>Sessions</span></div>
+
+                <div id='testerSessionsOuter'>
+                    <div id='testerSessions' class='testerSessions'>
+                        <div>
+                            <span class='testerName h4' style='margin-right: 2em;'></span>
+                            Number: <span class='numSessions'></span>, Avg min: <span class='avgMins'></span>
+                        </div>
+                        <table class="table">
+                            <thead>
+                            <tr id="testingTableHead">
+                                <th>Student</th>
+                                <th>Time In</th>
+                                <th>Asmts</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr class='sessionRow'>
+                              <td id="srstu"></td>
+                              <td id="srtime"></td>
+                              <td class='srasmts text-right'></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
