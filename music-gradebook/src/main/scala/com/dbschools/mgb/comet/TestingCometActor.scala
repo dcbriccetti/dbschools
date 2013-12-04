@@ -66,7 +66,8 @@ class TestingCometActor extends CometActor with CometListener {
     val ss = Testing.SessionStats(user)
     val id = uid(user)
     JsJqHtml(s"$id .avgMins", Text(ss.avgMinsStr)) &
-    JsJqHtml(s"$id .numSessions", Text(ss.num.toString))
+    JsJqHtml(s"$id .numSessions", Text(ss.num.toString)) &
+    JsJqHtml(s"$id .stdev", Text(ss.σStr))
   }
 
   private def showSessionsTable(user: User) = JsShowId(s"user${user.id}")

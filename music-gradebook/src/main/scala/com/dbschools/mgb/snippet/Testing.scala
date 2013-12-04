@@ -15,9 +15,16 @@ import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import com.dbschools.mgb.schema.{Musician, AppSchema}
 import AppSchema.{users}
-import model.{SelectedMusician, EnqueuedMusician, TestingMusician, Cache, Actors, ChatMessage, Terms}
+import com.dbschools.mgb.model._
 import model.testingState._
 import model.TestingManagerMessages._
+import com.dbschools.mgb.model.TestingManagerMessages.DequeueMusicians
+import scala.Some
+import com.dbschools.mgb.model.TestingManagerMessages.Chat
+import com.dbschools.mgb.model.ChatMessage
+import com.dbschools.mgb.model.TestingManagerMessages.TestMusician
+import com.dbschools.mgb.model.TestingMusician
+import com.dbschools.mgb.model.EnqueuedMusician
 
 class Testing extends SelectedMusician {
   def render = {
@@ -53,6 +60,7 @@ class Testing extends SelectedMusician {
         ".testerName *"             #> user.last_name &
         ".numSessions *"            #> ss.num &
         ".avgMins *"                #> ss.avgMinsStr &
+        ".stdev *"                  #> ss.σStr &
         "#testerSessions [id]"      #> s"user${user.id}" &
         "#testerSessions [style+]"  #> (if (ss.rows.isEmpty) "display: none" else "") &
         ".sessionRow"               #> rowSels
@@ -86,7 +94,8 @@ object Testing extends SelectedMusician {
   val SessionsToShowPerTester = 3
   private val tmf = DateTimeFormat.forStyle("-M")
 
-  case class SessionStats(rows: Seq[TestingMusician], num: Int, avgMins: Option[Double], avgMinsStr: String)
+  case class SessionStats(rows: Seq[TestingMusician], num: Int, avgMins: Option[Double], avgMinsStr: String,
+    σ: Option[Double], σStr: String)
 
   object SessionStats {
     private val fnum = NumberFormat.getNumberInstance
@@ -96,9 +105,13 @@ object Testing extends SelectedMusician {
       val rows = testingMusicians.filter(_.tester == user).toSeq.
         sortBy(-_.time.millis).take(Testing.SessionsToShowPerTester)
       val n = rows.size
-      val avgMins = if (n < 2) None else
-        Some((rows(0).time.getMillis - rows(n - 1).time.getMillis) / (n - 1) / 1000.0 / 60)
-      SessionStats(rows, n, avgMins, ~avgMins.map(fnum.format))
+      val lengths = if (n < 2) List[Double]() else
+        for {
+          i <- 1 until n
+        } yield (rows(i - 1).time.getMillis - rows(i).time.getMillis) / 1000.0 / 60
+      val avgMins = if (n < 2) None else Some(lengths.sum / (n - 1))
+      val opσ = avgMins.map(am => Stats.stdev(lengths, am))
+      SessionStats(rows, n, avgMins, ~avgMins.map(fnum.format), opσ, ~opσ.map(fnum.format))
     }
   }
 
