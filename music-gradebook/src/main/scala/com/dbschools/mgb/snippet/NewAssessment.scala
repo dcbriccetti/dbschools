@@ -137,7 +137,7 @@ class NewAssessment extends SelectedMusician {
 
         val row = createAssessmentRow(asmt, asmtTime, musician, user)
         ActivityCometDispatcher ! ActivityStatusUpdate(row)
-        Actors.testingManager ! IncrementMusicianAssessmentCount(musician.id)
+        Actors.testingManager ! IncrementMusicianAssessmentCount(user.id, musician.id)
         s.next(pass = pass)
 
         updatePageForNextAssessment(row, asmt)

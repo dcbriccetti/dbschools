@@ -44,8 +44,9 @@ class TestingCometActor extends CometActor with CometListener {
       )
 
     case UpdateAssessmentCount(tm) =>
+      val testerId = uid(tm.tester)
       val rowId = sessionRowId(tm.musician.id)
-      val sel = s"#$rowId .srasmts"
+      val sel = s"$testerId #$rowId .srasmts"
       partialUpdate(
         JsJqHtml(sel, tm.numAsmts) &
         JsJqHilite(sel)

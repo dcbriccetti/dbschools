@@ -46,8 +46,8 @@ class TestingManager extends Actor {
       })
       updateStudentsPage()
 
-    case IncrementMusicianAssessmentCount(musicianId) =>
-      testingState.testingMusicians.find(_.musician.id == musicianId).foreach(tm => {
+    case IncrementMusicianAssessmentCount(testerId, musicianId) =>
+      testingState.testingMusicians.find(tm => tm.tester.id == testerId && tm.musician.id == musicianId).foreach(tm => {
         tm.numAsmts += 1
         TestingCometDispatcher ! UpdateAssessmentCount(tm)
       })
@@ -95,7 +95,7 @@ object TestingManagerMessages {
   case class EnqueueMusicians(enqueuedMusicians: Iterable[EnqueuedMusician])
   case class DequeueMusicians(ids: Iterable[Int])
   case class TestMusician(testingMusician: TestingMusician)
-  case class IncrementMusicianAssessmentCount(musicianId: Int)
+  case class IncrementMusicianAssessmentCount(testerId: Int, musicianId: Int)
   case object ClearQueue
   case class Chat(chatMessage: ChatMessage)
   case object ClearChat

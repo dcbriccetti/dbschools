@@ -13,18 +13,12 @@ import net.liftweb.http.SHtml
 import net.liftweb.http.js.JsCmds.{Noop, JsShowId, JsHideId}
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
-import com.dbschools.mgb.schema.{Musician, AppSchema}
-import AppSchema.{users}
-import com.dbschools.mgb.model._
+import schema.{Musician, AppSchema}
+import AppSchema.users
+import model._
 import model.testingState._
 import model.TestingManagerMessages._
-import com.dbschools.mgb.model.TestingManagerMessages.DequeueMusicians
-import scala.Some
-import com.dbschools.mgb.model.TestingManagerMessages.Chat
-import com.dbschools.mgb.model.ChatMessage
-import com.dbschools.mgb.model.TestingManagerMessages.TestMusician
-import com.dbschools.mgb.model.TestingMusician
-import com.dbschools.mgb.model.EnqueuedMusician
+import model.TestingManagerMessages.{Chat, DequeueMusicians, TestMusician}
 
 class Testing extends SelectedMusician {
   def render = {
