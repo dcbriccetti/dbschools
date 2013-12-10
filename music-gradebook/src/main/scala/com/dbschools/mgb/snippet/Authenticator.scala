@@ -11,6 +11,7 @@ import net.liftweb.util.Helpers._
 import net.liftweb.util.{PassThru, ClearNodes, Props, BCrypt}
 import net.liftweb.http.js.JsCmds.{Script, Noop, RedirectTo, FocusOnLoad}
 import schema.{User, AppSchema}
+import model.testingState
 
 class Authenticator extends FormHelper {
   val log = Logger.getLogger(getClass)
@@ -32,7 +33,7 @@ class Authenticator extends FormHelper {
       if (opUser.nonEmpty && (isDemo || opUser.exists(user => BCrypt.checkpw(password, user.password)))) {
         Authenticator svLoggedInUser opUser
         log.info(s"$userId logged in")
-        S.redirectTo(groups.href)
+        S.redirectTo((if (testingState.enqueuedMusicians.nonEmpty) testing else groups).href)
       } else {
         log.info(s"$userId failed to log in")
         S.error("Login failed")
