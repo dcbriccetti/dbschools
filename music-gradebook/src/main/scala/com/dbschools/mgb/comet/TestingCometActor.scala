@@ -64,7 +64,7 @@ class TestingCometActor extends CometActor with CometListener {
   private def uid(user: User) = s"#user${user.id}"
 
   private def updateStats(user: User) = {
-    val ss = Testing.SessionStats(user)
+    val ss = Testing.SessionStats(user.id)
     val id = uid(user)
     JsJqHtml(s"$id .avgMins", Text(ss.avgMinsStr)) &
     JsJqHtml(s"$id .numSessions", Text(ss.num.toString)) &

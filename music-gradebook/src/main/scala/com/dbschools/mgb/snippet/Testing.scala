@@ -48,8 +48,8 @@ class Testing extends SelectedMusician {
 
     def testerSessions: List[CssSel] = {
       users.filter(_.enabled).toList.sortBy(_.last_name).map(user => {
-        val ss = Testing.SessionStats(user)
-        val rowSels = ss.rows.map(Testing.sessionRow(show = true))
+        val ss = Testing.SessionStats(user.id)
+        val rowSels = ss.rows.take(Testing.SessionsToShowPerTester).map(Testing.sessionRow(show = true))
 
         ".testerName *"             #> user.last_name &
         ".numSessions *"            #> ss.num &
@@ -95,8 +95,8 @@ object Testing extends SelectedMusician {
     private val fnum = NumberFormat.getNumberInstance
     fnum.setMaximumFractionDigits(2)
 
-    def apply(user: schema.User): SessionStats = {
-      val rows = testingMusicians.filter(_.tester == user).toSeq.sortBy(-_.time.millis)
+    def apply(userId: Int): SessionStats = {
+      val rows = testingMusicians.filter(_.tester.id == userId).toSeq.sortBy(-_.time.millis)
       val n = rows.size
       val lengths = if (n < 2) List[Double]() else
         for {
@@ -104,8 +104,7 @@ object Testing extends SelectedMusician {
         } yield (rows(i - 1).time.getMillis - rows(i).time.getMillis) / 1000.0 / 60
       val avgMins = if (n < 2) None else Some(lengths.sum / (n - 1))
       val opσ = avgMins.map(am => Stats.stdev(lengths, am))
-      SessionStats(rows.take(Testing.SessionsToShowPerTester), n,
-        avgMins, ~avgMins.map(fnum.format), opσ, ~opσ.map(fnum.format))
+      SessionStats(rows, n, avgMins, ~avgMins.map(fnum.format), opσ, ~opσ.map(fnum.format))
     }
   }
 
