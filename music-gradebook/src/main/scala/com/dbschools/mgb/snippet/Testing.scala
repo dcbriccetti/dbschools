@@ -24,7 +24,7 @@ class Testing extends SelectedMusician {
   def render = {
     var selectedScheduledIds = Set[Int]()
 
-    def queueRow(sm: EnqueuedMusician): CssSel = {
+    def queueRow(sm: EnqueuedMusician, extraClass: Option[String]): CssSel = {
       val m = sm.musician
       val mgs = AppSchema.musicianGroups.where(mg => mg.musician_id === m.id and mg.school_year === Terms.currentTerm)
       val instrumentNames =
@@ -34,6 +34,7 @@ class Testing extends SelectedMusician {
         } yield instrument.name.get
 
       "tr [id]"     #> Testing.queueRowId(m.id) &
+      "tr [class+]" #> ~extraClass &
       "#qrsel *"    #> SHtml.ajaxCheckbox(false, (b) => {
         if (b)
           selectedScheduledIds += sm.musician.id
@@ -65,7 +66,10 @@ class Testing extends SelectedMusician {
       Actors.testingManager ! DequeueMusicians(selectedScheduledIds)
       Noop
     }) &
-    ".queueRow"   #> enqueuedMusicians.toSeq.sortBy(_.sortOrder).map(queueRow) &
+    ".queueRow"   #> {
+      val numWait = testingState.numToCall
+      enqueuedMusicians.toSeq.sortBy(_.sortOrder).zipWithIndex.map {case (s, i) => queueRow(s, if (i < numWait) Some("success") else None)}
+    } &
     "#testerSessionsOuter" #> testerSessions &
     "#message"    #> SHtml.ajaxText("",
       _.trim match {

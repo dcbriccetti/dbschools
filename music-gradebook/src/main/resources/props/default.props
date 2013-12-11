@@ -7,3 +7,4 @@ db.user=dbschools
 db.password=dbschools
 
 organization=Stanley Middle School Music Department
+defaultNextCallMins=3

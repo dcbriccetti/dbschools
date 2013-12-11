@@ -39,8 +39,7 @@ class TestingCometActor extends CometActor with CometListener {
         clearOldSessionsTableRows(testingMusician.tester) &
         updateStats(testingMusician.tester) &
         FadeIn(sessionRowId(id), 0 seconds, fadeTime) &
-        After(fadeTime, JsJqHilite(sessRowSel)) &
-        (opNextMusicianId.map(nextId => After(fadeTime, JsJqHilite("#" + queueRowId(nextId), 60000))) getOrElse Noop)
+        After(fadeTime, JsJqHilite(sessRowSel))
       )
 
     case UpdateAssessmentCount(tm) =>
@@ -51,6 +50,10 @@ class TestingCometActor extends CometActor with CometListener {
         JsJqHtml(sel, tm.numAsmts) &
         JsJqHilite(sel)
       )
+
+    case SetNumWaitingRoom(num) =>
+      val sel = "tr.queueRow"
+      partialUpdate(JsJqUnStyleRows(sel) & JsJqStyleRows(sel, num))
 
     case Chat(chatMessage) =>
       partialUpdate(Testing.addMessage(chatMessage))
@@ -92,6 +95,7 @@ object TestingCometActorMessages {
   /** Removes a musician from the queue (if it exists), and adds it to a testing session */
   case class MoveMusician(testingMusician: TestingMusician, opNextMusicianId: Option[Int])
   case class UpdateAssessmentCount(testingMusician: TestingMusician)
+  case class SetNumWaitingRoom(num: Int)
   case class Chat(chatMessage: ChatMessage)
   case object ClearChat
 }

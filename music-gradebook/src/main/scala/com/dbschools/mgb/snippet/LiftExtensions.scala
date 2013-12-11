@@ -20,6 +20,8 @@ object LiftExtensions {
   def JsJqVal     [A](selector: String, value: A): JsCmd = JsJqFn1(selector, "val", value)
   def JsJqPrepend [A](selector: String, value: A): JsCmd = JsJqFn1(selector, "prepend", value)
   def JsJqDelRows    (selector: String, delAfter: Int): JsCmd = JsRaw(s"jQuery('$selector').find('tr:gt($delAfter)').remove();")
+  def JsJqUnStyleRows(selector: String): JsCmd = JsRaw(s"jQuery('$selector').removeClass('success');")
+  def JsJqStyleRows(selector: String, num: Int): JsCmd = JsRaw(s"jQuery('$selector').slice(0, $num).addClass('success');")
   def JsJqRemove(selector: String): JsCmd = JsJqFn0(selector, "remove")
   def JsJqHilite(selector: String, ms: Int = 3000): JsCmd = JsRaw(s"jQuery('$selector').effect('highlight', {}, $ms);").cmd
 

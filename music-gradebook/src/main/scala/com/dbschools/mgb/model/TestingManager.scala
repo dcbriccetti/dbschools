@@ -4,13 +4,17 @@ package model
 import scalaz._
 import Scalaz._
 import akka.actor.Actor
-import org.joda.time.DateTime
+import org.apache.log4j.Logger
+import org.scala_tools.time.Imports._
 import comet.{NoticesDispatcher, StudentCometDispatcher, StudentsCometDispatcher, StudentsCometActorMessages,
   TestingCometDispatcher, TestingCometActorMessages}
 import schema.Musician
 import com.dbschools.mgb.schema.User
+import net.liftweb.util.Props
+import com.dbschools.mgb.comet.TestingCometActorMessages.SetNumWaitingRoom
 
 class TestingManager extends Actor {
+  val log = Logger.getLogger(getClass)
   import StudentsCometActorMessages._
   import TestingCometActorMessages.{ReloadPage, MoveMusician, UpdateAssessmentCount}
   import TestingManagerMessages._
@@ -18,8 +22,20 @@ class TestingManager extends Actor {
   import comet.NoticesMessages._
   import comet.StudentMessages._
 
+  val defaultNextCallMins = Props.getInt("defaultNextCallMins") getOrElse 5
+  var numToCall = -1
 
   def receive = {
+
+    case Tick =>
+      if (numToCall != testingState.numToCall) {
+        numToCall = testingState.numToCall
+        log.info(s"Number to call is now $numToCall")
+        TestingCometDispatcher ! SetNumWaitingRoom(numToCall)
+      }
+
+    case SetMinsToCall(testerId, minsToCall) =>
+      testingState.setCallTime(testerId, minsToCall)
 
     case EnqueueMusicians(scheds) =>
       testingState.enqueuedMusicians ++= scheds
@@ -45,6 +61,7 @@ class TestingManager extends Actor {
         testingState.testingMusicians += testingMusician
         TestingCometDispatcher ! MoveMusician(testingMusician, opNextId)
         StudentCometDispatcher ! Next(on)
+        testingState.setCallTime(testingMusician.tester.id, defaultNextCallMins)
       })
       updateStudentsPage()
 
@@ -106,10 +123,15 @@ object TestingManagerMessages {
   case object ClearQueue
   case class Chat(chatMessage: ChatMessage)
   case object ClearChat
+  case object Tick
+  case class SetMinsToCall(testerId: Int, minsToCall: Int)
 }
 
 object testingState {
   var enqueuedMusicians = Set[EnqueuedMusician]()
   var testingMusicians = Set[TestingMusician]()
   var chatMessages = List[ChatMessage]()
+  var callNextTime = Map[Int, DateTime]()
+  def numToCall = callNextTime.values.map(callTime => if (DateTime.now > callTime) 1 else 0).sum
+  def setCallTime(testerId: Int, mins: Int) = callNextTime += testerId -> DateTime.now.plusMinutes(mins)
 }
