@@ -89,6 +89,7 @@ object TestingCometDispatcher extends CommonCometDispatcher
 
 object TestingCometActorMessages {
   case object ReloadPage
+  /** Removes a musician from the queue (if it exists), and adds it to a testing session */
   case class MoveMusician(testingMusician: TestingMusician, opNextMusicianId: Option[Int])
   case class UpdateAssessmentCount(testingMusician: TestingMusician)
   case class Chat(chatMessage: ChatMessage)
