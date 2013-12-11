@@ -31,7 +31,6 @@ object SchemaHelper extends Loggable {
   def recreateSchema(): Unit = {
     transaction {
       try {
-        AppSchema.printDdl
         AppSchema.drop
         AppSchema.create
       } catch {
