@@ -20,7 +20,7 @@ import model.testingState._
 import model.TestingManagerMessages._
 import model.TestingManagerMessages.{Chat, DequeueMusicians, TestMusician}
 
-class Testing extends SelectedMusician {
+class Testing extends SelectedMusician with Photos {
   def render = {
     var selectedScheduledIds = Set[Int]()
 
@@ -37,12 +37,13 @@ class Testing extends SelectedMusician {
       "tr [class+]" #> ~extraClass &
       "#qrsel *"    #> SHtml.ajaxCheckbox(false, (b) => {
         if (b)
-          selectedScheduledIds += sm.musician.id
+          selectedScheduledIds += m.id
         else
-          selectedScheduledIds -= sm.musician.id
+          selectedScheduledIds -= m.id
         JsShowIdIf("queueDelete", selectedScheduledIds.nonEmpty)
       }) &
       "#qrstu *"    #> Testing.studentNameLink(m, test = true) &
+      "#qrphoto *"  #> img(m.permStudentId.get) &
       "#qrinst *"   #> instrumentNames.toSet /* no dups */ .toSeq.sorted.mkString(", ") &
       "#qrpiece *"  #> sm.nextPieceName
     }
@@ -87,7 +88,7 @@ class Testing extends SelectedMusician {
   }
 }
 
-object Testing extends SelectedMusician {
+object Testing extends SelectedMusician with Photos {
 
   val SessionsToShowPerTester = 3
   private val tmf = DateTimeFormat.forStyle("-M")
@@ -130,6 +131,7 @@ object Testing extends SelectedMusician {
     val m = tm.musician
     "tr [id]"     #> Testing.sessionRowId(m.id) &
     "tr [style+]" #> (if (show) "" else "display: none;") &
+    "#srphoto *"  #> img(m.permStudentId.get) &
     "#srstu *"    #> m.nameFirstLast &
     "#srtester *" #> tm.tester.last_name &
     "#srtime *"   #> tmf.print(tm.time) &

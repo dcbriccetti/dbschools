@@ -24,6 +24,7 @@
             <tr>
                 <th></th>
                 <th class="schYear">School Year</th>
+                <th></th>
                 <th>Name</th>
                 <th>Grade</th>
                 <th class="group">Group</th>
@@ -37,6 +38,7 @@
             <tr class="studentRow">
                 <td class="sel"/>
                 <td class="schYear"/>
+                <td class="photo"/>
                 <td class="stuName"/>
                 <td style="text-align: right" class="grade"/>
                 <td class="group"/>
@@ -48,6 +50,12 @@
             </tbody>
         </table>
     </div>
+    <script language="JavaScript">
+        function activateTips() {
+            $(".studentRow img").tooltip({'placement': 'right', 'html': true});
+        }
+        $(document).ready(activateTips);
+    </script>
 </div>
 </body>
 </html>

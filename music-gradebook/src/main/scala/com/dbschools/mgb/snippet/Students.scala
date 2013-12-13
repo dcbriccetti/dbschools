@@ -1,6 +1,7 @@
 package com.dbschools.mgb
 package snippet
 
+import java.io.File
 import xml.{NodeSeq, Text}
 import scalaz._
 import Scalaz._
@@ -11,10 +12,12 @@ import net.liftweb._
 import common.{Full, Loggable}
 import util._
 import Helpers._
-import net.liftweb.http.{SessionVar, SHtml}
+import http.{LiftRules, S, SessionVar, SHtml}
+import http.provider.servlet.HTTPServletContext
 import SHtml.{ElemAttr, text, number, onSubmitUnit, ajaxRadio, ajaxButton, ajaxCheckbox, link}
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JsCmds.Replace
+import net.liftweb.http.js.JE.JsRaw
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
@@ -22,12 +25,13 @@ import model._
 import model.TestingManagerMessages._
 import Cache.lastAssTimeByMusician
 
-class Students extends SelectedMusician with Loggable {
+class Students extends SelectedMusician with Photos with Loggable {
   private val selectors = svSelectors.is
 
   private def replaceContents = {
     val elemId = "dynamicSection"
-    Replace(elemId, elemFromTemplate("students", s"#$elemId"))
+    Replace(elemId, elemFromTemplate("students", s"#$elemId")) &
+    JsRaw("activateTips();")
   }
 
   selectors.opCallback = Some(() => replaceContents)
@@ -132,6 +136,7 @@ class Students extends SelectedMusician with Loggable {
         ".sel      *" #> selectionCheckbox(row.musician) &
         ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
         ".stuName  *" #> studentLink(row.musician) &
+        ".photo    *" #> img(row.musician.permStudentId.get) &
         ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.get) &
         ".group    *" #> row.group.name &
         ".instr    *" #> row.instrument.name.get &
@@ -187,6 +192,20 @@ object Students {
     val ne = model.testingState.enqueuedMusicians.nonEmpty
     val testSel = "#test"
     JsEnableIf("#clearSchedule", ne) & JsEnableIf(testSel, ne) & JsClassIf(testSel, "btn-primary", ne)
+  }
+}
+
+trait Photos {
+  val opPdir = Props.get("photosDir").toOption
+
+  def img(permId: Long) = {
+    (for {
+      pdir    <- opPdir
+      relPath  = s"$pdir/$permId.jpg"
+      ctx      = LiftRules.context.asInstanceOf[HTTPServletContext].ctx
+      absPath  = ctx.getRealPath("/" + relPath)
+      if new File(absPath).exists
+    } yield <img src={relPath} title={s"<img style='width: 172px;' src='$relPath'/>"}/>) getOrElse NodeSeq.Empty
   }
 }
 

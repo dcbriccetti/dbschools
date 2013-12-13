@@ -32,6 +32,7 @@ class Authenticator extends FormHelper {
       val opUser = AppSchema.users.where(user => user.login === userId and user.enabled === true).headOption
       if (opUser.nonEmpty && (isDemo || opUser.exists(user => BCrypt.checkpw(password, user.password)))) {
         Authenticator svLoggedInUser opUser
+        S.containerRequest.foreach(_.session.setAttribute("loggedIn", true))
         log.info(s"$userId logged in")
         S.redirectTo((if (testingState.enqueuedMusicians.nonEmpty) testing else groups).href)
       } else {
@@ -46,6 +47,7 @@ class Authenticator extends FormHelper {
 
   def logOut = {
     Authenticator svLoggedInUser None
+    S.containerRequest.foreach(_.session.removeAttribute("loggedIn"))
     S.redirectTo(logIn.href)
   }
 

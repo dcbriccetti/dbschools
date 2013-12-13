@@ -6,7 +6,7 @@
     <div data-lift="Testing">
         <div data-lift="comet?type=TestingCometActor"></div>
         <div class="row">
-            <div class="col-md-8">
+            <div class="col-md-5">
                 <div>
                     <span class='h3'>Queue</span>
                     <span id='queueDelete' class='btn' style="display: none;"></span>
@@ -15,23 +15,55 @@
                     <thead>
                     <tr>
                         <th></th>
-                        <th>Student</th>
-                        <th>Instrument</th>
-                        <th>Piece</th>
+                        <th colspan="2">Student</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr class='queueRow'>
-                      <td id="qrsel" style='vertical-align: middle;'></td>
-                      <td id="qrstu" class="h3"></td>
-                      <td id="qrinst" class="h3"></td>
-                      <td id="qrpiece" class="h3"></td>
+                      <td id="qrsel"></td>
+                      <td id="qrphoto"></td>
+                      <td>
+                          <div id="qrstu" class="h3"></div>
+                          <div id="qrpiece" style='margin-top: .4em' class="h4"></div>
+                          <div id="qrinst" style='margin-top: .3em' class="h5"></div>
+                      </td>
                     </tr>
                     </tbody>
                 </table>
             </div>
-            <div class="col-md-4">
-                <div><span class='h3'>Chat</span></div>
+            <div class="col-md-5">
+                <div style="margin-bottom: 1em;"><span class='h3'>Sessions</span></div>
+
+                <div id='testerSessionsOuter'>
+                    <div id='testerSessions' class='testerSessions'>
+                        <div>
+                            <span class='testerName h4' style='margin-right: 2em;'></span>
+                            Number: <span class='numSessions'></span>,
+                            Avg min: <span class='avgMins'></span>,
+                            σ: <span class='stdev'></span>
+                        </div>
+                        <table class="table">
+                            <thead>
+                            <tr id="testingTableHead">
+                                <th colspan='2'>Student</th>
+                                <th>Time In</th>
+                                <th>Asmts</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr class='sessionRow'>
+                              <td id="srphoto"></td>
+                              <td id="srstu"></td>
+                              <td id="srtime"></td>
+                              <td class='srasmts text-right'></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5em; margin-bottom: 1em;"><span class='h3'>Messages</span></div>
+
                 <form data-lift="form.ajax">
                     <span id="message"></span>
                 </form>
@@ -54,38 +86,16 @@
                 <div>
                     <input type="button" id="clearMessages" class="btn" style="display: none;"/>
                 </div>
-
-                <div style="margin-top: 1.5em; margin-bottom: 1em;"><span class='h3'>Sessions</span></div>
-
-                <div id='testerSessionsOuter'>
-                    <div id='testerSessions' class='testerSessions'>
-                        <div>
-                            <span class='testerName h4' style='margin-right: 2em;'></span>
-                            Number: <span class='numSessions'></span>,
-                            Avg min: <span class='avgMins'></span>,
-                            σ: <span class='stdev'></span>
-                        </div>
-                        <table class="table">
-                            <thead>
-                            <tr id="testingTableHead">
-                                <th>Student</th>
-                                <th>Time In</th>
-                                <th>Asmts</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr class='sessionRow'>
-                              <td id="srstu"></td>
-                              <td id="srtime"></td>
-                              <td class='srasmts text-right'></td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
+    <script language="JavaScript">
+        function activateTips() {
+            $(".queueRow img").tooltip({'placement': 'right', 'html': true});
+            $(".sessionRow img").tooltip({'placement': 'right', 'html': true});
+        }
+        $(document).ready(activateTips);
+    </script>
 </div>
 </body>
 </html>

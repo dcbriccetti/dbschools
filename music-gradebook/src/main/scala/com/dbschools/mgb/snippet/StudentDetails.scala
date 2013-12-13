@@ -7,9 +7,9 @@ import util._
 import http._
 import Helpers._
 import bootstrap.liftweb.ApplicationPaths
-import com.dbschools.mgb.model.{testingState, LastPassFinder, SelectedMusician, Terms}
+import model.{testingState, LastPassFinder, SelectedMusician, Terms}
 
-class StudentDetails extends Collapsible with SelectedMusician {
+class StudentDetails extends Collapsible with SelectedMusician with Photos {
   private object svCollapsibleShowing extends SessionVar[Array[Boolean]](Array(false, false, false))
   private val collapsibleShowing = svCollapsibleShowing.is
 
@@ -23,6 +23,7 @@ class StudentDetails extends Collapsible with SelectedMusician {
       collapseSels.reduce(_ & _) &
       "#nextStu1 [class+]"  #> (if (qEmpty) "hide" else "show") &
       "#nextStu2 [class+]"  #> (if (qEmpty) "show" else "hide") &
+      "#photo"              #> img(m.permStudentId.get) &
       "#name *"             #> m.nameFirstLast &
       "#edit *"             #> SHtml.link(ApplicationPaths.editStudent.href, () => {}, Text("Edit")) &
       ".grade"              #> Terms.graduationYearAsGrade(m.graduation_year.get) &

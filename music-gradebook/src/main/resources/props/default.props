@@ -8,3 +8,4 @@ db.password=dbschools
 
 organization=Stanley Middle School Music Department
 defaultNextCallMins=3
+photosDir=assets/images/student-photos

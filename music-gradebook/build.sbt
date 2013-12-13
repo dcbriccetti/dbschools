@@ -18,6 +18,7 @@ scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
 libraryDependencies ++= {
   val liftVersion = "2.6-SNAPSHOT"
   Seq(
+    "javax.servlet"     %  "servlet-api"        % "2.5" % "compile",
     "com.typesafe.akka" %% "akka-actor"         % "2.1.4" withSources(),
     "org.scalaz"        %  "scalaz-core_2.10"   % "7.0.3" withSources(),
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",

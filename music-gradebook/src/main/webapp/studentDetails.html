@@ -10,6 +10,9 @@
 
     <div data-lift="StudentDetails">
         <div class="row">
+            <div style='height: 90px;' class="col-md-1">
+                <span id="photo"/>
+            </div>
             <div class="col-md-5">
                 <span class='h3' id="name"></span> <span id="edit">
                 </span>
@@ -141,6 +144,13 @@
                 </div>
             </div>
         </div>
+
+        <script language="JavaScript">
+            function activateTips() {
+                $("#photo").tooltip({'placement': 'right', 'html': true});
+            }
+            $(document).ready(activateTips);
+        </script>
 
         <span data-lift='StudentDetails.js'></span>
 

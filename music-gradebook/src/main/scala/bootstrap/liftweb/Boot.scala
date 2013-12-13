@@ -1,5 +1,7 @@
 package bootstrap.liftweb
 
+import scalaz._
+import Scalaz._
 import net.liftweb._
 import common._
 import http._
@@ -10,12 +12,29 @@ import net.liftmodules.FoBo
 
 import com.dbschools.mgb.model.Cache
 import com.dbschools.mgb.dbconn.Db
-import com.dbschools.mgb.snippet.Authenticator
+import com.dbschools.mgb.snippet.{Photos, Authenticator}
 
 class Boot {
   def boot(): Unit = {
     import bootstrap.liftweb.ApplicationPaths._
-    
+
+    LiftRules.liftRequest.append(new LiftRules.LiftRequestPF with Photos {
+      val lastPathPart = ~opPdir.flatMap(_.split("/").lastOption)
+
+      def isDefinedAt(r: Req) = test(r)
+
+      def apply(r: Req) = test(r)
+
+      private def test(r: Req) = {
+        val path = r.path.wholePath
+        val l = path.size
+        if (l >= 2 && path(l - 2) == lastPathPart)
+          r.request.session.attribute("loggedIn") == null
+        else
+          false
+      }
+    })
+
     // where to search snippet
     LiftRules.addToPackages("com.dbschools.mgb")
 

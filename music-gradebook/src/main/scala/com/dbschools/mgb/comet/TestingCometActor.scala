@@ -2,17 +2,18 @@ package com.dbschools.mgb
 package comet
 
 import scala.language.postfixOps
+import scala.xml.Text
 import net.liftweb.http.{CometListener, CometActor}
-import net.liftweb.http.js.JsCmds.{After, Noop, Reload, JsShowId}
+import net.liftweb.http.js.JsCmds.{After, Reload, JsShowId}
 import net.liftweb.http.js.jquery.JqJsCmds.{FadeIn, FadeOut}
+import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.util.{Helpers, PassThru}
 import Helpers._
-import com.dbschools.mgb.model.{ChatMessage, TestingMusician}
 import snippet.Testing
 import snippet.LiftExtensions._
 import Testing.{queueRowId, sessionRowId, sessionRow}
-import com.dbschools.mgb.schema.User
-import scala.xml.Text
+import model.{ChatMessage, TestingMusician}
+import schema.User
 
 class TestingCometActor extends CometActor with CometListener {
   import TestingCometActorMessages._
@@ -28,8 +29,7 @@ class TestingCometActor extends CometActor with CometListener {
     case MoveMusician(testingMusician, opNextMusicianId) =>
       val id = testingMusician.musician.id
       val fadeTime = 2.seconds
-      val queueRowSel = "#" + queueRowId  (id)
-      val sessRowSel  = "#" + sessionRowId(id)
+      val queueRowSel = "#" + queueRowId(id)
 
       partialUpdate(
         FadeOut(queueRowId(id), 0 seconds, fadeTime) &
@@ -39,7 +39,7 @@ class TestingCometActor extends CometActor with CometListener {
         clearOldSessionsTableRows(testingMusician.tester) &
         updateStats(testingMusician.tester) &
         FadeIn(sessionRowId(id), 0 seconds, fadeTime) &
-        After(fadeTime, JsJqHilite(sessRowSel))
+        JsRaw("activateTips();").cmd
       )
 
     case UpdateAssessmentCount(tm) =>
