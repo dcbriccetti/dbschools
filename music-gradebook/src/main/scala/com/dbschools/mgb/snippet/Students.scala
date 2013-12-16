@@ -53,6 +53,11 @@ class Students extends SelectedMusician with Photos with Loggable {
     }).flatMap(item => <label style="margin-right: .5em;">{item.xhtml} {item.key.toString} </label>)
   }
 
+  def details = ajaxCheckbox(svDetails.is, (b) => {
+    svDetails(b)
+    replaceContents
+  })
+
   var newId = 0
   var grade = 6
   var name = ""
@@ -117,11 +122,25 @@ class Students extends SelectedMusician with Photos with Loggable {
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedInstId .isDefined) ".instr"   #> none[String] else PassThru) andThen (
+    (if (! svDetails.is) "#studentsTable"     #> NodeSeq.Empty else PassThru) andThen (
+    (if (svDetails.is)   "#studentsContainer" #> NodeSeq.Empty else PassThru) andThen (
 
     "#autoSelect"             #> autoSelectButton &
     "#schedule"               #> scheduleButton &
     "#test"                   #> testButton &
     "#clearSchedule"          #> clearScheduleButton &
+    ".photoContainer"         #> {
+      var lastId = -1
+      val uniqMs = groupAssignments.map(_.musician).filter(m =>
+        if (m.id == lastId) false else {
+          lastId = m.id
+          true
+        }
+      )
+      uniqMs.map(m =>
+        ".stuName  *" #> studentLink(m) &
+        ".photo"      #> img(m.permStudentId.get)
+      )} &
     ".studentRow"             #> {
       def selectionCheckbox(musician: Musician) =
         ajaxCheckbox(false, checked => {
@@ -144,7 +163,7 @@ class Students extends SelectedMusician with Photos with Loggable {
         ".daysSince *" #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
         ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.id))
       })
-    })))
+    })))))
   }
 
   private def formatLastPasses(opLastPasses: Option[Iterable[LastPass]]): NodeSeq = {
@@ -210,6 +229,8 @@ trait Photos {
 }
 
 object svSortingStudentsBy extends SessionVar[SortStudentsBy.Value](SortStudentsBy.Name)
+
+object svDetails extends SessionVar(true)
 
 object svSelectors extends SessionVar[Selectors](new Selectors())
 
