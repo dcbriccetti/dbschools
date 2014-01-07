@@ -53,10 +53,13 @@ class Students extends SelectedMusician with Photos with Loggable {
     }).flatMap(item => <label style="margin-right: .5em;">{item.xhtml} {item.key.toString} </label>)
   }
 
-  def details = ajaxCheckbox(svDetails.is, (b) => {
-    svDetails(b)
-    replaceContents
-  })
+  def picturesDisplay = {
+    val choices = Seq(PicturesDisplay.None, PicturesDisplay.Small, PicturesDisplay.Large)
+    ajaxRadio[PicturesDisplay.Value](choices, Full(svPicturesDisplay.is), (s) => {
+      svPicturesDisplay(s)
+      replaceContents
+    }).flatMap(item => <label style="margin-right: .5em;">{item.xhtml} {item.key.toString} </label>)
+  }
 
   var newId = 0
   var grade = 6
@@ -122,8 +125,8 @@ class Students extends SelectedMusician with Photos with Loggable {
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedInstId .isDefined) ".instr"   #> none[String] else PassThru) andThen (
-    (if (! svDetails.is) "#studentsTable"     #> NodeSeq.Empty else PassThru) andThen (
-    (if (svDetails.is)   "#studentsContainer" #> NodeSeq.Empty else PassThru) andThen (
+    (if (svPicturesDisplay.is == PicturesDisplay.Large) "#studentsTable"     #> NodeSeq.Empty else PassThru) andThen (
+    (if (svPicturesDisplay.is != PicturesDisplay.Large) "#studentsContainer" #> NodeSeq.Empty else PassThru) andThen (
 
     "#autoSelect"             #> autoSelectButton &
     "#schedule"               #> scheduleButton &
@@ -155,7 +158,7 @@ class Students extends SelectedMusician with Photos with Loggable {
         ".sel      *" #> selectionCheckbox(row.musician) &
         ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
         ".stuName  *" #> studentLink(row.musician) &
-        ".photo    *" #> img(row.musician.permStudentId.get) &
+        ".photo    *" #> (if (svPicturesDisplay.is != PicturesDisplay.None) img(row.musician.permStudentId.get) else NodeSeq.Empty) &
         ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.get) &
         ".group    *" #> row.group.name &
         ".instr    *" #> row.instrument.name.get &
@@ -230,7 +233,7 @@ trait Photos {
 
 object svSortingStudentsBy extends SessionVar[SortStudentsBy.Value](SortStudentsBy.Name)
 
-object svDetails extends SessionVar(true)
+object svPicturesDisplay extends SessionVar[PicturesDisplay.Value](PicturesDisplay.Small)
 
 object svSelectors extends SessionVar[Selectors](new Selectors())
 
