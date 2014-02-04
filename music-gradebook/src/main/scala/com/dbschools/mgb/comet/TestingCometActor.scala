@@ -5,7 +5,7 @@ import scala.language.postfixOps
 import scala.xml.Text
 import net.liftweb.http.{CometListener, CometActor}
 import net.liftweb.http.js.JsCmds.{After, Reload, JsShowId}
-import net.liftweb.http.js.jquery.JqJsCmds.{FadeIn, FadeOut}
+import net.liftweb.http.js.jquery.JqJsCmds.{FadeIn, FadeOut, Show}
 import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.util.{Helpers, PassThru}
 import Helpers._
@@ -26,21 +26,20 @@ class TestingCometActor extends CometActor with CometListener {
     case ReloadPage =>
       partialUpdate(Reload)
 
-    case MoveMusician(testingMusician, opNextMusicianId) =>
+    case MoveMusician(testingMusician, opNextMusicianId, numToCall) =>
       val id = testingMusician.musician.id
-      val fadeTime = 2.seconds
       val queueRowSel = "#" + queueRowId(id)
 
       partialUpdate(
-        FadeOut(queueRowId(id), 0 seconds, fadeTime) &
-        After(fadeTime, JsJqRemove(queueRowSel)) &
+        JsJqRemove(queueRowSel) &
         showSessionsTable(testingMusician.tester) &
         prependRowToSessionsTable(testingMusician) &
         clearOldSessionsTableRows(testingMusician.tester) &
         updateStats(testingMusician.tester) &
-        FadeIn(sessionRowId(id), 0 seconds, fadeTime) &
+        JsShowId(sessionRowId(id)) &
         JsRaw("activateTips();").cmd
       )
+      TestingCometDispatcher ! SetNumWaitingRoom(numToCall)
 
     case UpdateAssessmentCount(tm) =>
       val testerId = uid(tm.tester)
@@ -93,7 +92,7 @@ object TestingCometDispatcher extends CommonCometDispatcher
 object TestingCometActorMessages {
   case object ReloadPage
   /** Removes a musician from the queue (if it exists), and adds it to a testing session */
-  case class MoveMusician(testingMusician: TestingMusician, opNextMusicianId: Option[Int])
+  case class MoveMusician(testingMusician: TestingMusician, opNextMusicianId: Option[Int], numToCall: Int)
   case class UpdateAssessmentCount(testingMusician: TestingMusician)
   case class SetNumWaitingRoom(num: Int)
   case class Chat(chatMessage: ChatMessage)

@@ -68,8 +68,8 @@ class Testing extends SelectedMusician with Photos {
       Noop
     }) &
     ".queueRow"   #> {
-      val numWait = testingState.numToCall
-      enqueuedMusicians.toSeq.sortBy(_.sortOrder).zipWithIndex.map {case (s, i) => queueRow(s, if (i < numWait) Some("success") else None)}
+      enqueuedMusicians.toSeq.sortBy(_.sortOrder).zipWithIndex.map {case (s, i) => queueRow(s,
+        if (i < testingState.numToCall) Some("success") else None)}
     } &
     "#testerSessionsOuter" #> testerSessions &
     "#message"    #> SHtml.ajaxText("",
@@ -101,12 +101,12 @@ object Testing extends SelectedMusician with Photos {
     fnum.setMaximumFractionDigits(2)
 
     def apply(userId: Int): SessionStats = {
-      val rows = testingMusicians.filter(_.tester.id == userId).toSeq.sortBy(-_.time.millis)
+      val rows = testingMusicians.filter(_.tester.id == userId).toSeq.sortBy(-_.startingTime.millis)
       val n = rows.size
       val lengths = if (n < 2) List[Double]() else
         for {
           i <- 1 until n
-        } yield (rows(i - 1).time.getMillis - rows(i).time.getMillis) / 1000.0 / 60
+        } yield (rows(i - 1).startingTime.getMillis - rows(i).startingTime.getMillis) / 1000.0 / 60
       val avgMins = if (n < 2) None else Some(lengths.sum / (n - 1))
       val opσ = avgMins.map(am => Stats.stdev(lengths, am))
       SessionStats(rows, n, avgMins, ~avgMins.map(fnum.format), opσ, ~opσ.map(fnum.format))
@@ -134,7 +134,7 @@ object Testing extends SelectedMusician with Photos {
     "#srphoto *"  #> img(m.permStudentId.get) &
     "#srstu *"    #> m.nameFirstLast &
     "#srtester *" #> tm.tester.last_name &
-    "#srtime *"   #> tmf.print(tm.time) &
+    "#srtime *"   #> tmf.print(tm.startingTime) &
     ".srasmts *"  #> tm.numAsmts
   }
 

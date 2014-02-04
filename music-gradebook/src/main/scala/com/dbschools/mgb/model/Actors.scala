@@ -10,7 +10,7 @@ object Actors {
   val testingManager = system.actorOf(Props[TestingManager], "testingManager")
   testingManager ! Tick // Why doesn’t this get received right away?
   import Actors.system.dispatcher // for execution context
-  system.scheduler.schedule(0 milliseconds, 5 seconds, testingManager, Tick)
+  system.scheduler.schedule(0 milliseconds, 1 seconds, testingManager, Tick)
 
   private val all = Seq(testingManager)
 
