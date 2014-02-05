@@ -68,7 +68,7 @@ class Testing extends SelectedMusician with Photos {
       Noop
     }) &
     ".queueRow"   #> {
-      enqueuedMusicians.toSeq.sortBy(_.sortOrder).zipWithIndex.map {case (s, i) => queueRow(s,
+      enqueuedMusicians.sorted.zipWithIndex.map {case (s, i) => queueRow(s,
         if (i < testingState.numToCall) Some("success") else None)}
     } &
     "#testerSessionsOuter" #> testerSessions &
@@ -123,7 +123,8 @@ object Testing extends SelectedMusician with Photos {
       svSelectedMusician(Some(m))
       if (test)
         Authenticator.opLoggedInUser.foreach(user =>
-          Actors.testingManager ! TestMusician(TestingMusician(m, user, DateTime.now)))
+          Actors.testingManager ! TestMusician(TestingMusician(m, user, DateTime.now,
+            Some(testingState.enqueuedMusicians))))
     }, <span title={title}>{m.nameFirstLast}</span>)
   }
 

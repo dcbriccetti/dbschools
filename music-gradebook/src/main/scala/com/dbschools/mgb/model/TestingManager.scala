@@ -34,37 +34,32 @@ class TestingManager extends Actor {
       }
 
     case EnqueueMusicians(scheds) =>
-      val currentIds = testingState.enqueuedMusicians.map(_.musician.id).toSet
-      testingState.enqueuedMusicians ++= scheds.filterNot(currentIds contains _.musician.id)
+      testingState.enqueuedMusicians ++= scheds
       TestingCometDispatcher ! ReloadPage
       updateStudentsPage()
       StudentCometDispatcher ! Next(opNext)
 
     case DequeueMusicians(ids) =>
-      val idsSet = ids.toSet
-      val sms = testingState.enqueuedMusicians.filter(idsSet contains _.musician.id)
-      if (sms.nonEmpty) {
-        testingState.enqueuedMusicians --= sms
+      if ((testingState.enqueuedMusicians --= ids) > 0) {
         TestingCometDispatcher ! ReloadPage
         updateStudentsPage()
         StudentCometDispatcher ! Next(opNext)
       }
 
     case TestMusician(testingMusician) =>
-      testingState.enqueuedMusicians.find(_.musician == testingMusician.musician).foreach(sm => {
-        testingState.enqueuedMusicians -= sm
+      if (testingState.enqueuedMusicians -= testingMusician.musician.id) {
         val on = opNext
         val opNextId = on.map(_.musician.id)
         testingState.testingMusicians += testingMusician
         TestingCometDispatcher ! MoveMusician(testingMusician, opNextId, testingState.numToCall)
         StudentCometDispatcher ! Next(on)
-      })
+      }
       updateStudentsPage()
 
     case IncrementMusicianAssessmentCount(tester, musician) =>
       val tm = testingState.testingMusicians.find(tm => tm.tester.id == tester.id && tm.musician.id == musician.id) | {
         // This student wasn’t selected from the queue, so make a TestingMusician record now
-        val newTm = TestingMusician(musician, tester, DateTime.now)
+        val newTm = TestingMusician(musician, tester, DateTime.now, None)
         testingState.testingMusicians += newTm
         TestingCometDispatcher ! MoveMusician(newTm, None, numToCall)
         newTm
@@ -74,7 +69,7 @@ class TestingManager extends Actor {
       TestingCometDispatcher ! UpdateAssessmentCount(tm)
 
     case ClearQueue =>
-      testingState.enqueuedMusicians = testingState.enqueuedMusicians.empty
+      testingState.enqueuedMusicians.empty()
       testingState.testingMusicians = testingState.testingMusicians.empty
       TestingCometDispatcher ! ReloadPage
       updateStudentsPage()
@@ -101,13 +96,13 @@ object TestingManager {
   def opNext = sortedEnqueued.headOption
 
   def sortedEnqueued: Seq[EnqueuedMusician] = {
-    testingState.enqueuedMusicians.toSeq.sortBy(_.sortOrder)
+    testingState.enqueuedMusicians.sorted
   }
 }
 
 case class EnqueuedMusician(musician: Musician, sortOrder: Long, nextPieceName: String)
 
-case class TestingMusician(musician: Musician, tester: User, startingTime: DateTime) {
+case class TestingMusician(musician: Musician, tester: User, startingTime: DateTime, fromQueue: Option[MusicianQueue]) {
   var numAsmts = 0
   var lastActivity = startingTime
 }
@@ -126,7 +121,7 @@ object TestingManagerMessages {
 }
 
 object testingState {
-  var enqueuedMusicians = Set[EnqueuedMusician]()
+  val enqueuedMusicians = new MusicianQueue()
   var testingMusicians = Set[TestingMusician]()
   var chatMessages = List[ChatMessage]()
 
@@ -137,7 +132,7 @@ object testingState {
 
   def numToCall = {
     val now = DateTime.now
-    val c = testingMusicians.groupBy(_.tester.id).count {
+    val c = testingMusicians.filter(_.fromQueue.nonEmpty).groupBy(_.tester.id).count {
       case (id, tms) =>
         val lastStudentStart = tms.map(_.startingTime).reduce {(a, b) => if (a > b) a else b}
         val sessionAge = now.millis - lastStudentStart.millis

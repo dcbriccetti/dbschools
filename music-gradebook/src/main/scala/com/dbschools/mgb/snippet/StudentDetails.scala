@@ -29,7 +29,7 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       ".grade"              #> Terms.graduationYearAsGrade(m.graduation_year.get) &
       ".stuId"              #> m.student_id.toString() &
       "#lastPiece *"        #> StudentDetails.lastPiece(lastPassFinder, m.id) &
-      "#inQueue"            #> (if (testingState.enqueuedMusicians.exists(_.musician.id == m.id)) PassThru else ClearNodes)
+      "#inQueue"            #> (if (testingState.enqueuedMusicians.exists(m.id)) PassThru else ClearNodes)
     }) getOrElse PassThru
   }
 
