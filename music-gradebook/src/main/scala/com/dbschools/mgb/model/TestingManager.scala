@@ -29,7 +29,6 @@ class TestingManager extends Actor {
     case Tick =>
       if (numToCall != testingState.numToCall) {
         numToCall = testingState.numToCall
-        log.info(s"Number to call is now $numToCall")
         TestingCometDispatcher ! SetNumWaitingRoom(numToCall)
       }
 
@@ -67,6 +66,9 @@ class TestingManager extends Actor {
       tm.numAsmts += 1
       tm.lastActivity = DateTime.now
       TestingCometDispatcher ! UpdateAssessmentCount(tm)
+
+    case SetCallAfterMins(user, mins) =>
+      testingState.callAfterMinsByTesterId += user.id -> mins
 
     case ClearQueue =>
       testingState.enqueuedMusicians.empty()
@@ -114,6 +116,7 @@ object TestingManagerMessages {
   case class DequeueMusicians(ids: Iterable[Int])
   case class TestMusician(testingMusician: TestingMusician)
   case class IncrementMusicianAssessmentCount(tester: User, musician: Musician)
+  case class SetCallAfterMins(tester: User, mins: Option[Int])
   case object ClearQueue
   case class Chat(chatMessage: ChatMessage)
   case object ClearChat
@@ -124,11 +127,7 @@ object testingState {
   val enqueuedMusicians = new MusicianQueue()
   var testingMusicians = Set[TestingMusician]()
   var chatMessages = List[ChatMessage]()
-
-  def numActiveTesters = {
-    val recentPast = DateTime.now minusMinutes 10
-    testingMusicians.filter(_.lastActivity > recentPast).map(_.tester.id).toSet.size
-  }
+  var callAfterMinsByTesterId = Map[Int, Option[Int]]().withDefaultValue(Some(TestingManager.defaultNextCallMins))
 
   def numToCall = {
     val now = DateTime.now
@@ -136,7 +135,7 @@ object testingState {
       case (id, tms) =>
         val lastStudentStart = tms.map(_.startingTime).reduce {(a, b) => if (a > b) a else b}
         val sessionAge = now.millis - lastStudentStart.millis
-        sessionAge > TestingManager.defaultNextCallMins * 60000
+        callAfterMinsByTesterId(id).map(mins => sessionAge >= mins * 60000) | false
     }
     c
   }
