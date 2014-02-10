@@ -1,7 +1,15 @@
 <!DOCTYPE html>
 <html>
 <body class="lift:content_id=main">
+
 <div id="main" class="lift:surround?with=default;at=content">
+    <form data-lift="PictureUploader?form=post;multipart=true" style='margin-bottom: 2em;'>
+       <label for="file">
+         Upload a picture: <input id="file"></input>
+       </label>
+       <input type="submit" value="Submit"></input>
+    </form>
+
     <div data-lift="EditStudent"/>
 </div>
 </body>

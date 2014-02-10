@@ -33,7 +33,8 @@ case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
 
   @Column("perm_student_id")
   val permStudentId = new IntField(this) {
-    override def shouldDisplay_? = false
+    override def displayName = "Permanent Student ID"
+    override def shouldDisplay_? = true
   }
 
   @Column("first_name")

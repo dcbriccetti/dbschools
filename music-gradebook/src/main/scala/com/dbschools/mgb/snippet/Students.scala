@@ -220,14 +220,23 @@ object Students {
 trait Photos {
   val opPdir = Props.get("photosDir").toOption
 
-  def img(permId: Long) = {
-    (for {
-      pdir    <- opPdir
-      relPath  = s"$pdir/$permId.jpg"
+  case class Paths(rel: String, abs: String)
+
+  def paths(permId: Long) =
+    for {
+      relPath <- opPdir
       ctx      = LiftRules.context.asInstanceOf[HTTPServletContext].ctx
       absPath  = ctx.getRealPath("/" + relPath)
-      if new File(absPath).exists
-    } yield <img src={relPath} title={s"<img style='width: 172px;' src='$relPath'/>"}/>) getOrElse NodeSeq.Empty
+    } yield Paths(relPath, absPath)
+
+  def img(permId: Long) = {
+    def fn(dir: String) = s"$dir/$permId.jpg"
+
+    (for {
+      p <- paths(permId)
+      fnr = fn(p.rel)
+      f = new File(fn(p.abs)) if f.exists
+    } yield <img src={fnr} title={s"<img style='width: 172px;' src='$fnr'/>"}/>) getOrElse NodeSeq.Empty
   }
 }
 

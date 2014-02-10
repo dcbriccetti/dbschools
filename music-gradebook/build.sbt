@@ -36,7 +36,9 @@ libraryDependencies ++= {
     "org.squeryl"       %% "squeryl"            % "0.9.5-6",
     "postgresql"        %  "postgresql"         % "8.4-702.jdbc4",
     "org.scala-tools.time" % "time_2.9.1"       % "0.5",
-    "com.jolbox"        %  "bonecp"             % "0.7.1.RELEASE" // connection pooling
+    "com.jolbox"        %  "bonecp"             % "0.7.1.RELEASE", // connection pooling
+    "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.2",
+    "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.2"
   )
 }
 
