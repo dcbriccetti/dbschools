@@ -4,6 +4,7 @@ package snippet
 import java.text.NumberFormat
 import scalaz._
 import Scalaz._
+import org.apache.log4j.Logger
 import org.squeryl.PrimitiveTypeMode._
 import org.scala_tools.time.Imports._
 import org.joda.time.format.PeriodFormat
@@ -98,7 +99,7 @@ class Testing extends SelectedMusician with Photos {
 }
 
 object Testing extends SelectedMusician with Photos {
-
+  val log = Logger.getLogger(getClass)
   val SessionsToShowPerTester = 3
   private val tmf = DateTimeFormat.forStyle("-M")
 
@@ -167,8 +168,8 @@ object Testing extends SelectedMusician with Photos {
       case (s, i) =>
         val formattedTime =
           if (i < durs.size) {
-            val p = durs(i).toPeriod()
-            if (p.millis > 0) Testing.formatter.print(p.withMillis(0)) else ""
+            val p = durs(i).toPeriod().withMillis(0)
+            if (durs(i).getMillis > 0) s"Calling in ${Testing.formatter.print(p)}" else ""
           } else ""
         val id = queueRowId(s.musician.id)
         JsJqHtml(s"#$id .qrtime", formattedTime match { case "0 milliseconds" => "" case f => f })
