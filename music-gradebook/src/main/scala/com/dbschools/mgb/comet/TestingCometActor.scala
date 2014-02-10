@@ -3,9 +3,9 @@ package comet
 
 import scala.language.postfixOps
 import scala.xml.Text
+import org.scala_tools.time.Imports._
 import net.liftweb.http.{CometListener, CometActor}
-import net.liftweb.http.js.JsCmds.{After, Reload, JsShowId}
-import net.liftweb.http.js.jquery.JqJsCmds.{FadeIn, FadeOut, Show}
+import net.liftweb.http.js.JsCmds.{Reload, JsShowId}
 import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.util.{Helpers, PassThru}
 import Helpers._
@@ -26,7 +26,7 @@ class TestingCometActor extends CometActor with CometListener {
     case ReloadPage =>
       partialUpdate(Reload)
 
-    case MoveMusician(testingMusician, opNextMusicianId, numToCall) =>
+    case MoveMusician(testingMusician, opNextMusicianId, timesUntilCall) =>
       val id = testingMusician.musician.id
       val queueRowSel = "#" + queueRowId(id)
 
@@ -39,7 +39,7 @@ class TestingCometActor extends CometActor with CometListener {
         JsShowId(sessionRowId(id)) &
         JsRaw("activateTips();").cmd
       )
-      TestingCometDispatcher ! SetNumWaitingRoom(numToCall)
+      TestingCometDispatcher ! SetTimesUntilCall(timesUntilCall)
 
     case UpdateAssessmentCount(tm) =>
       val testerId = uid(tm.tester)
@@ -50,9 +50,10 @@ class TestingCometActor extends CometActor with CometListener {
         JsJqHilite(sel)
       )
 
-    case SetNumWaitingRoom(num) =>
+    case SetTimesUntilCall(timesUntilCall) =>
       val sel = "tr.queueRow"
-      partialUpdate(JsJqUnStyleRows(sel) & JsJqStyleRows(sel, num))
+      partialUpdate(JsJqUnStyleRows(sel) & JsJqStyleRows(sel, timesUntilCall.count(_.millis < 0)) &
+        Testing.updateTimesUntilCall(timesUntilCall))
 
     case Chat(chatMessage) =>
       partialUpdate(Testing.addMessage(chatMessage))
@@ -92,9 +93,10 @@ object TestingCometDispatcher extends CommonCometDispatcher
 object TestingCometActorMessages {
   case object ReloadPage
   /** Removes a musician from the queue (if it exists), and adds it to a testing session */
-  case class MoveMusician(testingMusician: TestingMusician, opNextMusicianId: Option[Int], numToCall: Int)
+  case class MoveMusician(testingMusician: TestingMusician, opNextMusicianId: Option[Int],
+    timesUntilCall: Iterable[Duration])
   case class UpdateAssessmentCount(testingMusician: TestingMusician)
-  case class SetNumWaitingRoom(num: Int)
+  case class SetTimesUntilCall(timesUntilCall: Iterable[Duration])
   case class Chat(chatMessage: ChatMessage)
   case object ClearChat
 }

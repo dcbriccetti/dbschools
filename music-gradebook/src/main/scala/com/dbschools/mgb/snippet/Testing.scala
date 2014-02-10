@@ -6,6 +6,7 @@ import scalaz._
 import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
 import org.scala_tools.time.Imports._
+import org.joda.time.format.PeriodFormat
 import net.liftweb._
 import util._
 import Helpers._
@@ -24,7 +25,7 @@ class Testing extends SelectedMusician with Photos {
   def render = {
     var selectedScheduledIds = Set[Int]()
 
-    def queueRow(sm: EnqueuedMusician, extraClass: Option[String]): CssSel = {
+    def queueRow(sm: EnqueuedMusician, extraClass: Option[String], timeUntilCall: Option[Duration]): CssSel = {
       val m = sm.musician
       val mgs = AppSchema.musicianGroups.where(mg => mg.musician_id === m.id and mg.school_year === Terms.currentTerm)
       val instrumentNames =
@@ -32,6 +33,8 @@ class Testing extends SelectedMusician with Photos {
           instrumentId  <- mgs.map(_.instrument_id)
           instrument    <- Cache.instruments.find(_.id == instrumentId)
         } yield instrument.name.get
+
+      val formattedTime = ~timeUntilCall.map(t => Testing.formatter.print(t.toPeriod))
 
       "tr [id]"     #> Testing.queueRowId(m.id) &
       "tr [class+]" #> ~extraClass &
@@ -45,7 +48,8 @@ class Testing extends SelectedMusician with Photos {
       "#qrstu *"    #> Testing.studentNameLink(m, test = true) &
       "#qrphoto *"  #> img(m.permStudentId.get) &
       "#qrinst *"   #> instrumentNames.toSet /* no dups */ .toSeq.sorted.mkString(", ") &
-      "#qrpiece *"  #> sm.nextPieceName
+      "#qrpiece *"  #> sm.nextPieceName &
+      "#qrtime *"   #> formattedTime
     }
 
     def testerSessions: List[CssSel] = {
@@ -68,8 +72,13 @@ class Testing extends SelectedMusician with Photos {
       Noop
     }) &
     ".queueRow"   #> {
-      enqueuedMusicians.sorted.zipWithIndex.map {case (s, i) => queueRow(s,
-        if (i < testingState.numToCall) Some("success") else None)}
+      val durs = Testing.sortedDurs(testingState.timesUntilCall)
+      enqueuedMusicians.sorted.zipWithIndex.map {
+        case (s, i) =>
+          queueRow(s,
+            if (i < testingState.timesUntilCall.count(_.millis < 0)) Some("success") else None,
+            if (i < durs.size) Some(durs(i)) else None)
+      }
     } &
     "#testerSessionsOuter" #> testerSessions &
     "#message"    #> SHtml.ajaxText("",
@@ -92,6 +101,8 @@ object Testing extends SelectedMusician with Photos {
 
   val SessionsToShowPerTester = 3
   private val tmf = DateTimeFormat.forStyle("-M")
+
+  private val formatter = PeriodFormat.getDefault
 
   case class SessionStats(rows: Seq[TestingMusician], num: Int, avgMins: Option[Double], avgMinsStr: String,
     σ: Option[Double], σStr: String)
@@ -147,6 +158,22 @@ object Testing extends SelectedMusician with Photos {
   def addMessage(chatMessage: ChatMessage) = JsJqPrepend("#messagesTable tbody",
     messageRow(chatMessage)(elemFromTemplate("testing", ".messageRow")).toString().encJs) &
     JsShowId("clearMessages")
+
+  private def sortedDurs(timesUntilCall: Iterable[Duration]) = timesUntilCall.toSeq.sortBy(_.millis)
+
+  def updateTimesUntilCall(timesUntilCall: Iterable[Duration]) = {
+    val durs = Testing.sortedDurs(timesUntilCall)
+    enqueuedMusicians.sorted.zipWithIndex.map {
+      case (s, i) =>
+        val formattedTime =
+          if (i < durs.size) {
+            val p = durs(i).toPeriod()
+            if (p.millis > 0) Testing.formatter.print(p.withMillis(0)) else ""
+          } else ""
+        val id = queueRowId(s.musician.id)
+        JsJqHtml(s"#$id .qrtime", formattedTime match { case "0 milliseconds" => "" case f => f })
+    }.fold(Noop)(_ & _)
+  }
 
   def clearMessages = JsJqRemove("#messagesTable tbody *") & JsHideId("clearMessages")
 

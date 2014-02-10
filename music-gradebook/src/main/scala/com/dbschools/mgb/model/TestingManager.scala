@@ -11,7 +11,7 @@ import comet.{NoticesDispatcher, StudentCometDispatcher, StudentsCometDispatcher
 import schema.Musician
 import com.dbschools.mgb.schema.User
 import net.liftweb.util.Props
-import com.dbschools.mgb.comet.TestingCometActorMessages.SetNumWaitingRoom
+import com.dbschools.mgb.comet.TestingCometActorMessages.SetTimesUntilCall
 
 class TestingManager extends Actor {
   val log = Logger.getLogger(getClass)
@@ -22,15 +22,10 @@ class TestingManager extends Actor {
   import comet.NoticesMessages._
   import comet.StudentMessages._
 
-  var numToCall = -1
-
   def receive = {
 
     case Tick =>
-      if (numToCall != testingState.numToCall) {
-        numToCall = testingState.numToCall
-        TestingCometDispatcher ! SetNumWaitingRoom(numToCall)
-      }
+      TestingCometDispatcher ! SetTimesUntilCall(testingState.timesUntilCall)
 
     case EnqueueMusicians(scheds) =>
       testingState.enqueuedMusicians ++= scheds
@@ -50,7 +45,7 @@ class TestingManager extends Actor {
         val on = opNext
         val opNextId = on.map(_.musician.id)
         testingState.testingMusicians += testingMusician
-        TestingCometDispatcher ! MoveMusician(testingMusician, opNextId, testingState.numToCall)
+        TestingCometDispatcher ! MoveMusician(testingMusician, opNextId, testingState.timesUntilCall)
         StudentCometDispatcher ! Next(on)
       }
       updateStudentsPage()
@@ -60,7 +55,7 @@ class TestingManager extends Actor {
         // This student wasn’t selected from the queue, so make a TestingMusician record now
         val newTm = TestingMusician(musician, tester, DateTime.now, None)
         testingState.testingMusicians += newTm
-        TestingCometDispatcher ! MoveMusician(newTm, None, numToCall)
+        TestingCometDispatcher ! MoveMusician(newTm, None, testingState.timesUntilCall)
         newTm
       }
       tm.numAsmts += 1
@@ -129,14 +124,16 @@ object testingState {
   var chatMessages = List[ChatMessage]()
   var callAfterMinsByTesterId = Map[Int, Option[Int]]().withDefaultValue(Some(TestingManager.defaultNextCallMins))
 
-  def numToCall = {
+  def timesUntilCall = {
     val now = DateTime.now
-    val c = testingMusicians.filter(_.fromQueue.nonEmpty).groupBy(_.tester.id).count {
+    testingMusicians.filter(_.fromQueue.nonEmpty).groupBy(_.tester.id).flatMap {
       case (id, tms) =>
         val lastStudentStart = tms.map(_.startingTime).reduce {(a, b) => if (a > b) a else b}
-        val sessionAge = now.millis - lastStudentStart.millis
-        callAfterMinsByTesterId(id).map(mins => sessionAge >= mins * 60000) | false
+        val sessionAge = new Interval(lastStudentStart, now).toDuration
+        callAfterMinsByTesterId(id).map(mins => {
+          val expectedSessionDuration = new Duration(mins * 60000)
+          expectedSessionDuration - sessionAge
+        })
     }
-    c
   }
 }
