@@ -91,6 +91,12 @@ class Students extends SelectedMusician with Photos with Loggable {
     def enableButtons =
       JsEnableIf("#schedule", selectedMusicians.nonEmpty) & Students.adjustButtons
 
+    def testAllButton = ajaxButton("Test All", () => {
+      groupAssignments.foreach(selectedMusicians += _.musician)
+      scheduleSelectedMusicians()
+      RedirectTo(ApplicationPaths.testing.href)
+    })
+
     def autoSelectButton = ajaxButton("Check 5", () => {
       val indexOfLastChecked = LastCheckedIndex.find(
         groupAssignments.map(_.musician), selectedMusicians)
@@ -128,6 +134,7 @@ class Students extends SelectedMusician with Photos with Loggable {
     (if (svPicturesDisplay.is == PicturesDisplay.Large) "#studentsTable"     #> NodeSeq.Empty else PassThru) andThen (
     (if (svPicturesDisplay.is != PicturesDisplay.Large) "#studentsContainer" #> NodeSeq.Empty else PassThru) andThen (
 
+    "#testAll"                #> testAllButton &
     "#autoSelect"             #> autoSelectButton &
     "#schedule"               #> scheduleButton &
     "#test"                   #> testButton &
@@ -197,7 +204,8 @@ class Students extends SelectedMusician with Photos with Loggable {
       } yield nextPiece.name.get
       val longAgo = 60L * 60 * 24 * 365 * 100
       val secondsSince = lastAsmtTime.map(la => Seconds.secondsBetween(la, now).getSeconds.toLong) | longAgo
-      EnqueuedMusician(musician, -secondsSince, opNextPieceName | Cache.pieces.head.name.get)
+      val sortOrder = -secondsSince
+      EnqueuedMusician(musician, sortOrder, opNextPieceName | Cache.pieces.head.name.get)
     })
     Actors.testingManager ! EnqueueMusicians(scheduledMusicians)
   }

@@ -44,7 +44,8 @@ class Testing extends SelectedMusician with Photos {
           selectedScheduledIds += m.id
         else
           selectedScheduledIds -= m.id
-        JsShowIdIf("queueDelete", selectedScheduledIds.nonEmpty)
+        val del = selectedScheduledIds.nonEmpty
+        JsShowIdIf("queueDelete", del) & JsShowIdIf("queueDeleteInstrument", del)
       }) &
       "#qrstu *"    #> Testing.studentNameLink(m, test = true) &
       "#qrphoto *"  #> img(m.permStudentId.get) &
@@ -68,10 +69,14 @@ class Testing extends SelectedMusician with Photos {
       })
     }
 
-    "#queueDelete" #> SHtml.ajaxButton("Remove Selected", () => {
+    "#queueDelete" #> SHtml.ajaxButton("Remove", () => {
       Actors.testingManager ! DequeueMusicians(selectedScheduledIds)
       Noop
-    }) &
+    }, "title" -> "Remove all selected musicians") &
+    "#queueDeleteInstrument" #> SHtml.ajaxButton("Remove Instruments", () => {
+      Actors.testingManager ! DequeueInstrumentsOfMusicians(selectedScheduledIds)
+      Noop
+    }, "title" -> "Remove all students playing the instruments of the selected students") &
     ".queueRow"   #> {
       val durs = Testing.sortedDurs(testingState.timesUntilCall)
       enqueuedMusicians.sorted.zipWithIndex.map {

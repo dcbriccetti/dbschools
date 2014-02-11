@@ -6,10 +6,10 @@ import Scalaz._
 import akka.actor.Actor
 import org.apache.log4j.Logger
 import org.scala_tools.time.Imports._
+import org.squeryl.PrimitiveTypeMode._
 import comet.{NoticesDispatcher, StudentCometDispatcher, StudentsCometDispatcher, StudentsCometActorMessages,
   TestingCometDispatcher, TestingCometActorMessages}
-import schema.Musician
-import com.dbschools.mgb.schema.User
+import com.dbschools.mgb.schema.{AppSchema, Musician, User}
 import net.liftweb.util.Props
 import com.dbschools.mgb.comet.TestingCometActorMessages.SetTimesUntilCall
 
@@ -38,6 +38,21 @@ class TestingManager extends Actor {
         TestingCometDispatcher ! ReloadPage
         updateStudentsPage()
         StudentCometDispatcher ! Next(opNext)
+      }
+
+    case DequeueInstrumentsOfMusicians(musicianIds) =>
+      if (musicianIds.nonEmpty) {
+        val musicianIdsWithInstruments = transaction {
+          val instQ = from(AppSchema.musicianGroups)(mg =>
+            where(mg.musician_id in musicianIds and mg.school_year === Terms.currentTerm)
+            select mg.instrument_id
+          ).distinct
+          from(AppSchema.musicianGroups)(mg =>
+            where(mg.instrument_id in instQ and mg.school_year === Terms.currentTerm)
+            select mg.musician_id
+          ).distinct.toVector
+        }
+        Actors.testingManager ! DequeueMusicians(musicianIdsWithInstruments)
       }
 
     case TestMusician(testingMusician) =>
@@ -109,6 +124,7 @@ case class ChatMessage(time: DateTime, user: User, msg: String)
 object TestingManagerMessages {
   case class EnqueueMusicians(enqueuedMusicians: Iterable[EnqueuedMusician])
   case class DequeueMusicians(ids: Iterable[Int])
+  case class DequeueInstrumentsOfMusicians(musicianIds: Iterable[Int])
   case class TestMusician(testingMusician: TestingMusician)
   case class IncrementMusicianAssessmentCount(tester: User, musician: Musician)
   case class SetCallAfterMins(tester: User, mins: Option[Int])
