@@ -9,6 +9,11 @@
             <div class="col-md-5">
                 <div>
                     <span class='h3'>Queue</span>
+                    <span title='Sort by time since the last test (longest time ago at the top), or leave in the order in which students were added to the queue'
+                        style='margin-left: 1em'>
+                        <span id='lastTestOrder'></span> <label for="lastTestOrder">Sort</label>
+                    </span>
+                    <span id='toTop' class='btn' style="display: none;" title='Move to the top'></span>
                     <span id='queueDelete' class='btn' style="display: none;"></span>
                     <span id='queueDeleteInstrument' class='btn' style="display: none;"></span>
                 </div>

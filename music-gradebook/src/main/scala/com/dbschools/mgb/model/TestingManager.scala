@@ -40,6 +40,10 @@ class TestingManager extends Actor {
         StudentCometDispatcher ! Next(opNext)
       }
 
+    case ToTop(ids) =>
+      testingState.enqueuedMusicians.moveToTop(ids)
+      TestingCometDispatcher ! ReloadPage
+
     case DequeueInstrumentsOfMusicians(musicianIds) =>
       if (musicianIds.nonEmpty) {
         val musicianIdsWithInstruments = transaction {
@@ -80,6 +84,10 @@ class TestingManager extends Actor {
     case SetCallAfterMins(user, mins) =>
       testingState.callAfterMinsByTesterId += user.id -> mins
 
+    case SetLastTestOrder(lastTestOrder) =>
+      testingState.enqueuedMusicians.lastTestOrder = lastTestOrder
+      TestingCometDispatcher ! ReloadPage
+
     case ClearQueue =>
       testingState.enqueuedMusicians.empty()
       testingState.testingMusicians = testingState.testingMusicians.empty
@@ -108,7 +116,7 @@ object TestingManager {
   def opNext = sortedEnqueued.headOption
 
   def sortedEnqueued: Seq[EnqueuedMusician] = {
-    testingState.enqueuedMusicians.sorted
+    testingState.enqueuedMusicians.items
   }
 }
 
@@ -123,11 +131,13 @@ case class ChatMessage(time: DateTime, user: User, msg: String)
 
 object TestingManagerMessages {
   case class EnqueueMusicians(enqueuedMusicians: Iterable[EnqueuedMusician])
+  case class ToTop(ids: Iterable[Int])
   case class DequeueMusicians(ids: Iterable[Int])
   case class DequeueInstrumentsOfMusicians(musicianIds: Iterable[Int])
   case class TestMusician(testingMusician: TestingMusician)
   case class IncrementMusicianAssessmentCount(tester: User, musician: Musician)
   case class SetCallAfterMins(tester: User, mins: Option[Int])
+  case class SetLastTestOrder(lastTestOrder: Boolean)
   case object ClearQueue
   case class Chat(chatMessage: ChatMessage)
   case object ClearChat

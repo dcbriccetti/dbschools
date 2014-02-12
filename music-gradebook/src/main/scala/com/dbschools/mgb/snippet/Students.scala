@@ -103,7 +103,7 @@ class Students extends SelectedMusician with Photos with Loggable {
       groupAssignments.drop(indexOfLastChecked + 1).take(5).map(row => {
         selectedMusicians += row.musician
         JsCheckIf("#" + cbId(row.musician.id), true)
-      }).reduce(_ & _) & enableButtons
+      }).fold(Noop)(_ & _) & enableButtons
     })
 
     def flattrs(attrs: Option[TheStrBindParam]*): Seq[ElemAttr] = attrs.flatten
@@ -111,15 +111,10 @@ class Students extends SelectedMusician with Photos with Loggable {
     def scheduleButton =
       ajaxButton("Add Checked", () => {
         scheduleSelectedMusicians()
-        Noop
+        groupAssignments.map(row => {
+          JsCheckIf("#" + cbId(row.musician.id), false)
+        }).fold(Noop)(_ & _) & enableButtons
       }, flattrs(disableIf(selectedMusicians.isEmpty)): _*)
-
-    def testButton = {
-      val empty = model.testingState.enqueuedMusicians.isEmpty
-      ajaxButton("Test", () => {
-        RedirectTo(ApplicationPaths.testing.href)
-      }, flattrs(disableIf(empty), classIf("btn-primary", ! empty)): _*)
-    }
 
     def clearScheduleButton =
       ajaxButton("Clear", () => {
@@ -137,7 +132,6 @@ class Students extends SelectedMusician with Photos with Loggable {
     "#testAll"                #> testAllButton &
     "#autoSelect"             #> autoSelectButton &
     "#schedule"               #> scheduleButton &
-    "#test"                   #> testButton &
     "#clearSchedule"          #> clearScheduleButton &
     ".photoContainer"         #> {
       var lastId = -1

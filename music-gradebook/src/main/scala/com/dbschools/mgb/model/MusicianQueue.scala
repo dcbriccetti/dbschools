@@ -1,7 +1,8 @@
 package com.dbschools.mgb.model
 
 class MusicianQueue {
-  private var q = Set[EnqueuedMusician]()
+  private var q = Vector[EnqueuedMusician]()
+  var lastTestOrder = true
 
   def isEmpty = q.isEmpty
   def nonEmpty = q.nonEmpty
@@ -14,7 +15,7 @@ class MusicianQueue {
   }
 
   def -=(m: EnqueuedMusician): Unit = synchronized {
-    q -= m
+    q = q.filterNot(_ == m)
   }
 
   def -=(musicianId: Int): Boolean = {
@@ -27,13 +28,20 @@ class MusicianQueue {
   def --=(musicianIds: Iterable[Int]) = synchronized {
     val idsSet = musicianIds.toSet
     val ems = q.filter(idsSet contains _.musician.id)
-    q --= ems
+    q = q.filterNot(ems.contains)
     ems.size
   }
 
-  def empty(): Unit = synchronized {
-    q = q.empty
+  def moveToTop(musicianIds: Iterable[Int]): Unit = synchronized {
+    val ids = musicianIds.toSet
+    def matching(m: EnqueuedMusician) = ids.contains(m.musician.id)
+    q = q.filter(matching) ++ q.filterNot(matching)
+    lastTestOrder = false
   }
 
-  def sorted = q.toSeq.sortBy(_.sortOrder)
+  def empty(): Unit = synchronized {
+    q = Vector()
+  }
+
+  def items = if (lastTestOrder) q.sortBy(_.sortOrder) else q
 }

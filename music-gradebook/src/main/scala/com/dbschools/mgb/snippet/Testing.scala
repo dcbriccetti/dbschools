@@ -23,6 +23,8 @@ import model.TestingManagerMessages._
 import model.TestingManagerMessages.{Chat, DequeueMusicians, TestMusician}
 
 class Testing extends SelectedMusician with Photos {
+  private val tm = Actors.testingManager
+
   def render = {
     var selectedScheduledIds = Set[Int]()
 
@@ -45,7 +47,7 @@ class Testing extends SelectedMusician with Photos {
         else
           selectedScheduledIds -= m.id
         val del = selectedScheduledIds.nonEmpty
-        JsShowIdIf("queueDelete", del) & JsShowIdIf("queueDeleteInstrument", del)
+        Seq("toTop", "queueDelete", "queueDeleteInstrument").map(id => JsShowIdIf(id, del)).fold(Noop)(_ & _)
       }) &
       "#qrstu *"    #> Testing.studentNameLink(m, test = true) &
       "#qrphoto *"  #> img(m.permStudentId.get) &
@@ -69,20 +71,29 @@ class Testing extends SelectedMusician with Photos {
       })
     }
 
+    "#lastTestOrder" #> SHtml.ajaxCheckbox(testingState.enqueuedMusicians.lastTestOrder, (checked) => {
+      tm ! SetLastTestOrder(checked)
+      Noop
+    }) &
+    "#toTop" #> SHtml.ajaxButton("Top", () => {
+      tm ! ToTop(selectedScheduledIds)
+      Noop
+    }) &
     "#queueDelete" #> SHtml.ajaxButton("Remove", () => {
-      Actors.testingManager ! DequeueMusicians(selectedScheduledIds)
+      tm ! DequeueMusicians(selectedScheduledIds)
       Noop
     }, "title" -> "Remove all selected musicians") &
     "#queueDeleteInstrument" #> SHtml.ajaxButton("Remove Instruments", () => {
-      Actors.testingManager ! DequeueInstrumentsOfMusicians(selectedScheduledIds)
+      tm ! DequeueInstrumentsOfMusicians(selectedScheduledIds)
       Noop
     }, "title" -> "Remove all students playing the instruments of the selected students") &
     ".queueRow"   #> {
       val durs = Testing.sortedDurs(testingState.timesUntilCall)
-      enqueuedMusicians.sorted.zipWithIndex.map {
+      val items = enqueuedMusicians.items
+      items.zipWithIndex.map {
         case (s, i) =>
           queueRow(s,
-            if (i < testingState.timesUntilCall.count(_.millis < 0)) Some("success") else None,
+            if (i < testingState.timesUntilCall.count(_.millis < 0)) Some("selected") else None,
             if (i < durs.size) Some(durs(i)) else None)
       }
     } &
@@ -91,13 +102,13 @@ class Testing extends SelectedMusician with Photos {
       _.trim match {
         case "" => // Ignore
         case msg =>
-          Actors.testingManager ! Chat(ChatMessage(DateTime.now, Authenticator.opLoggedInUser.get, msg))
+          tm ! Chat(ChatMessage(DateTime.now, Authenticator.opLoggedInUser.get, msg))
           JsJqVal("#message", "")
       }, "id" -> "message", "style" -> "width: 100%;", "placeholder" -> "Type message and press Enter"
     ) &
     ".messageRow" #> chatMessages.map(Testing.messageRow) &
     "#clearMessages" #> SHtml.ajaxButton("Clear", () => {
-      Actors.testingManager ! ClearChat
+      tm ! ClearChat
       Noop
     }, displayNoneIf(chatMessages.isEmpty))
   }
@@ -169,15 +180,24 @@ object Testing extends SelectedMusician with Photos {
 
   def updateTimesUntilCall(timesUntilCall: Iterable[Duration]) = {
     val durs = Testing.sortedDurs(timesUntilCall)
-    enqueuedMusicians.sorted.zipWithIndex.map {
+    val goTest = "It’s time to test"
+
+    enqueuedMusicians.items.zipWithIndex.map {
       case (s, i) =>
         val formattedTime =
-          if (i < durs.size) {
-            val p = durs(i).toPeriod().withMillis(0)
-            if (durs(i).getMillis > 0) s"Calling in ${Testing.formatter.print(p)}" else ""
-          } else ""
+          if (i >= durs.size)
+            ""
+          else {
+            if (durs(i).getMillis > 0) {
+              val p = durs(i).toPeriod().withMillis(0)
+              Testing.formatter.print(p) match {
+                case "0 milliseconds" => goTest // todo properly suppress this
+                case nz               => s"Calling in $nz"
+              }
+            } else goTest
+          }
         val id = queueRowId(s.musician.id)
-        JsJqHtml(s"#$id .qrtime", formattedTime match { case "0 milliseconds" => "" case f => f })
+        JsJqHtml(s"#$id .qrtime", formattedTime)
     }.fold(Noop)(_ & _)
   }
 
