@@ -19,9 +19,10 @@ class LastPassFinder {
       upTo:       Option[DateTime]  = None
   ): Iterable[LastPass] =
   {
-    from(AppSchema.assessments, AppSchema.pieces)((a, p) =>
+    from(AppSchema.assessments, AppSchema.pieces, AppSchema.musicianGroups)((a, p, mg) =>
       where(a.pass === true and a.musician_id === musicianId.? and
-        a.pieceId === p.id and a.assessment_time < upTo.map(toTs).?)
+        a.pieceId === p.id and a.assessment_time < upTo.map(toTs).? and
+        a.musician_id === mg.musician_id and mg.school_year === Terms.currentTerm and a.instrument_id === mg.instrument_id)
       groupBy(a.musician_id, a.instrument_id, a.subinstrument_id)
       compute max(p.testOrder.get)
       orderBy max(p.testOrder.get).desc
