@@ -3,6 +3,7 @@ package snippet
 
 import java.io.File
 import xml.{NodeSeq, Text}
+import scala.collection.immutable.TreeSet
 import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
@@ -64,7 +65,7 @@ class Students extends SelectedMusician with Photos with Loggable {
   var newId = 0
   var grade = 6
   var name = ""
-  var selectedMusicians = Set[Musician]()
+  var selectedMusicians = Vector[Musician]()
 
   def newStudent = {
 
@@ -92,7 +93,7 @@ class Students extends SelectedMusician with Photos with Loggable {
       JsEnableIf("#schedule", selectedMusicians.nonEmpty) & Students.adjustButtons
 
     def testAllButton = ajaxButton("Test All", () => {
-      groupAssignments.foreach(selectedMusicians += _.musician)
+      groupAssignments.foreach(selectedMusicians :+= _.musician)
       scheduleSelectedMusicians()
       RedirectTo(ApplicationPaths.testing.href)
     })
@@ -101,7 +102,7 @@ class Students extends SelectedMusician with Photos with Loggable {
       val indexOfLastChecked = LastCheckedIndex.find(
         groupAssignments.map(_.musician), selectedMusicians)
       groupAssignments.drop(indexOfLastChecked + 1).take(5).map(row => {
-        selectedMusicians += row.musician
+        selectedMusicians :+= row.musician
         JsCheckIf("#" + cbId(row.musician.id), true)
       }).fold(Noop)(_ & _) & enableButtons
     })
@@ -111,6 +112,7 @@ class Students extends SelectedMusician with Photos with Loggable {
     def scheduleButton =
       ajaxButton("Add Checked", () => {
         scheduleSelectedMusicians()
+        selectedMusicians = Vector()
         groupAssignments.map(row => {
           JsCheckIf("#" + cbId(row.musician.id), false)
         }).fold(Noop)(_ & _) & enableButtons
@@ -148,8 +150,8 @@ class Students extends SelectedMusician with Photos with Loggable {
     ".studentRow"             #> {
       def selectionCheckbox(musician: Musician) =
         ajaxCheckbox(false, checked => {
-          if (checked) selectedMusicians += musician
-          else selectedMusicians -= musician
+          if (checked) selectedMusicians :+= musician
+          else selectedMusicians = selectedMusicians.filterNot(_ == musician)
           enableButtons
         }, "id" -> cbId(musician.id))
 
@@ -189,7 +191,7 @@ class Students extends SelectedMusician with Photos with Loggable {
 
   private def scheduleSelectedMusicians() {
     val now = DateTime.now
-    val scheduledMusicians = selectedMusicians.map(musician => {
+    val musiciansToEnqueue = selectedMusicians.map(musician => {
       val lastAsmtTime = lastAssTimeByMusician.get(musician.id)
       val opNextPieceName = for {
         lastPasses  <- lastPassesByMusician.get(musician.id)
@@ -201,7 +203,7 @@ class Students extends SelectedMusician with Photos with Loggable {
       val sortOrder = -secondsSince
       EnqueuedMusician(musician, sortOrder, opNextPieceName | Cache.pieces.head.name.get)
     })
-    Actors.testingManager ! EnqueueMusicians(scheduledMusicians)
+    Actors.testingManager ! EnqueueMusicians(musiciansToEnqueue)
   }
 
   private def studentLink(m: Musician) = {

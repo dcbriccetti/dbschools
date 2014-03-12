@@ -14,7 +14,9 @@ import javax.swing.JTabbedPane;
 public class Gradebook extends AbstractMusicApp {
     private static final long serialVersionUID = 1370023559060131938L;
 
-    public static void main(String[] args) {
+    public static void main(
+
+    ) {
         beginApp(new Gradebook(), args);
     }
 
