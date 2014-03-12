@@ -26,18 +26,19 @@ class TestingManager extends Actor {
 
     case Tick =>
       TestingCometDispatcher ! SetTimesUntilCall(testingState.timesUntilCall)
+      StudentCometDispatcher ! Next(called)
 
     case EnqueueMusicians(scheds) =>
       testingState.enqueuedMusicians ++= scheds
       TestingCometDispatcher ! ReloadPage
       updateStudentsPage()
-      StudentCometDispatcher ! Next(opNext)
+      StudentCometDispatcher ! Next(called)
 
     case DequeueMusicians(ids) =>
       if ((testingState.enqueuedMusicians --= ids) > 0) {
         TestingCometDispatcher ! ReloadPage
         updateStudentsPage()
-        StudentCometDispatcher ! Next(opNext)
+        StudentCometDispatcher ! Next(called)
       }
 
     case ToTop(ids) =>
@@ -61,11 +62,9 @@ class TestingManager extends Actor {
 
     case TestMusician(testingMusician) =>
       if (testingState.enqueuedMusicians -= testingMusician.musician.id) {
-        val on = opNext
-        val opNextId = on.map(_.musician.id)
         testingState.testingMusicians += testingMusician
-        TestingCometDispatcher ! MoveMusician(testingMusician, opNextId, testingState.timesUntilCall)
-        StudentCometDispatcher ! Next(on)
+        TestingCometDispatcher ! MoveMusician(testingMusician, testingState.timesUntilCall)
+        StudentCometDispatcher ! Next(called)
       }
       updateStudentsPage()
 
@@ -74,7 +73,7 @@ class TestingManager extends Actor {
         // This student wasn’t selected from the queue, so make a TestingMusician record now
         val newTm = TestingMusician(musician, tester, DateTime.now, None)
         testingState.testingMusicians += newTm
-        TestingCometDispatcher ! MoveMusician(newTm, None, testingState.timesUntilCall)
+        TestingCometDispatcher ! MoveMusician(newTm, testingState.timesUntilCall)
         newTm
       }
       tm.numAsmts += 1
@@ -87,6 +86,7 @@ class TestingManager extends Actor {
         testingState.callNowByTesterId += user.id
       else
         testingState.callNowByTesterId -= user.id
+      StudentCometDispatcher ! Next(called)
 
     case SetLastTestOrder(lastTestOrder) =>
       testingState.enqueuedMusicians.lastTestOrder = lastTestOrder
@@ -97,7 +97,7 @@ class TestingManager extends Actor {
       testingState.testingMusicians = testingState.testingMusicians.empty
       TestingCometDispatcher ! ReloadPage
       updateStudentsPage()
-      StudentCometDispatcher ! Next(None)
+      StudentCometDispatcher ! Next(Nil)
 
     case Chat(chatMessage) =>
       testingState.chatMessages ::= chatMessage
@@ -117,11 +117,9 @@ class TestingManager extends Actor {
 object TestingManager {
   val defaultNextCallMins = Props.getInt("defaultNextCallMins") getOrElse 5
 
-  def opNext = sortedEnqueued.headOption
+  def called = sortedEnqueued.take(testingState.timesUntilCall.count(_.getMillis <= 0))
 
-  def sortedEnqueued: Seq[EnqueuedMusician] = {
-    testingState.enqueuedMusicians.items
-  }
+  def sortedEnqueued: Seq[EnqueuedMusician] = testingState.enqueuedMusicians.items
 }
 
 case class EnqueuedMusician(musician: Musician, sortOrder: Long, nextPieceName: String)

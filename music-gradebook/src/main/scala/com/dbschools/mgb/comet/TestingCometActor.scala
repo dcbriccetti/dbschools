@@ -26,7 +26,7 @@ class TestingCometActor extends CometActor with CometListener {
     case ReloadPage =>
       partialUpdate(Reload)
 
-    case MoveMusician(testingMusician, opNextMusicianId, timesUntilCall) =>
+    case MoveMusician(testingMusician, timesUntilCall) =>
       val id = testingMusician.musician.id
       val queueRowSel = "#" + queueRowId(id)
 
@@ -94,8 +94,7 @@ object TestingCometDispatcher extends CommonCometDispatcher
 object TestingCometActorMessages {
   case object ReloadPage
   /** Removes a musician from the queue (if it exists), and adds it to a testing session */
-  case class MoveMusician(testingMusician: TestingMusician, opNextMusicianId: Option[Int],
-    timesUntilCall: Iterable[Duration])
+  case class MoveMusician(testingMusician: TestingMusician, timesUntilCall: Iterable[Duration])
   case class UpdateAssessmentCount(testingMusician: TestingMusician)
   case class SetTimesUntilCall(timesUntilCall: Iterable[Duration])
   case class Chat(chatMessage: ChatMessage)

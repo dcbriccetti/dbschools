@@ -1,7 +1,6 @@
 package com.dbschools.mgb
 package comet
 
-import scala.xml.NodeSeq
 import net.liftweb.http.{CometListener, CometActor}
 import net.liftweb.http.js.JsCmds.SetHtml
 import net.liftweb.util.PassThru
@@ -16,26 +15,34 @@ class Student extends CometActor with CometListener {
 
   override protected def dontCacheRendering = true
 
+  private def musicianSpans(musicians: Seq[EnqueuedMusician]) =
+    musicians.map(em => <span style="margin-right: 1em">{studentNameLink(em.musician, test = true)} </span>)
+
+  private var lastNames = Seq[String]()
+
   override def lowPriority = {
 
-    case Next(opEnqueuedMusician) =>
-      partialUpdate(
-        SetHtml("nextTesting", opEnqueuedMusician.map(em => studentNameLink(em.musician, test = true)) getOrElse
-          NodeSeq.Empty))
+    case Next(enqueuedMusicians) =>
+      val theseNames = enqueuedMusicians.map(_.musician.nameFirstLast)
+      if (theseNames != lastNames) {
+        partialUpdate(SetHtml("nextTesting", musicianSpans(enqueuedMusicians)))
+        lastNames = theseNames
+      }
 
     case Start =>
   }
 
+
   def render = {
-    TestingManager.opNext match {
-      case Some(em) => "#nextTesting *" #> studentNameLink(em.musician, test = true)
-      case _ => PassThru
+    TestingManager.called match {
+      case Nil => PassThru
+      case ems => "#nextTesting *" #> musicianSpans(ems)
     }
   }
 }
 
 object StudentMessages {
-  case class Next(opEnqueuedMusician: Option[EnqueuedMusician])
+  case class Next(enqueuedMusicians: Seq[EnqueuedMusician])
 }
 
 object StudentCometDispatcher extends CommonCometDispatcher

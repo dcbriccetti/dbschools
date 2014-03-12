@@ -27,7 +27,7 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
 
     def minutesSelector = {
       val sels = 10 to 2 by -1 map(n => n.toString -> s"after $n minutes")
-      val allSels = sels ++ Seq("1" -> "after 1 minute", "0" -> "Immediately", "-1" -> "Never")
+      val allSels = sels ++ Seq("1" -> "after 1 minute", "-1" -> "Never")
       val initialSel = mins.map(_.toString) | "-1"
       ajaxSelect(allSels, Full(initialSel), gid => {
         mins = gid.toInt match {
