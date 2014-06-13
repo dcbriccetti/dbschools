@@ -2,7 +2,11 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
-    <div data-lift="GroupsSummary">
+    <div>
+        School Years: <span><span data-lift="GroupsSummary.yearSelector"/></span>
+    </div>
+
+    <div id="dynamicSection" data-lift="GroupsSummary" style="margin-top: .5em;">
         <table class="table table-condensed table-bordered autoWidth">
             <thead>
             <tr id="heading"></tr>

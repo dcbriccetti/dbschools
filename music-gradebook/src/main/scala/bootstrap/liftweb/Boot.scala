@@ -60,6 +60,7 @@ class Boot {
       instrumentsDelete.menu    >> loggedIn >> Hidden,
       instrumentsEdit.menu      >> loggedIn >> Hidden,
       instrumentsView.menu      >> loggedIn >> Hidden,
+      studentImport.menu        >> loggedIn >> Hidden,
       logout.menu               >> loggedIn
     )
 

@@ -25,4 +25,5 @@ object ApplicationPaths {
   val instrumentsDelete = new Path("Delete Instrument", "instruments/delete")
   val instrumentsEdit   = new Path("Edit Instrument",   "instruments/edit")
   val instrumentsView   = new Path("View Instrument",   "instruments/view")
+  val studentImport     = new Path("Import",  "import")
 }

@@ -58,7 +58,7 @@ object Cache {
 
   case class GroupPeriod(group: Group, period: Int)
   
-  def filteredGroups(opSelectedTerm: Option[Int] = Some(Terms.currentTerm)) = {
+  def filteredGroups(opSelectedTerm: Option[Int]) = {
     val groupIdToPeriod = (for {
       gt      <- Cache.groupTerms
       selTerm <- opSelectedTerm

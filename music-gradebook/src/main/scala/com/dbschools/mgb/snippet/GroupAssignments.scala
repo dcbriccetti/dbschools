@@ -2,6 +2,8 @@ package com.dbschools.mgb
 package snippet
 
 import scala.xml.{Text, NodeSeq}
+import scalaz._
+import Scalaz._
 import org.apache.log4j.Logger
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.http.js.JsCmds._
@@ -20,8 +22,9 @@ object rvMusicianDetails extends RequestVar[Option[MusicianDetails]](None)
 class GroupAssignments extends SelectedMusician {
   private val log = Logger.getLogger(getClass)
   private var selectedMusicianGroups = Set[Int]()
-  private val groupSelectorValues = Cache.filteredGroups().map(gp => (gp.group.id.toString, gp.group.name)).toSeq
-  private var newAssignmentGroupId = groupSelectorValues(0)._1.toInt
+  private def groupSelectorValues(term: Int = Terms.currentTerm) =
+    Cache.filteredGroups(Some(term)).map(gp => (gp.group.id.toString, gp.group.name)).toSeq
+  private var newAssignmentGroupId = groupSelectorValues().head._1.toInt
   private val opMusicianDetails = opMusician.map(musician =>
     MusicianDetails(musician, model.GroupAssignments(Some(musician.id)),
     AppSchema.assessments.where(_.musician_id === musician.id).toSeq))
@@ -64,7 +67,7 @@ class GroupAssignments extends SelectedMusician {
     }
 
     def nextSel = {
-      SHtml.ajaxSelect(groupSelectorValues, Empty, gid => {
+      SHtml.ajaxSelect(groupSelectorValues(), Empty, gid => {
         newAssignmentGroupId = gid.toInt
         Noop
       })
@@ -72,14 +75,12 @@ class GroupAssignments extends SelectedMusician {
 
     def groupsTable(groups: Iterable[model.GroupAssignment]) =
       groups.map(ga => {
-        val curTerm = ga.musicianGroup.school_year == Terms.currentTerm
-        ".sel *"        #> (if (curTerm) assignmentCheckbox(ga) else NodeSeq.Empty) &
+        val editable = ga.musicianGroup.school_year >= Terms.currentTerm
+        ".sel *"        #> (if (editable) assignmentCheckbox(ga) else NodeSeq.Empty) &
         ".year *"       #> Terms.formatted(ga.musicianGroup.school_year) &
-        ".group *"      #>  {
-                              if (curTerm) groupSelector(ga)
-                              else Text(Cache.groups.find(_.id == ga.musicianGroup.group_id).map(_.name) getOrElse "")
-                            } &
-        ".instrument *" #> (if (curTerm) instrumentSelector(ga) else
+        ".group *"      #>  (if (editable) groupSelector(ga)
+                             else Text(Cache.groups.find(_.id == ga.musicianGroup.group_id).map(_.name) getOrElse "")) &
+        ".instrument *" #> (if (editable) instrumentSelector(ga) else
           Text(Cache.instruments.find(_.id == ga.musicianGroup.instrument_id).map(_.name.get) getOrElse ""))
       })
 
@@ -97,17 +98,27 @@ class GroupAssignments extends SelectedMusician {
     })
 
   private def groupSelector(ga: GroupAssignment) =
-    SHtml.ajaxSelect(groupSelectorValues, Full(ga.musicianGroup.group_id.toString), gid => {
-      AppSchema.musicianGroups.update(mg => where(mg.id === ga.musicianGroup.id)
-        set (mg.group_id := gid.toInt))
+    SHtml.ajaxSelect(groupSelectorValues(ga.musicianGroup.school_year), Full(ga.musicianGroup.group_id.toString), gid => {
+      val intGid = gid.toInt
+      AppSchema.musicianGroups.update(mg =>
+        where(mg.id === ga.musicianGroup.id)
+        set(mg.group_id := intGid)
+      )
+      val newG = ~Cache.groups.find(_.id == intGid).map(_.name)
+      opMusicianDetails.foreach(md => log.info(s"Moved ${md.musician.name} to group $newG"))
       Noop
     })
 
   private def instrumentSelector(ga: GroupAssignment) =
     SHtml.ajaxSelect(Cache.instruments.map(i => (i.id.toString, i.name.get)).toSeq,
       Full(ga.musicianGroup.instrument_id.toString), iid => {
-        AppSchema.musicianGroups.update(mg => where(mg.id === ga.musicianGroup.id)
-          set (mg.instrument_id := iid.toInt))
+        val intIid = iid.toInt
+        AppSchema.musicianGroups.update(mg =>
+          where(mg.id === ga.musicianGroup.id)
+          set(mg.instrument_id := intIid)
+        )
+        val newI = ~Cache.instruments.find(_.id == intIid).map(_.name.get)
+        opMusicianDetails.foreach(md => log.info(s"Changed ${md.musician.name} to instrument $newI"))
         Reload // Todo Instead, update the instrument(s) to test on
       })
 }

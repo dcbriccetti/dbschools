@@ -7,23 +7,35 @@ import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.util.Helpers._
 import net.liftweb.http.SHtml
+import net.liftweb.http.js.JsCmds.Replace
 import bootstrap.liftweb.ApplicationPaths
-import com.dbschools.mgb.schema.{Instrument, AppSchema}
-import com.dbschools.mgb.model.{Cache, Terms}
+import schema.{Instrument, AppSchema}
+import model.{Cache, Terms}
+import snippet.LiftExtensions._
 
 class GroupsSummary {
   private val href = ApplicationPaths.students.href
+  private val selectors = svSelectors.is
+
+  private def replaceContents = {
+    val elemId = "dynamicSection"
+    Replace(elemId, elemFromTemplate("groups", s"#$elemId"))
+  }
+
+  selectors.opCallback = Some(() => replaceContents)
+  def yearSelector = selectors.yearSelector
 
   def render = {
     case class Count(groupId: Int, instrumentId: Int, count: Long)
+    val year = selectors.opSelectedTerm | Terms.currentTerm
     val q = from(AppSchema.musicianGroups)(mg =>
-      where(mg.school_year === Terms.currentTerm)
+      where(mg.school_year === year)
       groupBy(mg.group_id, mg.instrument_id)
       compute count(mg.instrument_id)
     )
     val counts = q.map(g => Count(g.key._1, g.key._2, g.measures))
     val countsByGroup = counts.groupBy(_.groupId)
-    val groupPeriods = Cache.filteredGroups()
+    val groupPeriods = Cache.filteredGroups(selectors.opSelectedTerm)
     val usedInstruments = {
       val usedInstIds = counts.map(_.instrumentId).toSet
       Cache.instruments.filter(usedInstIds contains _.id).sortBy(_.sequence.get)
@@ -44,8 +56,6 @@ class GroupsSummary {
         col <- 0 until instRows(0).counts.size
         colNums = (0 until instRows.size).map(r => instRows(r).counts(col))
       } yield colNums.sum
-
-    val selectors = svSelectors.is
 
     def detailRows = instRows.map(iRow =>
       <tr>
