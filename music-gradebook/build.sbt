@@ -16,7 +16,7 @@ seq(com.github.siasia.WebPlugin.webSettings :_*)
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
 
 libraryDependencies ++= {
-  val liftVersion = "2.6-SNAPSHOT"
+  val liftVersion = "2.6-M3"
   Seq(
     "javax.servlet"     %  "servlet-api"        % "2.5" % "compile",
     "com.typesafe.akka" %% "akka-actor"         % "2.1.4" withSources(),

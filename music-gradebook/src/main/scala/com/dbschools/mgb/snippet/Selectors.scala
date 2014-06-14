@@ -25,7 +25,8 @@ class Selectors(callback: => Option[() => JsCmd] = None, onlyTestingGroups: Bool
   private def updateTerm(opTerm: Option[Int]) = {
     opSelectedTerm = opTerm
     // Show only the groups with assessments in the term
-    ReplaceOptions(groupSelectorId, groupSelectValues, Empty): JsCmd
+    opSelectedGroupId = None
+    ReplaceOptions(groupSelectorId, groupSelectValues, Full(All)): JsCmd
   }
 
   val groupSelectorId: String = "groupSelector"
@@ -41,7 +42,7 @@ class Selectors(callback: => Option[() => JsCmd] = None, onlyTestingGroups: Bool
     opSelectedInstId, opSelectedInstId = _)
 
   private def selector(id: String, items: List[(String, String)], opId: Option[Int], fn: (Option[Int]) => JsCmd) = {
-    SHtml.ajaxSelect(items, Full(opId.map(_.toString) | All), sel => {
+    SHtml.ajaxUntrustedSelect(items, Full(opId.map(_.toString) | All), sel => {
       fn(if (sel == All) None else Some(sel.toInt)) & (opCallback.map(_()) | Noop)
     }, "id" -> id)
   }
