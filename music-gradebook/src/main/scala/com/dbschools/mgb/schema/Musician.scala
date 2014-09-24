@@ -4,7 +4,7 @@ import scalaz._
 import Scalaz._
 import org.squeryl.annotations._
 import net.liftweb.record.{MetaRecord, Record}
-import net.liftweb.record.field.{OptionalStringField, StringField, IntField}
+import net.liftweb.record.field.{OptionalStringField, StringField, OptionalTextareaField, IntField}
 import net.liftweb.squerylrecord.KeyedRecord
 import net.liftweb.util.FieldError
 import com.dbschools.mgb.model.Terms
@@ -53,6 +53,15 @@ case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
     override def displayName = "Nickname"
   }
 
+  @Column("phonetic_spelling")
+  val phoneticSpelling = new OptionalStringField(this, None) {
+    override def displayName = "Phonetic Spelling"
+  }
+
+  val notes = new OptionalTextareaField(this, 100000) {
+    override def displayName = "Notes"
+  }
+
   @Column("graduation_year")
   val graduation_year = new IntField(this, Terms.currentTerm) {
     override def displayName = "Graduation Year"
@@ -66,5 +75,5 @@ case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
 }
 
 object Musician extends Musician with MetaRecord[Musician] {
-  override def fieldOrder = List(student_id, first_name, nickname, last_name, graduation_year)
+  override def fieldOrder = List(student_id, first_name, nickname, last_name, phoneticSpelling, graduation_year, notes)
 }

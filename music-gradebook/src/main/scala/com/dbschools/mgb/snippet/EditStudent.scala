@@ -19,7 +19,8 @@ class EditStudent extends LiftScreen with SelectedMusician {
   private val grade = field(s"Grade in ${Terms.formatted(Terms.currentTerm)}",
     Terms.graduationYearAsGrade(m.graduation_year.get), minVal(1, "Invalid value"))
 
-  override def screenFields = List(m.first_name, m.nickname, m.last_name, m.student_id, m.permStudentId, grade)
+  override def screenFields = List(m.first_name, m.nickname, m.last_name,
+    m.phoneticSpelling, m.student_id, m.permStudentId, grade, m.notes)
 
   def valUniqueStudentId(): Errors = {
     if (! m.isPersisted) {
