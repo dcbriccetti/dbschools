@@ -39,25 +39,6 @@ object GroupAssignments extends Loggable {
     rows
   }
 
-  def create(musicianGroups: Iterable[Int], replaceExisting: Boolean, groupId: Int, instrumentId: Int): AnyVal = {
-    val currentTerm = Terms.currentTerm
-    if (musicianGroups.nonEmpty) {
-      if (replaceExisting) {
-        logger.info(s"Move $musicianGroups to $groupId $instrumentId")
-        update(AppSchema.musicianGroups)(mg =>
-          where(mg.id in musicianGroups)
-          set(mg.group_id := groupId, mg.instrument_id := instrumentId))
-      } else {
-        AppSchema.musicianGroups.insert(
-          from(AppSchema.musicianGroups)(mg =>
-            where(mg.id in musicianGroups and not(mg.group_id === groupId and mg.school_year === currentTerm))
-            select MusicianGroup(0, mg.musician_id, groupId, instrumentId, currentTerm)
-          ).toSeq
-        )
-      }
-    }
-  }
-
   def sorted(lastPassesByMusician: Map[Int, Iterable[LastPass]]) = {
     val longAgo = new DateTime("1000-01-01").toDate
 
