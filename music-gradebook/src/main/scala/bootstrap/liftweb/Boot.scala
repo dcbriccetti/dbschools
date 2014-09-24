@@ -46,7 +46,7 @@ class Boot {
       home.menu,
       logIn.menu                >> notLoggedIn,
       groups.menu               >> loggedIn,
-      noGroups.menu             >> loggedIn >> Hidden,
+      noGroups.menu             >> loggedIn,
       students.menu             >> loggedIn,
       testing.menu              >> loggedIn,
       editStudent.menu          >> loggedIn >> Hidden,
