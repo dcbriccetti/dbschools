@@ -12,7 +12,7 @@ import net.liftweb._
 import util._
 import Helpers._
 import net.liftweb.http.SHtml
-import net.liftweb.http.js.JsCmds.{Noop, JsShowId, JsHideId}
+import net.liftweb.http.js.JsCmds.{Reload, Noop, JsShowId, JsHideId}
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
@@ -111,6 +111,16 @@ class Testing extends SelectedMusician with Photos {
       tm ! ClearChat
       Noop
     }, displayNoneIf(chatMessages.isEmpty))
+  }
+
+  def queueService = {
+    val opUser = Authenticator.opLoggedInUser // This appears on every page, even before login
+    val setting = opUser.map(user => testingState.servicingQueueTesterIds contains user.id) | false
+
+    "#servicing" #> SHtml.ajaxCheckbox(setting, b => {
+      opUser.foreach(user => tm ! SetServicingQueue(user, b))
+      Reload
+    })
   }
 }
 

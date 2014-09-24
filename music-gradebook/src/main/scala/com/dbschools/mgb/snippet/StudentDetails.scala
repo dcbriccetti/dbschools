@@ -47,11 +47,15 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
     opMusician.map(m => {
       val collapseSels = (0 to 2).map(n => s"#collapse$n [class+]" #> (if (collapsibleShowing(n)) "in" else ""))
       val qEmpty = testingState.enqueuedMusicians.isEmpty
+      val testerServicingQueue = testingState.servicingQueueTesterIds contains Authenticator.opLoggedInUser.get.id
+      val showQueueControls = ! qEmpty && testerServicingQueue
+      val showIfShow = if (showQueueControls) "show" else "hide"
+      val hideIfShow = if (showQueueControls) "hide" else "show"
 
       collapseSels.reduce(_ & _) &
-      "#nextStu1 [class+]"  #> (if (qEmpty) "hide" else "show") &
-      "#nextStu2 [class+]"  #> (if (qEmpty) "show" else "hide") &
-      "#callNext [class+]"  #> (if (qEmpty) "hide" else "show") &
+      "#nextStu1 [class+]"  #> showIfShow &
+      "#nextStu2 [class+]"  #> hideIfShow &
+      "#callNext [class+]"  #> showIfShow &
       "#photo"              #> img(m.permStudentId.get) &
       "#name *"             #> m.nameFirstLast &
       "#edit *"             #> link(ApplicationPaths.editStudent.href, () => {}, Text("Edit")) &

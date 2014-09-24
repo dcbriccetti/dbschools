@@ -80,12 +80,18 @@ class TestingManager extends Actor {
       tm.lastActivity = DateTime.now
       TestingCometDispatcher ! UpdateAssessmentCount(tm)
 
+    case SetServicingQueue(user, servicing) =>
+      if (servicing)
+        testingState.servicingQueueTesterIds += user.id
+      else
+        testingState.servicingQueueTesterIds -= user.id
+
     case SetCallAfterMins(user, mins, callNow) =>
       testingState.callAfterMinsByTesterId += user.id -> mins
       if (callNow)
-        testingState.callNowByTesterId += user.id
+        testingState.callNowTesterIds += user.id
       else
-        testingState.callNowByTesterId -= user.id
+        testingState.callNowTesterIds -= user.id
       StudentCometDispatcher ! Next(called)
 
     case SetLastTestOrder(lastTestOrder) =>
@@ -138,6 +144,7 @@ object TestingManagerMessages {
   case class DequeueInstrumentsOfMusicians(musicianIds: Iterable[Int])
   case class TestMusician(testingMusician: TestingMusician)
   case class IncrementMusicianAssessmentCount(tester: User, musician: Musician)
+  case class SetServicingQueue(tester: User, servicing: Boolean)
   case class SetCallAfterMins(tester: User, mins: Option[Int], callNow: Boolean)
   case class SetLastTestOrder(lastTestOrder: Boolean)
   case object ClearQueue
@@ -151,19 +158,27 @@ object testingState {
   var testingMusicians = Set[TestingMusician]()
   var chatMessages = List[ChatMessage]()
   var callAfterMinsByTesterId = Map[Int, Option[Int]]().withDefaultValue(Some(TestingManager.defaultNextCallMins))
-  var callNowByTesterId = Set[Int]()
+  var servicingQueueTesterIds = Set[Int]()
+  var callNowTesterIds = Set[Int]()
 
+  /** Returns a Duration for each tester servicing the queue. */
   def timesUntilCall = {
     val now = DateTime.now
-    testingMusicians.filter(_.fromQueue.nonEmpty).groupBy(_.tester.id).flatMap {
-      case (id, tms) =>
-        val lastStudentStart = tms.map(_.startingTime).reduce {(a, b) => if (a > b) a else b}
-        val sessionAge = new Interval(lastStudentStart, now).toDuration
-        val opCallNow = if (callNowByTesterId.contains(id)) Some(0) else None
-        opCallNow orElse callAfterMinsByTesterId(id) map(mins => {
-          val expectedSessionDuration = new Duration(mins * 60000)
-          expectedSessionDuration - sessionAge
-        })
-    }
+    val testingMusiciansFromQueueByTesterId = testingMusicians.filter(_.fromQueue.nonEmpty).groupBy(_.tester.id)
+    val durationsFromQueueServicingSessions = (for {
+      (testerId, testingMusicians) <- testingMusiciansFromQueueByTesterId
+      if servicingQueueTesterIds contains testerId
+    } yield {
+      val lastStudentStart = testingMusicians.map(_.startingTime).reduce {(a, b) => if (a > b) a else b}
+      val sessionAge = new Interval(lastStudentStart, now).toDuration
+      val opCallNow = if (callNowTesterIds.contains(testerId)) Some(0) else None
+      opCallNow orElse callAfterMinsByTesterId(testerId) map(mins => {
+        val expectedSessionDuration = new Duration(mins * 60000)
+        expectedSessionDuration - sessionAge
+      })
+    }).flatten
+    val zeroDurations = (servicingQueueTesterIds -- testingMusiciansFromQueueByTesterId.keySet).toSeq.
+      map(n => new Duration(0))
+    durationsFromQueueServicingSessions ++ zeroDurations
   }
 }
