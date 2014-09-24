@@ -3,7 +3,6 @@ package snippet
 
 import java.io.File
 import xml.{NodeSeq, Text}
-import scala.collection.immutable.TreeSet
 import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
@@ -165,6 +164,7 @@ class Students extends SelectedMusician with Photos with Loggable {
         ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.get) &
         ".group    *" #> row.group.name &
         ".instr    *" #> row.instrument.name.get &
+        ".passedThisYear *" #> ~Cache.numPassesThisYearByMusician.get(row.musician.id).map(_.toString) &
         ".lastAss  *" #> ~lastAsmtTime.map(fmt.print) &
         ".daysSince *" #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
         ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.id))

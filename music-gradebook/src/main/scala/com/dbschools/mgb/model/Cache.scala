@@ -6,6 +6,7 @@ import org.squeryl.PrimitiveTypeMode.{inTransaction => inT}
 import org.joda.time.DateTime
 import scalaz._
 import Scalaz._
+import Terms.{toTs, termStart, currentTerm}
 
 object Cache {
   var groups = readGroups
@@ -20,8 +21,23 @@ object Cache {
     gm <- from(AppSchema.assessments)(a => groupBy(a.musician_id) compute max(a.assessment_time))
     m <- gm.measures
   } yield gm.key -> new DateTime(m.getTime)).toMap
+
   def lastAssTimeByMusician = _lastAssTimeByMusician
   def updateLastAssTime(musicianId: Int, time: DateTime): Unit = _lastAssTimeByMusician += musicianId -> time
+
+  private var _numPassesThisYearByMusician = inT(for {
+    gm <- from(AppSchema.assessments)(a =>
+      where(a.pass === true and a.assessment_time > toTs(termStart(currentTerm)))
+      groupBy a.musician_id
+      compute count(a.assessment_time)
+    )
+    m = gm.measures
+  } yield gm.key -> m.toInt).toMap
+
+  def numPassesThisYearByMusician = _numPassesThisYearByMusician
+  def incrementNumPassesThisYearByMusician(musicianId: Int): Unit = {
+    _numPassesThisYearByMusician += musicianId -> (_numPassesThisYearByMusician.getOrElse(musicianId, 0) + 1)
+  }
 
   private def readGroups      = inT {AppSchema.groups.toSeq.sortBy(_.name)}
   private def readGroupTerms  = inT {AppSchema.groupTerms.toList}
