@@ -12,6 +12,8 @@ object AppSchema extends Schema {
   val pieces              = table[Piece]              ("piece")
   val musicianGroups      = table[MusicianGroup]      ("musician_group")
   on(musicianGroups)(t => declare(t.musician_id is indexed("musician_group_musician_id")))
+  on(musicianGroups)(mg => declare(columns(mg.musician_id, mg.school_year, mg.group_id) are (
+    unique, indexed("musician_group_unique"))))
   val instruments         = table[Instrument]         ("instrument")
   val subinstruments      = table[Subinstrument]      ("subinstrument")
   val assessments         = table[Assessment]         ("assessment")

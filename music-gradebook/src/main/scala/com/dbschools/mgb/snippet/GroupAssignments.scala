@@ -58,10 +58,15 @@ class GroupAssignments extends SelectedMusician {
         instrumentId <- opSoleAssignedInstrumentId orElse Cache.instruments.find(_.name.get == "Unassigned").map(_.id)
         musician     <- opMusician
       } {
-        val musicianGroup = MusicianGroup(0, musician.id, newAssignmentGroupId, instrumentId,
-          Terms.currentTerm)
-        AppSchema.musicianGroups.insert(musicianGroup)
-        log.info("Made musician assignment: " + musicianGroup)
+        val term = Terms.currentTerm
+        if (AppSchema.musicianGroups.where(mg => mg.musician_id === musician.id and
+          mg.school_year === term and mg.group_id === newAssignmentGroupId).headOption.nonEmpty) {
+          log.warn("Ignoring request to create a duplicate group assignment")
+        } else {
+          val musicianGroup = MusicianGroup(0, musician.id, newAssignmentGroupId, instrumentId, term)
+          AppSchema.musicianGroups.insert(musicianGroup)
+          log.info("Made musician assignment: " + musicianGroup)
+        }
       }
       Reload
     }
