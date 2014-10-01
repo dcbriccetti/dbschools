@@ -101,6 +101,7 @@ class TestingManager extends Actor {
     case ClearQueue =>
       testingState.enqueuedMusicians.empty()
       testingState.testingMusicians = testingState.testingMusicians.empty
+      testingState.servicingQueueTesterIds = testingState.servicingQueueTesterIds.empty
       TestingCometDispatcher ! ReloadPage
       updateStudentsPage()
       StudentCometDispatcher ! Next(Nil)
