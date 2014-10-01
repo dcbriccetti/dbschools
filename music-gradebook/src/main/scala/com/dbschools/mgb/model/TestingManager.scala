@@ -27,6 +27,15 @@ class TestingManager extends Actor {
     case Tick =>
       TestingCometDispatcher ! SetTimesUntilCall(testingState.timesUntilCall)
       StudentCometDispatcher ! Next(called)
+      if (! inQueueServiceTime) {
+        if (! testingState.servicingQueueTesterIdsReset) {
+          testingState.servicingQueueTesterIds = testingState.servicingQueueTesterIds.empty
+          println("Servicing IDs reset")
+          testingState.servicingQueueTesterIdsReset = true
+        }
+      } else {
+        testingState.servicingQueueTesterIdsReset = false
+      }
 
     case EnqueueMusicians(scheds) =>
       testingState.enqueuedMusicians ++= scheds
@@ -119,6 +128,10 @@ class TestingManager extends Actor {
 
   private def updateStudentsPage(): Unit =
     StudentsCometDispatcher ! QueueSize(testingState.enqueuedMusicians.size)
+
+  private def inQueueServiceTime = {
+    testingState.periodWithin.map(_.timeRemainingMs > 1000 * 60 * 3) | false
+  }
 }
 
 object TestingManager {
@@ -154,12 +167,24 @@ object TestingManagerMessages {
   case object Tick
 }
 
+case class SimpleTime(hour: Int, minute: Int)
+case class Period(num: Int, start: SimpleTime, end: SimpleTime) {
+  def startTime = DateTime.now.withHourOfDay(start.hour).withMinuteOfHour(start.minute)
+  def endTime   = DateTime.now.withHourOfDay(end.hour).withMinuteOfHour(end.minute)
+  def within(t: DateTime) = t.millis >= startTime.millis && t.millis <= endTime.millis
+  def timeRemainingMs = endTime.millis - DateTime.now.millis
+}
+object Period {
+  def apply(num: Int, sh: Int, sm: Int, eh: Int, em: Int): Period = Period(num, SimpleTime(sh, sm), SimpleTime(eh, em))
+}
+
 object testingState {
   val enqueuedMusicians = new MusicianQueue()
   var testingMusicians = Set[TestingMusician]()
   var chatMessages = List[ChatMessage]()
   var callAfterMinsByTesterId = Map[Int, Option[Int]]().withDefaultValue(Some(TestingManager.defaultNextCallMins))
   var servicingQueueTesterIds = Set[Int]()
+  var servicingQueueTesterIdsReset = false
   var callNowTesterIds = Set[Int]()
 
   /** Returns a Duration for each tester servicing the queue. */
@@ -182,4 +207,15 @@ object testingState {
       map(n => new Duration(0))
     durationsFromQueueServicingSessions ++ zeroDurations
   }
+
+  val periods = Vector(
+    Period(1, 9, 0, 9, 40),
+    Period(2, 9, 43, 10, 23),
+    Period(3, 10, 38, 11, 18),
+    Period(4, 11, 21, 12, 1),
+    Period(5, 12, 4, 12, 44)
+  )
+
+  def periodWithin = periods.find(_.within(DateTime.now))
 }
+
