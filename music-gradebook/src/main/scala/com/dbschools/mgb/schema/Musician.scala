@@ -6,7 +6,6 @@ import org.squeryl.annotations._
 import net.liftweb.record.{MetaRecord, Record}
 import net.liftweb.record.field.{OptionalStringField, StringField, OptionalTextareaField, IntField}
 import net.liftweb.squerylrecord.KeyedRecord
-import net.liftweb.util.FieldError
 import com.dbschools.mgb.model.Terms
 
 case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
@@ -18,18 +17,6 @@ case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
   }
 
   def musician_id = idField
-
-  @Column("student_id")
-  val student_id = new IntField(this) {
-    override def displayName = "Student ID"
-    override def validations = nonZero _ :: super.validations
-
-    def nonZero(value: Int) =
-      if (value < 1)
-        List(FieldError(this, "Invalid value"))
-      else
-        Nil
-  }
 
   @Column("perm_student_id")
   val permStudentId = new IntField(this) {
@@ -75,5 +62,5 @@ case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
 }
 
 object Musician extends Musician with MetaRecord[Musician] {
-  override def fieldOrder = List(student_id, first_name, nickname, last_name, phoneticSpelling, graduation_year, notes)
+  override def fieldOrder = List(permStudentId, first_name, nickname, last_name, phoneticSpelling, graduation_year, notes)
 }

@@ -239,7 +239,7 @@ cindy""")
     lastNames.foreach(lastName => {
       val firstName = firstNames((random * firstNames.length).toInt)
       val grad_year = Terms.currentTerm
-      val m = AppSchema.musicians.insert(Musician.createRecord.student_id(id).first_name(firstName).
+      val m = AppSchema.musicians.insert(Musician.createRecord.permStudentId(id).first_name(firstName).
         last_name(lastName).graduation_year(grad_year))
       id += 1
 
@@ -263,7 +263,7 @@ cindy""")
     /** Returns the requested number of unique, randomly-chosen group IDs */
     def apply(num: Int) = {
       var ids = Set[Int]()
-      if(!groupIds.isEmpty){
+      if(groupIds.nonEmpty){
         while(ids.size < num)
           ids += groupIds((random * groupIds.length).toInt)
         }

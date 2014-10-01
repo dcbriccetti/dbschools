@@ -184,7 +184,7 @@ class Students extends SelectedMusician with Photos with Loggable {
     ".studentRow"   #> musicians.map(m =>
       ".stuName  *" #> studentLink(m) &
       ".id       *" #> m.id &
-      ".stuId    *" #> m.student_id.get &
+      ".stuId    *" #> m.permStudentId.get &
       ".grade    *" #> Terms.graduationYearAsGrade(m.graduation_year.get)
     )
   }

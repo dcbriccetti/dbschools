@@ -60,7 +60,7 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       "#name *"             #> m.nameFirstLast &
       "#edit *"             #> link(ApplicationPaths.editStudent.href, () => {}, Text("Edit")) &
       ".grade"              #> Terms.graduationYearAsGrade(m.graduation_year.get) &
-      ".stuId"              #> m.student_id.toString() &
+      ".stuId"              #> m.permStudentId.toString() &
       "#lastPiece *"        #> StudentDetails.lastPiece(lastPassFinder, m.id) &
       "#callNextAfter"      #> minutesSelector &
       "#callNow"            #> callNowButton &
