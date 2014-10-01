@@ -2,7 +2,7 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
-    <h3>Assessments Summary</h3>
+    <h3>Tests Summary</h3>
 
     <div data-lift='AssessmentsSummary'>
         <table class='table table-condensed autoWidth'>
@@ -11,8 +11,8 @@
                     <th>Date</th>
                     <th>Tester</th>
                     <th>Students</th>
-                    <th>Assessments</th>
-                    <th>Avg Per Student</th>
+                    <th>Tests</th>
+                    <th>Avg #/Student</th>
                     <th>σ</th>
                 </tr>
             </thead>
@@ -29,7 +29,7 @@
         </table>
     </div>
 
-    <h3>Assessments Detail</h3>
+    <h3>Tests Detail</h3>
 
     <div data-lift="Assessments.renderWithStudents?eager_eval=true">
         <div data-lift="comet?type=ActivityCometActor"></div>
