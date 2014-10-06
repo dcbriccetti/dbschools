@@ -100,15 +100,22 @@ td {
 
     <div id="navList">
         <span data-lift="Menu.builder"></span>
-        <span data-lift="Testing.queueService">
-            <span title="Select to indicate that you are ready to test from the queue">
-                <span id="servicing"></span> <label for="servicing">Testing From Queue</label></span>
+        <span id='periodSpan' data-lift="Testing.period">
+            <span id='period'>
+                <label for="periodNumber">Period: </label> <span id="periodNumber"></span>
+            </span>
+        </span>
+        <span id='queueService' data-lift="Testing.queueService">
+            <span id='queue' title="Select to indicate that you are ready to test from the queue">
+                <span id="servicing"></span> <label for="servicing">Testing From Queue</label>
+            </span>
         </span>
         <span id='messagesNotice' data-lift='comet?type=Notices' style='margin-left: 1.5em;'>
             <a href="testing">Messages: <span id='numChatMsgs' class='badge'>0</span></a>
         </span>
     </div>
     <div data-lift="Msgs"></div>
+    <div data-lift="comet?type=GeneralSettingsCometActor"></div>
     <div style="margin-top: 1em;" id="content"></div>
 </div>
 </body>

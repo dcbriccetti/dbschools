@@ -23,6 +23,7 @@ import model.TestingManagerMessages._
 import model.TestingManagerMessages.{Chat, DequeueMusicians, TestMusician}
 
 class Testing extends SelectedMusician with Photos {
+  private val log = Logger.getLogger(getClass)
   private val tm = Actors.testingManager
 
   def render = {
@@ -117,9 +118,26 @@ class Testing extends SelectedMusician with Photos {
     val opUser = Authenticator.opLoggedInUser // This appears on every page, even before login
     val setting = opUser.map(user => testingState.servicingQueueTesterIds contains user.id) | false
 
+    "#queue"     #> (if (opUser.nonEmpty) PassThru else ClearNodes) andThen
     "#servicing" #> SHtml.ajaxCheckbox(setting, b => {
       opUser.foreach(user => tm ! SetServicingQueue(user, b))
       Reload
+    })
+  }
+
+  def period = {
+    val opUser = Authenticator.opLoggedInUser // This appears on every page, even before login
+    val opPeriod = model.Periods.periodWithin
+    def fh(h: Int) = (if (h > 12) h - 12 else h).toString
+    def fm(m: Int) = f"$m%02d"
+
+    "#period"       #> (if (opUser.nonEmpty && opPeriod.nonEmpty) PassThru else ClearNodes) andThen
+    "#periodNumber" #> ~opPeriod.map(p => {
+      val sh = fh(p.start.hour)
+      val sm = fm(p.start.minute)
+      val eh = fh(p.end.hour)
+      val em = fm(p.end.minute)
+      s"${p.num}, $sh:$sm–$eh:$em"
     })
   }
 }

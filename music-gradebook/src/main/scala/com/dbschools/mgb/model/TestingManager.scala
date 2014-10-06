@@ -7,30 +7,38 @@ import akka.actor.Actor
 import org.apache.log4j.Logger
 import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
-import comet.{NoticesDispatcher, StudentCometDispatcher, StudentsCometDispatcher, StudentsCometActorMessages,
-  TestingCometDispatcher, TestingCometActorMessages}
+import com.dbschools.mgb.comet._
 import com.dbschools.mgb.schema.{AppSchema, Musician, User}
 import net.liftweb.util.Props
 import com.dbschools.mgb.comet.TestingCometActorMessages.SetTimesUntilCall
 
 class TestingManager extends Actor {
   val log = Logger.getLogger(getClass)
+  var opPeriod = none[Periods.Period]
   import StudentsCometActorMessages._
   import TestingCometActorMessages.{ReloadPage, MoveMusician, UpdateAssessmentCount}
   import TestingManagerMessages._
   import TestingManager._
   import comet.NoticesMessages._
   import comet.StudentMessages._
+  import comet.GeneralSettingsCometActorMessages._
 
   def receive = {
 
     case Tick =>
       TestingCometDispatcher ! SetTimesUntilCall(testingState.timesUntilCall)
       StudentCometDispatcher ! Next(called)
+
+      val periodNow = Periods.periodWithin
+      if (periodNow != opPeriod) {
+        opPeriod = periodNow
+        GeneralSettingsCometDispatcher ! SetPeriod
+      }
       if (! inQueueServiceTime) {
         if (! testingState.servicingQueueTesterIdsReset) {
           testingState.servicingQueueTesterIds = testingState.servicingQueueTesterIds.empty
-          println("Servicing IDs reset")
+          GeneralSettingsCometDispatcher ! SetServicingQueueCheckbox
+          log.info("Servicing IDs reset")
           testingState.servicingQueueTesterIdsReset = true
         }
       } else {
@@ -130,7 +138,7 @@ class TestingManager extends Actor {
     StudentsCometDispatcher ! QueueSize(testingState.enqueuedMusicians.size)
 
   private def inQueueServiceTime = {
-    testingState.periodWithin.map(_.timeRemainingMs > 1000 * 60 * 3) | false
+    Periods.periodWithin.map(_.timeRemainingMs > 1000 * 60 * 3) | false
   }
 }
 
@@ -167,17 +175,6 @@ object TestingManagerMessages {
   case object Tick
 }
 
-case class SimpleTime(hour: Int, minute: Int)
-case class Period(num: Int, start: SimpleTime, end: SimpleTime) {
-  def startTime = DateTime.now.withHourOfDay(start.hour).withMinuteOfHour(start.minute)
-  def endTime   = DateTime.now.withHourOfDay(end.hour).withMinuteOfHour(end.minute)
-  def within(t: DateTime) = t.millis >= startTime.millis && t.millis <= endTime.millis
-  def timeRemainingMs = endTime.millis - DateTime.now.millis
-}
-object Period {
-  def apply(num: Int, sh: Int, sm: Int, eh: Int, em: Int): Period = Period(num, SimpleTime(sh, sm), SimpleTime(eh, em))
-}
-
 object testingState {
   val enqueuedMusicians = new MusicianQueue()
   var testingMusicians = Set[TestingMusician]()
@@ -207,15 +204,4 @@ object testingState {
       map(n => new Duration(0))
     durationsFromQueueServicingSessions ++ zeroDurations
   }
-
-  val periods = Vector(
-    Period(1, 9, 0, 9, 40),
-    Period(2, 9, 43, 10, 23),
-    Period(3, 10, 38, 11, 18),
-    Period(4, 11, 21, 12, 1),
-    Period(5, 12, 4, 12, 44)
-  )
-
-  def periodWithin = periods.find(_.within(DateTime.now))
 }
-
