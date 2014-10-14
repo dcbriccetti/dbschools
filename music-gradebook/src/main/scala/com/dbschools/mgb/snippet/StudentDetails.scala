@@ -57,7 +57,7 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       "#nextStu2 [class+]"  #> hideIfShow &
       "#callNext [class+]"  #> showIfShow &
       "#photo"              #> img(m.permStudentId.get) &
-      "#name *"             #> m.nameFirstLast &
+      "#name *"             #> m.nameFirstNickLast &
       "#edit *"             #> link(ApplicationPaths.editStudent.href, () => {}, Text("Edit")) &
       ".grade"              #> Terms.graduationYearAsGrade(m.graduation_year.get) &
       ".stuId"              #> m.permStudentId.toString() &

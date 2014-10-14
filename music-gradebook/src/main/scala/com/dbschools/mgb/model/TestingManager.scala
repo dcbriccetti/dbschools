@@ -183,6 +183,7 @@ object testingState {
   var servicingQueueTesterIds = Set[Int]()
   var servicingQueueTesterIdsReset = false
   var callNowTesterIds = Set[Int]()
+  var desktopNotify = false
 
   /** Returns a Duration for each tester servicing the queue. */
   def timesUntilCall = {

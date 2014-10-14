@@ -2,6 +2,8 @@ package com.dbschools.mgb
 package snippet
 
 import java.text.NumberFormat
+import net.liftweb.http.js.JE.JsRaw
+
 import scalaz._
 import Scalaz._
 import org.apache.log4j.Logger
@@ -125,6 +127,17 @@ class Testing extends SelectedMusician with Photos {
     })
   }
 
+  def desktopNotify = {
+    val opUser = Authenticator.opLoggedInUser // This appears on every page, even before login
+    val setting = opUser.map(user => testingState.desktopNotify) | false
+
+    "#notify"#> (if (opUser.nonEmpty) PassThru else ClearNodes) andThen
+    "#desktopNotifyCheckbox" #> SHtml.ajaxCheckbox(setting, b => {
+      testingState.desktopNotify =  b
+      Noop
+    })
+  }
+
   def period = {
     val opUser = Authenticator.opLoggedInUser // This appears on every page, even before login
     val opPeriod = model.Periods.periodWithin
@@ -181,7 +194,7 @@ object Testing extends SelectedMusician with Photos {
         Authenticator.opLoggedInUser.foreach(user =>
           Actors.testingManager ! TestMusician(TestingMusician(m, user, DateTime.now,
             Some(testingState.enqueuedMusicians))))
-    }, <span title={title}>{m.nameFirstLast}</span>)
+    }, <span title={title}>{m.nameFirstNickLast}</span>)
   }
 
   def sessionRow(show: Boolean)(tm: TestingMusician): CssSel = {
@@ -189,7 +202,7 @@ object Testing extends SelectedMusician with Photos {
     "tr [id]"     #> Testing.sessionRowId(m.id) &
     "tr [style+]" #> (if (show) "" else "display: none;") &
     "#srphoto *"  #> img(m.permStudentId.get) &
-    "#srstu *"    #> m.nameFirstLast &
+    "#srstu *"    #> m.nameFirstNickLast &
     "#srtester *" #> tm.tester.last_name &
     "#srtime *"   #> tmf.print(tm.startingTime) &
     ".srasmts *"  #> tm.numAsmts
@@ -206,12 +219,18 @@ object Testing extends SelectedMusician with Photos {
 
   private def sortedDurs(timesUntilCall: Iterable[Duration]) = timesUntilCall.toSeq.sortBy(_.millis)
 
+  private var notifiedMusicianIds = Set[Int]()
+
   def updateTimesUntilCall(timesUntilCall: Iterable[Duration]) = {
     val durs = Testing.sortedDurs(timesUntilCall)
     val goTest = "It’s time to test"
+    val enqueuedMusicianIds = enqueuedMusicians.items.map(_.musician.id).toSet
+    notifiedMusicianIds &= enqueuedMusicianIds // Remove anybody no longer in the queue
 
-    enqueuedMusicians.items.zipWithIndex.map {
-      case (s, i) =>
+    case class IdAndTime(rowId: String, musician: Musician, opTimeMillis: Option[Long], formattedTime: String)
+
+    val idAndTimes = enqueuedMusicians.items.zipWithIndex.map {
+      case (enqueuedMusician, i) =>
         val formattedTime =
           if (i >= durs.size)
             ""
@@ -224,9 +243,21 @@ object Testing extends SelectedMusician with Photos {
               }
             } else goTest
           }
-        val id = queueRowId(s.musician.id)
-        JsJqHtml(s"#$id .qrtime", formattedTime)
-    }.fold(Noop)(_ & _)
+        val id = queueRowId(enqueuedMusician.musician.id)
+        IdAndTime(id, enqueuedMusician.musician, if (i >= durs.size) None else Some(durs(i).millis), formattedTime)
+    }
+
+    val toNotify = if (testingState.desktopNotify)
+      idAndTimes.filter(it =>
+      (it.opTimeMillis.map(_ <= 0) | false) && ! notifiedMusicianIds.contains(it.musician.id))
+    else Vector[IdAndTime]()
+    log.info(idAndTimes)
+    log.info("To notify: " + toNotify)
+    notifiedMusicianIds ++= toNotify.map(_.musician.id)
+    val notifications = toNotify.map(it => JsRaw(s"""sendNotification("${it.musician.nameNickLast}, it’s time to test")""").cmd)
+    val callTimes = idAndTimes.map(it => JsJqHtml(s"#${it.rowId} .qrtime", it.formattedTime))
+
+    (notifications ++ callTimes).fold(Noop)(_ & _)
   }
 
   def clearMessages = JsJqRemove("#messagesTable tbody *") & JsHideId("clearMessages")

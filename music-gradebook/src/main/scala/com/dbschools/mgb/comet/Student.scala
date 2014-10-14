@@ -23,7 +23,7 @@ class Student extends CometActor with CometListener {
   override def lowPriority = {
 
     case Next(enqueuedMusicians) =>
-      val theseNames = enqueuedMusicians.map(_.musician.nameFirstLast)
+      val theseNames = enqueuedMusicians.map(_.musician.nameFirstNickLast)
       if (theseNames != lastNames) {
         partialUpdate(SetHtml("nextTesting", musicianSpans(enqueuedMusicians)))
         lastNames = theseNames

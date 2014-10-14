@@ -12,7 +12,7 @@ import Helpers._
 import snippet.Testing
 import snippet.LiftExtensions._
 import Testing.{queueRowId, sessionRowId, sessionRow}
-import model.{ChatMessage, TestingMusician}
+import com.dbschools.mgb.model.{ChatMessage, TestingMusician}
 import schema.User
 
 class TestingCometActor extends CometActor with CometListener {
@@ -39,7 +39,6 @@ class TestingCometActor extends CometActor with CometListener {
         JsShowId(sessionRowId(id)) &
         JsRaw("activateTips();").cmd
       )
-      TestingCometDispatcher ! SetTimesUntilCall(timesUntilCall)
 
     case UpdateAssessmentCount(tm) =>
       val testerId = uid(tm.tester)

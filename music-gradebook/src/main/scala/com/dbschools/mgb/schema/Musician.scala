@@ -56,7 +56,9 @@ case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
 
   def name = last_name.get + ", " + first_name.get + nickOrBlank
 
-  def nameFirstLast = first_name.get + nickOrBlank + " " + last_name.get
+  def nameFirstNickLast = first_name.get + nickOrBlank + " " + last_name.get
+  
+  def nameNickLast = (nickname.get | first_name.get) + " " + last_name.get
 
   private def nickOrBlank = ~nickname.get.map(n => s" ($n)")
 }
