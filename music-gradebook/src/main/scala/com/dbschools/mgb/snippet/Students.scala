@@ -209,7 +209,7 @@ class Students extends SelectedMusician with Photos with Loggable {
   private def studentLink(m: Musician) = {
     link(ApplicationPaths.studentDetails.href, () => {
       svSelectedMusician(Some(m))
-    }, Text(m.name))
+    }, Text(m.nameNickLast))
   }
 }
 
