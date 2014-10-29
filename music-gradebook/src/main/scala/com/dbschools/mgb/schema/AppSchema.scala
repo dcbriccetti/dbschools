@@ -1,7 +1,12 @@
 package com.dbschools.mgb.schema
 
+import java.sql.Timestamp
+
 import org.squeryl.Schema
 import org.squeryl.PrimitiveTypeMode._
+import org.squeryl.dsl.DateExpression
+import org.squeryl.dsl.ast.{TokenExpressionNode, FunctionNode}
+import org.squeryl.internals.OutMapper
 
 object AppSchema extends Schema {
   val users               = table[User]               ("music_user")
@@ -27,4 +32,13 @@ object AppSchema extends Schema {
   val tempos              = table[Tempo]              ("tempo")
 
   val groupToGroupTerms   = oneToManyRelation(groups, groupTerms).via((g, t) => g.id === t.groupId)
+
+  class DateTrunc(
+    span: String,
+    e:    DateExpression[Timestamp],
+    m:    OutMapper[Timestamp])
+  extends FunctionNode[Timestamp]("date_trunc", Some(m), Seq(new TokenExpressionNode("'"+span+"'"), e))
+  with DateExpression[Timestamp]
+
+  def dateTrunc(span: String, e: DateExpression[Timestamp])(implicit m: OutMapper[Timestamp]) = new DateTrunc(span,e,m)
 }

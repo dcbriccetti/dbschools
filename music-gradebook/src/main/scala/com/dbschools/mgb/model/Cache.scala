@@ -1,6 +1,7 @@
 package com.dbschools.mgb.model
 
 import com.dbschools.mgb.schema.{Group, Piece, AppSchema}
+import AppSchema.dateTrunc
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.PrimitiveTypeMode.{inTransaction => inT}
 import org.joda.time.DateTime
@@ -23,9 +24,12 @@ object Cache {
   } yield gm.key -> new DateTime(m.getTime)).toMap
 
   def lastAssTimeByMusician = _lastAssTimeByMusician
-  def updateLastAssTime(musicianId: Int, time: DateTime): Unit = _lastAssTimeByMusician += musicianId -> time
+  def updateLastAssTime(musicianId: Int, time: DateTime): Unit = {
+    _lastAssTimeByMusician += musicianId -> time
+    updateNumDaysTestedThisYearByMusician(musicianId)
+  }
 
-  private var _numPassesThisYearByMusician = inT(for {
+  private var _numPassesThisTermByMusician = inT(for {
     gm <- from(AppSchema.assessments)(a =>
       where(a.pass === true and a.assessment_time > toTs(termStart(currentTerm)))
       groupBy a.musician_id
@@ -34,9 +38,30 @@ object Cache {
     m = gm.measures
   } yield gm.key -> m.toInt).toMap
 
-  def numPassesThisYearByMusician = _numPassesThisYearByMusician
-  def incrementNumPassesThisYearByMusician(musicianId: Int): Unit = {
-    _numPassesThisYearByMusician += musicianId -> (_numPassesThisYearByMusician.getOrElse(musicianId, 0) + 1)
+  def numPassesThisTermByMusician = _numPassesThisTermByMusician
+  def incrementNumPassesThisTermByMusician(musicianId: Int): Unit = {
+    _numPassesThisTermByMusician += musicianId -> (_numPassesThisTermByMusician.getOrElse(musicianId, 0) + 1)
+  }
+
+  private var _numDaysTestedThisYearByMusician = inT(for {
+    gm <- from(AppSchema.assessments)(a =>
+      where(a.assessment_time > toTs(termStart(currentTerm)))
+      groupBy a.musician_id
+      compute countDistinct(dateTrunc("day", a.assessment_time))
+    )
+    m = gm.measures
+  } yield gm.key -> m.toInt).toMap
+
+  def numDaysTestedThisYearByMusician = _numDaysTestedThisYearByMusician
+  private def updateNumDaysTestedThisYearByMusician(musicianId: Int): Unit = {
+    inT{
+      from(AppSchema.assessments)(a =>
+        where(a.musician_id === musicianId and a.assessment_time > toTs(termStart(currentTerm)))
+        compute countDistinct(dateTrunc("day", a.assessment_time))
+      ).headOption.foreach(m => {
+        _numDaysTestedThisYearByMusician += musicianId -> m.measures.toInt
+      })
+    }
   }
 
   private def readGroups      = inT {AppSchema.groups.toSeq.sortBy(_.name)}

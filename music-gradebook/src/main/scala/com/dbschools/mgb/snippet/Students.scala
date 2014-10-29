@@ -2,6 +2,7 @@ package com.dbschools.mgb
 package snippet
 
 import java.io.File
+import java.text.NumberFormat
 import xml.{NodeSeq, Text}
 import scalaz._
 import Scalaz._
@@ -154,9 +155,14 @@ class Students extends SelectedMusician with Photos with Loggable {
           enableButtons
         }, "id" -> cbId(musician.id))
 
+      val nfmt = NumberFormat.getInstance
+      nfmt.setMaximumFractionDigits(2)
+
       val now = DateTime.now
       groupAssignments.map(row => {
         val lastAsmtTime = lastAssTimeByMusician.get(row.musician.id)
+        val passedThisTerm = ~Cache.numPassesThisTermByMusician.get(row.musician.id)
+        val numDays = ~Cache.numDaysTestedThisYearByMusician.get(row.musician.id)
         ".sel      *" #> selectionCheckbox(row.musician) &
         ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
         ".stuName  *" #> studentLink(row.musician) &
@@ -164,7 +170,9 @@ class Students extends SelectedMusician with Photos with Loggable {
         ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.get) &
         ".group    *" #> row.group.name &
         ".instr    *" #> row.instrument.name.get &
-        ".passedThisYear *" #> ~Cache.numPassesThisYearByMusician.get(row.musician.id).map(_.toString) &
+        ".passedThisTerm *"           #> passedThisTerm &
+        ".daysTestedThisTerm *"       #> numDays &
+        ".avgPassedPerDayThisTerm *"  #> (if (numDays == 0) "" else nfmt.format(passedThisTerm.toFloat / numDays)) &
         ".lastAss  *" #> ~lastAsmtTime.map(fmt.print) &
         ".daysSince *" #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
         ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.id))

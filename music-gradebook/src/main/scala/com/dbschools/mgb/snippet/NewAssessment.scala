@@ -135,7 +135,7 @@ class NewAssessment extends SelectedMusician {
         
         Cache.updateLastAssTime(asmt.musician_id, asmtTime)
         if (pass)
-          Cache.incrementNumPassesThisYearByMusician(asmt.musician_id)
+          Cache.incrementNumPassesThisTermByMusician(asmt.musician_id)
 
         val row = createAssessmentRow(asmt, asmtTime, musician, user)
         ActivityCometDispatcher ! ActivityStatusUpdate(row)
