@@ -110,7 +110,7 @@ class GroupAssignments extends SelectedMusician {
         set(mg.group_id := intGid)
       )
       val newG = ~Cache.groups.find(_.id == intGid).map(_.name)
-      opMusicianDetails.foreach(md => log.info(s"Moved ${md.musician.name} to group $newG"))
+      opMusicianDetails.foreach(md => log.info(s"Moved ${md.musician.nameFirstNickLast} to group $newG"))
       Noop
     })
 
@@ -123,7 +123,7 @@ class GroupAssignments extends SelectedMusician {
           set(mg.instrument_id := intIid)
         )
         val newI = ~Cache.instruments.find(_.id == intIid).map(_.name.get)
-        opMusicianDetails.foreach(md => log.info(s"Changed ${md.musician.name} to instrument $newI"))
+        opMusicianDetails.foreach(md => log.info(s"Changed ${md.musician.nameFirstNickLast} to instrument $newI"))
         Reload // Todo Instead, update the instrument(s) to test on
       })
 }

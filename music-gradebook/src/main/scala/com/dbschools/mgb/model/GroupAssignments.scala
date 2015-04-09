@@ -47,7 +47,7 @@ object GroupAssignments extends Loggable {
 
     svSortingStudentsBy.is match {
       case SortStudentsBy.Name =>
-        byYear.sortBy(_.musician.name)
+        byYear.sortBy(_.musician.nameLastFirstNick)
       case SortStudentsBy.LastAssessment =>
         byYear.sortBy(ga => lastAssTimeByMusician.get(ga.musician.id).map(_.toDate) | longAgo)
       case SortStudentsBy.LastPiece =>

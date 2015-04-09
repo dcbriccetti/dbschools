@@ -54,7 +54,7 @@ case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
     override def displayName = "Graduation Year"
   }
 
-  def name = last_name.get + ", " + first_name.get + nickOrBlank
+  def nameLastFirstNick = last_name.get + ", " + first_name.get + nickOrBlank
 
   def nameFirstNickLast = first_name.get + nickOrBlank + " " + last_name.get
   

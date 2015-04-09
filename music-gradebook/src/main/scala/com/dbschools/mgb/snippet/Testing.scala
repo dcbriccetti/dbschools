@@ -194,7 +194,7 @@ object Testing extends SelectedMusician with Photos {
         Authenticator.opLoggedInUser.foreach(user =>
           Actors.testingManager ! TestMusician(TestingMusician(m, user, DateTime.now,
             Some(testingState.enqueuedMusicians))))
-    }, <span title={title}>{m.nameFirstNickLast}</span>)
+    }, <span title={title}>{m.nameNickLast}</span>)
   }
 
   def sessionRow(show: Boolean)(tm: TestingMusician): CssSel = {

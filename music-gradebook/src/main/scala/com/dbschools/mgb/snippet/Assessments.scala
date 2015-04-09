@@ -75,7 +75,7 @@ object Assessments {
         ".sel         *"  #> selectionCheckbox(ar) &
         ".date        *"  #> AbbrevDate(ar.date) &
         ".tester      *"  #> ar.tester &
-        ".student     *"  #> ar.musician.name &
+        ".student     *"  #> ar.musician.nameNickLast &
         ".piece [class]"  #> (if (ar.pass) "pass" else "fail") &
         ".piece       *"  #> ar.piece &
         ".instrument  *"  #> (ar.instrument + ~ar.subinstrument.map(Subinstrument.suffix)) &

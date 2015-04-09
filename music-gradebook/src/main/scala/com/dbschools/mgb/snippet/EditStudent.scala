@@ -25,7 +25,7 @@ class EditStudent extends LiftScreen with SelectedMusician {
   def valUniqueStudentId(): Errors = {
     if (! m.isPersisted) {
       val opExisting = AppSchema.musicians.where(_.permStudentId.get === m.permStudentId.get).headOption
-      opExisting.map(existing => FieldError(m.permStudentId, existing.name + " already has that student ID")).toList
+      opExisting.map(existing => FieldError(m.permStudentId, existing.nameFirstNickLast + " already has that student ID")).toList
     } else Nil
   }
 
