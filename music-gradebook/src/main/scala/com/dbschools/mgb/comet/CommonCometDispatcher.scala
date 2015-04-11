@@ -7,7 +7,7 @@ trait CommonCometDispatcher extends LiftActor with ListenerManager {
   def createUpdate = CommonCometActorMessages.Start
 
   override def lowPriority = {
-    case msg => updateListeners(msg)
+    case msg => sendListenersMessage(msg)
   }
 }
 

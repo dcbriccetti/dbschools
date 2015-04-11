@@ -7,12 +7,11 @@ import Scalaz._
 import org.squeryl.{PrimitiveTypeMode, Query}
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.GroupWithMeasures
-import net.liftweb._
-import util.BindHelpers._
 import net.liftweb.http.Templates
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JsCmds.Replace
 import net.liftweb.common.Loggable
+import net.liftweb.util.Helpers._
 import schema.AppSchema
 import AppSchema.{groups, musicianGroups, musicians, assessments, users}
 import model.Terms

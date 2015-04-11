@@ -7,14 +7,17 @@ import net.liftweb.squerylrecord.RecordTypeMode.{inTransaction, transaction}
 import net.liftweb.util.{LiftFlowOfControlException, LoanWrapper, Props}
 import com.dbschools.mgb.model.DefaultDataCreator
 import com.dbschools.mgb.TestDataMaker
+import org.apache.log4j.Logger
 
 object Db {
+  val log = Logger.getLogger(getClass)
 
   /**
    * Initialize database processing for the webapp, and for standalone tests.
    */
   def initialize(): Unit = {
-    val dbEngine = Props.get("db.engine", "h2")
+    log.info("Db.initialize")
+    val dbEngine = Props.get("db.engine", "postgres")
     if (dbEngine == "h2") {
       SchemaHelper.initH2()
     } else if (dbEngine == "postgres") {

@@ -1,5 +1,6 @@
 package bootstrap.liftweb
 
+import org.apache.log4j.{BasicConfigurator, Logger}
 import scalaz._
 import Scalaz._
 import net.liftweb._
@@ -7,14 +8,16 @@ import common._
 import http._
 import sitemap._
 import Loc._
-import net.liftmodules.widgets.flot.Flot
-import net.liftmodules.FoBo
 
 import com.dbschools.mgb.model.Cache
 import com.dbschools.mgb.dbconn.Db
 import com.dbschools.mgb.snippet.{Photos, Authenticator}
 
 class Boot {
+  BasicConfigurator.configure()
+  val log = Logger.getLogger(getClass)
+  log.info("Boot class created")
+
   def boot(): Unit = {
     import bootstrap.liftweb.ApplicationPaths._
 
@@ -52,7 +55,6 @@ class Boot {
       editStudent.menu          >> loggedIn >> Hidden,
       studentDetails.menu       >> loggedIn >> Hidden,
       activity.menu             >> loggedIn,
-      graphs.menu               >> loggedIn >> Hidden,
       stats.menu                >> loggedIn,
       history.menu              >> loggedIn >> Hidden,
       instrumentsList.menu      >> loggedIn >> Hidden,
@@ -65,12 +67,6 @@ class Boot {
     )
 
     LiftRules.setSiteMap(sitemap)
-
-    //Init the FoBo - Front-End Toolkit module,
-    //see http://liftweb.net/lift_modules for more info
-    FoBo.InitParam.JQuery=FoBo.JQuery191
-    FoBo.InitParam.ToolKit=FoBo.Bootstrap300
-    FoBo.init()
 
     //Show the spinny image when an Ajax call starts
     LiftRules.ajaxStart = Full(() => LiftRules.jsArtifacts.show("ajax-loader").cmd)
@@ -89,6 +85,5 @@ class Boot {
 
     Db.initialize()
     Cache.init()
-    Flot.init()
   }
 }

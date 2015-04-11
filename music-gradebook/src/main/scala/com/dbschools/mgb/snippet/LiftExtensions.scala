@@ -4,6 +4,7 @@ import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.http.js.JsCmd
 import net.liftweb.http.Templates
+import net.liftweb.http.SHtml.ElemAttr
 import com.dbschools.mgb.model
 import model.BoxOpener._
 import net.liftweb.util.Helpers
@@ -31,10 +32,10 @@ object LiftExtensions {
     cssGetTr(template)
   }
 
-  def displayNoneIf(condition: Boolean): Helpers.TheStrBindParam =
+  def displayNoneIf(condition: Boolean) =
     "style" -> (if (condition) "display: none;" else "")
 
-  def disableIf(b: Boolean) = if (b) Some("disabled" -> "disabled") else None
+  def disableIf(b: Boolean): Option[ElemAttr] = if (b) Some("disabled" -> "disabled") else None
   def classIf(classNames: String, b: Boolean) = if (b) Some("class" -> classNames) else None
 
   private def JsJqFn0(selector: String, fn: String): JsCmd = JsRaw(s"jQuery('$selector').$fn()").cmd

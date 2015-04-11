@@ -1,7 +1,12 @@
-libraryDependencies <+= sbtVersion(v => "com.github.siasia" %% "xsbt-web-plugin" % "0.12.0-0.2.11.1")
+resolvers += Resolver.url("bintray-sbt-plugin-releases",
+             url("http://dl.bintray.com/content/sbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns)
 
-//Uncoment this line to enable the sbt idea plugin
-addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.5.1")
+resolvers ++= Seq(
+  "typesafe" at "http://repo.typesafe.com/typesafe/releases/",
+  "sbt-plugin-releases2" at "http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/",
+  "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
+)
 
-//Uncoment this line to enable the sbt eclipse plugin
-addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.2.0")
+addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.4.0")
+
+addSbtPlugin("com.earldouglas" % "xsbt-web-plugin" % "1.1.0")

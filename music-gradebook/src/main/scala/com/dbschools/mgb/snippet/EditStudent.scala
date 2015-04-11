@@ -43,4 +43,6 @@ class EditStudent extends LiftScreen with SelectedMusician {
     svSelectedMusician(Some(m))
     S.redirectTo(ApplicationPaths.studentDetails.href)
   }
+
+  override def formName = "EditStudent"
 }

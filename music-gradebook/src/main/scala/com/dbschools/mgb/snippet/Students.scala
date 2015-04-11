@@ -107,8 +107,6 @@ class Students extends SelectedMusician with Photos with Loggable {
       }).fold(Noop)(_ & _) & enableButtons
     })
 
-    def flattrs(attrs: Option[TheStrBindParam]*): Seq[ElemAttr] = attrs.flatten
-
     def scheduleButton =
       ajaxButton("Add Checked", () => {
         scheduleSelectedMusicians()
@@ -116,14 +114,14 @@ class Students extends SelectedMusician with Photos with Loggable {
         groupAssignments.map(row => {
           JsCheckIf("#" + cbId(row.musician.id), false)
         }).fold(Noop)(_ & _) & enableButtons
-      }, flattrs(disableIf(selectedMusicians.isEmpty)): _*)
+      }, Seq(disableIf(selectedMusicians.isEmpty)).flatten: _*)
 
     def clearScheduleButton =
       ajaxButton("Clear", () => {
         Actors.testingManager ! ClearQueue
         Noop
-      }, flattrs(disableIf(model.testingState.enqueuedMusicians.isEmpty &&
-        model.testingState.testingMusicians.isEmpty)): _*)
+      }, Seq(disableIf(model.testingState.enqueuedMusicians.isEmpty &&
+        model.testingState.testingMusicians.isEmpty)).flatten: _*)
 
     (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (

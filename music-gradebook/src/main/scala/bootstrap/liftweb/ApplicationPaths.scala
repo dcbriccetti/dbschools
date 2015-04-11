@@ -9,8 +9,6 @@ object ApplicationPaths {
   val noGroups          = new Path("No Groups", "noGroups")
   val groups            = new Path("Groups", "groups")
 
-  val graphs            = new Path("Graphs", "graphs")
-
   val activity          = new Path("Activity",    "activity")
   val stats             = new Path("Statistics",  "stats")
   val students          = new Path("Students",    "students")
