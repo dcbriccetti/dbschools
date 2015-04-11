@@ -13,10 +13,10 @@ import net.liftweb.util.Props
 trait DbSettings {
   def adapter: DatabaseAdapter
   private def prop(name: String) = Props.get(name).get
-  def driver    = prop("db.driver")
-  def url       = prop("db.url")
-  def user      = prop("db.user")
-  def password  = prop("db.password")
+  def driver    = "org.postgresql.Driver"// prop("db.driver")
+  def url       = "jdbc:postgresql://localhost:5432/dbsmusic"// prop("db.url")
+  def user      = "dbschools" // prop("db.user")
+  def password  = "dbschools" // prop("db.password")
 }
 
 /** 
@@ -24,7 +24,7 @@ trait DbSettings {
  */
 class H2Settings extends DbSettings with Loggable {
   val adapter = new H2Adapter
-  logger.trace(s"H2Settings: setting up H2 Adapter. driver=$driver url=$url user=$user")
+  logger.info(s"H2Settings: setting up H2 Adapter. driver=$driver url=$url user=$user")
 }
 
 /**
@@ -32,5 +32,5 @@ class H2Settings extends DbSettings with Loggable {
  */
 class PostgreSqlSettings extends DbSettings with Loggable {
   val adapter = new PostgreSqlAdapter
-  logger.trace(s"PostgresSettings: setting up Posgtres Adapter. driver=$driver url=$url user=$user")
+  logger.info(s"PostgresSettings: setting up Posgtres Adapter. driver=$driver url=$url user=$user")
 }
