@@ -12,11 +12,11 @@ import net.liftweb.util.Props
  */
 trait DbSettings {
   def adapter: DatabaseAdapter
-  private def prop(name: String) = Props.get(name).get
-  def driver    = "org.postgresql.Driver"// prop("db.driver")
-  def url       = "jdbc:postgresql://localhost:5432/dbsmusic"// prop("db.url")
-  def user      = "dbschools" // prop("db.user")
-  def password  = "dbschools" // prop("db.password")
+  private def prop(name: String) = Props.get(name).toOption.get
+  def driver    = prop("db.driver")
+  def url       = prop("db.url")
+  def user      = prop("db.user")
+  def password  = prop("db.password")
 }
 
 /** 

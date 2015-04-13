@@ -80,9 +80,6 @@ class Boot {
     // What is the function to test if a user is logged in?
     LiftRules.loggedInTest = Full(() => Authenticator.loggedIn)
 
-    // Use HTML5 for rendering
-    LiftRules.htmlProperties.default.set((r: Req) => new Html5Properties(r.userAgent))
-
     Db.initialize()
     Cache.init()
   }
