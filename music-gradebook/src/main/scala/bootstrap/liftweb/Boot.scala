@@ -1,6 +1,5 @@
 package bootstrap.liftweb
 
-import org.apache.log4j.{BasicConfigurator, Logger}
 import scalaz._
 import Scalaz._
 import net.liftweb._
@@ -14,10 +13,6 @@ import com.dbschools.mgb.dbconn.Db
 import com.dbschools.mgb.snippet.{Photos, Authenticator}
 
 class Boot {
-  BasicConfigurator.configure()
-  val log = Logger.getLogger(getClass)
-  log.info("Boot class created")
-
   def boot(): Unit = {
     import bootstrap.liftweb.ApplicationPaths._
 
