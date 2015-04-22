@@ -1,7 +1,6 @@
 package com.dbschools.mgb.model
 
 import com.dbschools.mgb.schema.{Group, Piece, AppSchema}
-import AppSchema.dateTrunc
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.PrimitiveTypeMode.{inTransaction => inT}
 import org.joda.time.DateTime
@@ -43,25 +42,20 @@ object Cache {
     _numPassesThisTermByMusician += musicianId -> (_numPassesThisTermByMusician.getOrElse(musicianId, 0) + 1)
   }
 
-  private var _numDaysTestedThisYearByMusician = inT(for {
-    gm <- from(AppSchema.assessments)(a =>
-      where(a.assessment_time > toTs(termStart(currentTerm)))
-      groupBy a.musician_id
-      compute countDistinct(dateTrunc("day", a.assessment_time))
-    )
-    m = gm.measures
-  } yield gm.key -> m.toInt).toMap
+  private def numDaysTestedThisYear(musicianId: Option[Int]) = inT {
+    val testTimes = from(AppSchema.assessments)(a =>
+      where(a.assessment_time > toTs(termStart(currentTerm)) and a.musician_id === musicianId.?)
+      select(a.musician_id, new DateTime(a.assessment_time).withTimeAtStartOfDay.getMillis)).groupBy(_._1)
+    testTimes.map { case (id, times) => id -> times.toSet.size }
+  }
+
+  private var _numDaysTestedThisYearByMusician = numDaysTestedThisYear(None)
 
   def numDaysTestedThisYearByMusician = _numDaysTestedThisYearByMusician
+
   private def updateNumDaysTestedThisYearByMusician(musicianId: Int): Unit = {
-    inT{
-      from(AppSchema.assessments)(a =>
-        where(a.musician_id === musicianId and a.assessment_time > toTs(termStart(currentTerm)))
-        compute countDistinct(dateTrunc("day", a.assessment_time))
-      ).headOption.foreach(m => {
-        _numDaysTestedThisYearByMusician += musicianId -> m.measures.toInt
-      })
-    }
+    val numDays = numDaysTestedThisYear(Some(musicianId)).getOrElse(musicianId, 0)
+    inT{_numDaysTestedThisYearByMusician += musicianId -> numDays}
   }
 
   private def readGroups      = inT {AppSchema.groups.toSeq.sortBy(_.name)}
