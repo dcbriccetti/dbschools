@@ -61,6 +61,7 @@ class Boot {
       instrumentsEdit.menu      >> loggedIn >> Hidden,
       instrumentsView.menu      >> loggedIn >> Hidden,
       studentImport.menu        >> loggedIn >> Hidden,
+      tempos.menu               >> loggedIn,
       logout.menu               >> loggedIn
     )
 
