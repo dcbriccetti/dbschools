@@ -202,7 +202,7 @@ object Testing extends SelectedMusician with Photos {
     "tr [id]"     #> Testing.sessionRowId(m.id) &
     "tr [style+]" #> (if (show) "" else "display: none;") &
     "#srphoto *"  #> img(m.permStudentId.get) &
-    "#srstu *"    #> m.nameFirstNickLast &
+    "#srstu *"    #> m.nameNickLast &
     "#srtester *" #> tm.tester.last_name &
     "#srtime *"   #> tmf.print(tm.startingTime) &
     ".srasmts *"  #> tm.numAsmts
