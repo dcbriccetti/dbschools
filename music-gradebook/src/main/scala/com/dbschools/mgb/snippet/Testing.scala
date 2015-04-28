@@ -129,11 +129,10 @@ class Testing extends SelectedMusician with Photos {
 
   def desktopNotify = {
     val opUser = Authenticator.opLoggedInUser // This appears on every page, even before login
-    val setting = opUser.map(user => testingState.desktopNotify) | false
 
-    "#notify"#> (if (opUser.nonEmpty) PassThru else ClearNodes) andThen
-    "#desktopNotifyCheckbox" #> SHtml.ajaxCheckbox(setting, b => {
-      testingState.desktopNotify =  b
+    "#notify"                 #> (if (opUser.nonEmpty) PassThru else ClearNodes) andThen
+    "#desktopNotifyCheckbox"  #> SHtml.ajaxCheckbox(testingState.desktopNotify, notify => {
+      opUser.foreach(user => testingState.desktopNotifyByTesterId += user.id -> notify)
       Noop
     })
   }
