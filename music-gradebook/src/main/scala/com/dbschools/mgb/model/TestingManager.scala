@@ -1,7 +1,6 @@
 package com.dbschools.mgb
 package model
 
-
 import scalaz._
 import Scalaz._
 import akka.actor.Actor
