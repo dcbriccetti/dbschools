@@ -1,16 +1,18 @@
 package com.dbschools.mgb
 package model
 
+
 import scalaz._
 import Scalaz._
 import akka.actor.Actor
 import org.apache.log4j.Logger
 import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
-import com.dbschools.mgb.comet._
-import com.dbschools.mgb.schema.{AppSchema, Musician, User}
 import net.liftweb.util.Props
-import com.dbschools.mgb.comet.TestingCometActorMessages.SetTimesUntilCall
+import snippet.Authenticator
+import comet._
+import comet.TestingCometActorMessages.SetTimesUntilCall
+import schema.{AppSchema, Musician, User}
 
 class TestingManager extends Actor {
   val log = Logger.getLogger(getClass)
@@ -183,7 +185,8 @@ object testingState {
   var servicingQueueTesterIds = Set[Int]()
   var servicingQueueTesterIdsReset = false
   var callNowTesterIds = Set[Int]()
-  var desktopNotify = false
+  var desktopNotifyByTesterId = Map[Int, Boolean]().withDefaultValue(false)
+  def desktopNotify = Authenticator.opLoggedInUser.map(user => desktopNotifyByTesterId(user.id)) | false
 
   /** Returns a Duration for each tester servicing the queue. */
   def timesUntilCall = {
