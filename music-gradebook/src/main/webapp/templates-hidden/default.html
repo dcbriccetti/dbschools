@@ -95,24 +95,28 @@ td {
 </head>
 <body>
 <div class="container">
-    <h2><span data-lift='Title'>DBSchools Music Gradebook</span>
-        <span id="ajax-loader" style='display: none;'>&#x1D110;</span></h2>
+    <h3><span data-lift='Title'>Music Gradebook</span><span id='periodSpan' data-lift="Testing.period"><span id="period">—Period:
+        <span id="periodNumber"></span> <progress></progress></span></span>
+        <span id="ajax-loader" style='display: none;'>&#x1D110;</span>
+    </h3>
 
     <div id="navList">
         <span data-lift="Menu.builder"></span>
-        <span id='periodSpan' data-lift="Testing.period">
-            <span id='period'>
-                <label for="periodNumber">Period: </label> <span id="periodNumber"></span>
-            </span>
-        </span>
+    </div>
+    <div>
         <span id='queueService' data-lift="Testing.queueService">
             <span id='queue' title="Select to indicate that you are ready to test from the queue">
                 <span id="servicing"></span> <label for="servicing">Testing From Queue</label>
             </span>
         </span>
-        <span id='desktopNotify' data-lift="Testing.desktopNotify">
+        <span data-lift="Testing.desktopNotify">
             <span id='notify' title="Select to enable desktop notifications">
                 <span id="desktopNotifyCheckbox"></span> <label for="desktopNotifyCheckbox">Desktop Notifications</label>
+            </span>
+        </span>
+        <span id="specialScheduleOuter" data-lift="Testing.specialSchedule">
+            <span id='specialSchedule' title="Select if today has a special schedule">
+                <span id="specialScheduleCheckbox"></span> <label for="specialScheduleCheckbox">Special Schedule</label>
             </span>
         </span>
         <span id='messagesNotice' data-lift='comet?type=Notices' style='margin-left: 1.5em;'>

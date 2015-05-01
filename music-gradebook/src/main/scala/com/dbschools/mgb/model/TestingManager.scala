@@ -13,10 +13,12 @@ import snippet.Authenticator
 import comet._
 import comet.TestingCometActorMessages.SetTimesUntilCall
 import schema.{AppSchema, Musician, User}
+import model.Periods.{TimeClass, NotInPeriod, InSpecialSchedule}
 
 class TestingManager extends Actor {
   val log = Logger.getLogger(getClass)
-  var opPeriod = none[Periods.Period]
+  private var lastPeriodValue: TimeClass = NotInPeriod
+  var tickCount = 0
   import StudentsCometActorMessages._
   import TestingCometActorMessages.{ReloadPage, MoveMusician, UpdateAssessmentCount}
   import TestingManagerMessages._
@@ -28,12 +30,13 @@ class TestingManager extends Actor {
   def receive = {
 
     case Tick =>
+      tickCount += 1
       TestingCometDispatcher ! SetTimesUntilCall(testingState.timesUntilCall)
       StudentCometDispatcher ! Next(called)
 
       val periodNow = Periods.periodWithin
-      if (periodNow != opPeriod) {
-        opPeriod = periodNow
+      if (periodNow != lastPeriodValue || (periodNow.isInstanceOf[Periods.Period] && tickCount % 10 == 0)) {
+        lastPeriodValue = periodNow
         GeneralSettingsCometDispatcher ! SetPeriod
       }
       if (! inQueueServiceTime) {
@@ -117,6 +120,11 @@ class TestingManager extends Actor {
       testingState.enqueuedMusicians.lastTestOrder = lastTestOrder
       TestingCometDispatcher ! ReloadPage
 
+    case SetSpecialSchedule(specialSchedule) =>
+      testingState.specialSchedule = specialSchedule
+      GeneralSettingsCometDispatcher ! SetPeriod
+      GeneralSettingsCometDispatcher ! ChangeSpecialSchedule
+
     case ClearQueue =>
       testingState.enqueuedMusicians.empty()
       testingState.testingMusicians = testingState.testingMusicians.empty
@@ -140,7 +148,12 @@ class TestingManager extends Actor {
     StudentsCometDispatcher ! QueueSize(testingState.enqueuedMusicians.size)
 
   private def inQueueServiceTime = {
-    Periods.periodWithin.map(_.timeRemainingMs > 1000 * 60 * 3) | false
+    val Minutes = 1000 * 60
+    Periods.periodWithin match {
+      case period: Periods.Period => period.timeRemainingMs > Minutes * 3
+      case NotInPeriod            => false
+      case InSpecialSchedule      => true
+    }
   }
 }
 
@@ -171,6 +184,7 @@ object TestingManagerMessages {
   case class SetServicingQueue(tester: User, servicing: Boolean)
   case class SetCallAfterMins(tester: User, mins: Option[Int], callNow: Boolean)
   case class SetLastTestOrder(lastTestOrder: Boolean)
+  case class SetSpecialSchedule(specialSchedule: Boolean)
   case object ClearQueue
   case class Chat(chatMessage: ChatMessage)
   case object ClearChat
@@ -187,6 +201,7 @@ object testingState {
   var callNowTesterIds = Set[Int]()
   var desktopNotifyByTesterId = Map[Int, Boolean]().withDefaultValue(false)
   def desktopNotify = Authenticator.opLoggedInUser.map(user => desktopNotifyByTesterId(user.id)) | false
+  var specialSchedule = false
 
   /** Returns a Duration for each tester servicing the queue. */
   def timesUntilCall = {
