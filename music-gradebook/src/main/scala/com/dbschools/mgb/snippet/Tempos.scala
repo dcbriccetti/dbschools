@@ -16,7 +16,7 @@ class Tempos {
   private val allInstruments = Cache.instruments.filter(_.name.get != "Unassigned").sortBy(_.sequence.get)
   selectors.opCallback = Some(() => replaceContents)
 
-  def instrumentSelector = selectors.instrumentSelector
+  def instrumentSelector = selectors.instrumentSelector()
 
   def headings = {
     val colHeadings = Seq("Piece", "Default") ++ selectedInstruments.map(_.name.get)
@@ -65,5 +65,5 @@ class Tempos {
   }
 
   private def selectedInstruments =
-    selectors.opSelectedInstId.map(id => allInstruments.filter(_.id == id)) | allInstruments
+    Selectors.rto(selectors.selectedInstId).map(id => allInstruments.filter(_.id == id)) | allInstruments
 }

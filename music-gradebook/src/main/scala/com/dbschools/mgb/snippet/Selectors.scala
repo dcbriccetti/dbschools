@@ -3,7 +3,7 @@ package snippet
 
 import scalaz._
 import Scalaz._
-import net.liftweb.common.{Empty, Loggable, Full}
+import net.liftweb.common.{Loggable, Full}
 import net.liftweb.http.SHtml
 import net.liftweb.http.js.JsCmd
 import net.liftweb.http.js.JsCmds.{Noop, ReplaceOptions}
@@ -11,41 +11,64 @@ import model.{Cache, Terms}
 import schema.MusicianGroup
 
 class Selectors(callback: => Option[() => JsCmd] = None, onlyTestingGroups: Boolean = false) extends Loggable {
-  var opSelectedTerm: Option[Int] = Some(Terms.currentTerm) // None means no specific term, therefore all
-  var opSelectedGroupId = none[Int]                         // None means no specific group, therefore all
-  var opSelectedInstId  = none[Int]                         // None means no specific instrument, therefore all
+  import Selectors._
+  var selectedTerm   : Selection = Right(Terms.currentTerm)
+  var selectedGroupId: Selection = Left(true)
+  var selectedInstId : Selection = Left(true)
 
   var opCallback = callback
 
   private val All = "All"
   private val allItem = (All, All)
+  private val NoneOption = "None"
+  private val noneItem = (NoneOption, NoneOption)
 
-  def yearSelector = selector("yearSelector", allItem :: Terms.allTermsFormatted, opSelectedTerm, updateTerm)
+  def yearSelector = selector("yearSelector", allItem :: Terms.allTermsFormatted, selectedTerm, updateTerm)
 
-  private def updateTerm(opTerm: Option[Int]) = {
-    opSelectedTerm = opTerm
+  private def updateTerm(opTerm: Selection) = {
+    selectedTerm = opTerm
     // Show only the groups with assessments in the term
-    opSelectedGroupId = None
+    selectedGroupId = Left(true)
     ReplaceOptions(groupSelectorId, groupSelectValues, Full(All)): JsCmd
   }
 
   val groupSelectorId: String = "groupSelector"
 
   def groupSelector =
-    selector(groupSelectorId, groupSelectValues, opSelectedGroupId, opSelectedGroupId = _)
+    selector(groupSelectorId, groupSelectValues, selectedGroupId, selectedGroupId = _)
 
   private def groupSelectValues =
-    allItem :: Cache.filteredGroups(opSelectedTerm).map(gp => gp.group.id.toString -> gp.group.name).toList
+    allItem :: Cache.filteredGroups(rto(selectedTerm)).map(gp => gp.group.id.toString -> gp.group.name).toList
 
-  def instrumentSelector = selector("instrumentSelector",
-    allItem :: Cache.instruments.toList.sortBy(_.sequence.get).map(i => i.id.toString -> i.name.get),
-    opSelectedInstId, opSelectedInstId = _)
+  def instrumentSelector(includeNone: Boolean = false, exclude: Seq[String] = Seq()) = {
+    val nones = if (includeNone) Seq(noneItem) else Seq[(String, String)]()
+    val instruments = Cache.instruments.filterNot(i => exclude.contains(i.name.get)).
+      sortBy(_.sequence.get).map(i => i.id.toString -> i.name.get)
+    selector("instrumentSelector", (nones :+ allItem) ++ instruments,
+      selectedInstId, selectedInstId = _)
+  }
 
-  private def selector(id: String, items: List[(String, String)], opId: Option[Int], fn: (Option[Int]) => JsCmd) = {
-    SHtml.ajaxUntrustedSelect(items, Full(opId.map(_.toString) | All), sel => {
-      fn(if (sel == All) None else Some(sel.toInt)) & (opCallback.map(_()) | Noop)
+  private def selector(id: String, items: Seq[(String, String)], opId: Selection, fn: (Selection) => JsCmd) = {
+    SHtml.ajaxUntrustedSelect(items, Full(opId match {
+      case Left(false)  => NoneOption
+      case Left(true)   => All
+      case Right(num)   => num.toString
+    }), selString => {
+      val sel = selString match {
+        case NoneOption => Left(false)
+        case All        => Left(true)
+        case n          => Right(n.toInt)
+      }
+      fn(sel) & (opCallback.map(_()) | Noop)
     }, "id" -> id)
   }
 
-  def musicianGroups = MusicianGroup.selectedMusicians(opSelectedTerm, opSelectedGroupId, opSelectedInstId)
+  def musicianGroups = MusicianGroup.selectedMusicians(rto(selectedTerm), rto(selectedGroupId), rto(selectedInstId))
+}
+
+object Selectors {
+  /** Left: false = None, true = All; Right(id) */
+  type Selection = Either[Boolean, Int]
+  /** Convert Selections that don’t include None to Option[Int] where None[Int] means All */
+  def rto(s: Selection) = s.right.toOption orElse None
 }

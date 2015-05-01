@@ -1,7 +1,6 @@
 package com.dbschools.mgb
 package model
 
-
 import scalaz._
 import Scalaz._
 import akka.actor.Actor
@@ -10,6 +9,7 @@ import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.util.Props
 import snippet.Authenticator
+import snippet.Selectors.Selection
 import comet._
 import comet.TestingCometActorMessages.SetTimesUntilCall
 import schema.{AppSchema, Musician, User}
@@ -102,11 +102,13 @@ class TestingManager extends Actor {
       tm.lastActivity = DateTime.now
       TestingCometDispatcher ! UpdateAssessmentCount(tm)
 
-    case SetServicingQueue(user, servicing) =>
-      if (servicing)
-        testingState.servicingQueueTesterIds += user.id
-      else
-        testingState.servicingQueueTesterIds -= user.id
+    case SetServicingQueue(user, instrumentSelection) =>
+      instrumentSelection match {
+        case Left(false) =>
+          testingState.servicingQueueTesterIds -= user.id
+        case _ =>
+          testingState.servicingQueueTesterIds += user.id -> instrumentSelection
+      }
 
     case SetCallAfterMins(user, mins, callNow) =>
       testingState.callAfterMinsByTesterId += user.id -> mins
@@ -181,7 +183,7 @@ object TestingManagerMessages {
   case class DequeueInstrumentsOfMusicians(musicianIds: Iterable[Int])
   case class TestMusician(testingMusician: TestingMusician)
   case class IncrementMusicianAssessmentCount(tester: User, musician: Musician)
-  case class SetServicingQueue(tester: User, servicing: Boolean)
+  case class SetServicingQueue(tester: User, instrumentSelection: Selection)
   case class SetCallAfterMins(tester: User, mins: Option[Int], callNow: Boolean)
   case class SetLastTestOrder(lastTestOrder: Boolean)
   case class SetSpecialSchedule(specialSchedule: Boolean)
@@ -196,7 +198,7 @@ object testingState {
   var testingMusicians = Set[TestingMusician]()
   var chatMessages = List[ChatMessage]()
   var callAfterMinsByTesterId = Map[Int, Option[Int]]().withDefaultValue(Some(TestingManager.defaultNextCallMins))
-  var servicingQueueTesterIds = Set[Int]()
+  var servicingQueueTesterIds = Map[Int, Selection]()
   var servicingQueueTesterIdsReset = false
   var callNowTesterIds = Set[Int]()
   var desktopNotifyByTesterId = Map[Int, Boolean]().withDefaultValue(false)

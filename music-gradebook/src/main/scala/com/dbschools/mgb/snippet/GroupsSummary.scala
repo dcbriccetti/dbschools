@@ -26,8 +26,9 @@ class GroupsSummary {
   def yearSelector = selectors.yearSelector
 
   def render = {
+    import Selectors._
     case class Count(groupId: Int, instrumentId: Int, count: Long)
-    val year = selectors.opSelectedTerm | Terms.currentTerm
+    val year = rto(selectors.selectedTerm) | Terms.currentTerm
     val q = from(AppSchema.musicianGroups)(mg =>
       where(mg.school_year === year)
       groupBy(mg.group_id, mg.instrument_id)
@@ -35,7 +36,7 @@ class GroupsSummary {
     )
     val counts = q.map(g => Count(g.key._1, g.key._2, g.measures))
     val countsByGroup = counts.groupBy(_.groupId)
-    val groupPeriods = Cache.filteredGroups(selectors.opSelectedTerm)
+    val groupPeriods = Cache.filteredGroups(rto(selectors.selectedTerm))
     val usedInstruments = {
       val usedInstIds = counts.map(_.instrumentId).toSet
       Cache.instruments.filter(usedInstIds contains _.id).sortBy(_.sequence.get)
@@ -61,8 +62,8 @@ class GroupsSummary {
       <tr>
         <th>{
           SHtml.link(href, () => {
-            selectors.opSelectedGroupId = None
-            selectors.opSelectedInstId = Some(iRow.instrument.id)
+            selectors.selectedGroupId = Left(true)
+            selectors.selectedInstId = Right(iRow.instrument.id)
             }, Text(iRow.instrument.name.get))
         }</th>
         {(0 until groupPeriods.size).map(g =>
@@ -71,8 +72,8 @@ class GroupsSummary {
               case 0 => ""
               case n =>
                 SHtml.link(href, () => {
-                  selectors.opSelectedGroupId = Some(groupPeriods(g).group.id)
-                  selectors.opSelectedInstId = Some(iRow.instrument.id)
+                  selectors.selectedGroupId = Right(groupPeriods(g).group.id)
+                  selectors.selectedInstId = Right(iRow.instrument.id)
                 }, Text(n.toString))
             }}
           </td>
@@ -85,8 +86,8 @@ class GroupsSummary {
       <tr>
         <th>Totals</th>{totals.map(t => <th class="alignRight"> {t} </th>)}
         <th class="alignRight">{SHtml.link(href, () => {
-          selectors.opSelectedGroupId = None
-          selectors.opSelectedInstId = None
+          selectors.selectedGroupId = Left(true)
+          selectors.selectedInstId = Left(true)
           }, Text(totals.sum.toString))
         }</th>
       </tr>
@@ -96,8 +97,8 @@ class GroupsSummary {
         <th>Instrument</th>{groupPeriods.map(gp => <th>
         {
         SHtml.link(href, () => {
-          selectors.opSelectedGroupId = Some(gp.group.id)
-          selectors.opSelectedInstId = None
+          selectors.selectedGroupId = Right(gp.group.id)
+          selectors.selectedInstId = Left(true)
           }, Text(gp.group.shortName | gp.group.name))
         }
       </th>)}<td>Totals</td>

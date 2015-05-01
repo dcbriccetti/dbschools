@@ -38,7 +38,7 @@ class Students extends SelectedMusician with Photos with Loggable {
   selectors.opCallback = Some(() => replaceContents)
   def yearSelector = selectors.yearSelector
   def groupSelector = selectors.groupSelector
-  def instrumentSelector = selectors.instrumentSelector
+  def instrumentSelector = selectors.instrumentSelector()
 
   private val lastPassFinder = new LastPassFinder()
   private val lastPassesByMusician = lastPassFinder.lastPassed().groupBy(_.musicianId)
@@ -125,9 +125,9 @@ class Students extends SelectedMusician with Photos with Loggable {
       }, flattrs(disableIf(model.testingState.enqueuedMusicians.isEmpty &&
         model.testingState.testingMusicians.isEmpty)): _*)
 
-    (if (selectors.opSelectedTerm   .isDefined) ".schYear" #> none[String] else PassThru) andThen (
-    (if (selectors.opSelectedGroupId.isDefined) ".group"   #> none[String] else PassThru) andThen (
-    (if (selectors.opSelectedInstId .isDefined) ".instr"   #> none[String] else PassThru) andThen (
+    (if (selectors.selectedTerm   .isRight) ".schYear" #> none[String] else PassThru) andThen (
+    (if (selectors.selectedGroupId.isRight) ".group"   #> none[String] else PassThru) andThen (
+    (if (selectors.selectedInstId .isRight) ".instr"   #> none[String] else PassThru) andThen (
     (if (svPicturesDisplay.is == PicturesDisplay.Large) "#studentsTable"     #> NodeSeq.Empty else PassThru) andThen (
     (if (svPicturesDisplay.is != PicturesDisplay.Large) "#studentsContainer" #> NodeSeq.Empty else PassThru) andThen (
 

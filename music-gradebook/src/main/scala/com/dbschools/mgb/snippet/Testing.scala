@@ -12,9 +12,10 @@ import org.joda.time.format.PeriodFormat
 import net.liftweb._
 import util._
 import Helpers._
-import net.liftweb.http.SHtml
+import net.liftweb.http.{SessionVar, SHtml}
 import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.http.js.JsCmds.{Reload, Noop, JsShowId, JsHideId}
+import net.liftweb.http.js.JsCmd
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
@@ -116,16 +117,14 @@ class Testing extends SelectedMusician with Photos {
     }, displayNoneIf(chatMessages.isEmpty))
   }
 
-  def queueService = {
-    val opUser = Authenticator.opLoggedInUser // This appears on every page, even before login
-    val setting = opUser.map(user => testingState.servicingQueueTesterIds contains user.id) | false
+  private val selectors = svTestingSelectors.get
+  selectors.opCallback = Some(() => changeTestingInstrument())
 
-    "#queue"     #> (if (opUser.nonEmpty) PassThru else ClearNodes) andThen
-    "#servicing" #> SHtml.ajaxCheckbox(setting, b => {
-      opUser.foreach(user => tm ! SetServicingQueue(user, b))
-      Reload
-    })
+  def changeTestingInstrument(): JsCmd = {
+    Authenticator.opLoggedInUser.foreach(user => tm ! SetServicingQueue(user, selectors.selectedInstId))
+    Reload
   }
+  def queueInstrumentSelector = selectors.instrumentSelector(includeNone = true, exclude = Seq("Unassigned"))
 
   def desktopNotify = {
     val opUser = Authenticator.opLoggedInUser // This appears on every page, even before login
@@ -271,3 +270,9 @@ object Testing extends SelectedMusician with Photos {
   
   def sessionRowId(musicianId: Int) = "sr" + musicianId
 }
+
+object svTestingSelectors extends SessionVar[Selectors]({
+  val s = new Selectors()
+  s.selectedInstId = Left(false)
+  s
+})
