@@ -2,8 +2,7 @@ package com.dbschools.mgb
 package snippet
 
 import java.text.NumberFormat
-import net.liftweb.http.js.JE.JsRaw
-
+import scala.xml.NodeSeq
 import scalaz._
 import Scalaz._
 import org.apache.log4j.Logger
@@ -14,6 +13,7 @@ import net.liftweb._
 import util._
 import Helpers._
 import net.liftweb.http.SHtml
+import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.http.js.JsCmds.{Reload, Noop, JsShowId, JsHideId}
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
@@ -137,20 +137,28 @@ class Testing extends SelectedMusician with Photos {
     })
   }
 
-  def period = {
-    val opUser = Authenticator.opLoggedInUser // This appears on every page, even before login
-    val opPeriod = model.Periods.periodWithin
-    def fh(h: Int) = (if (h > 12) h - 12 else h).toString
-    def fm(m: Int) = f"$m%02d"
-
-    "#period"       #> (if (opUser.nonEmpty && opPeriod.nonEmpty) PassThru else ClearNodes) andThen
-    "#periodNumber" #> ~opPeriod.map(p => {
-      val sh = fh(p.start.hour)
-      val sm = fm(p.start.minute)
-      val eh = fh(p.end.hour)
-      val em = fm(p.end.minute)
-      s"${p.num}, $sh:$sm–$eh:$em"
+  def specialSchedule =
+    "#specialSchedule"          #> (if (Authenticator.opLoggedInUser.nonEmpty) PassThru else ClearNodes) andThen
+    "#specialScheduleCheckbox"  #> SHtml.ajaxCheckbox(testingState.specialSchedule, b => {
+      tm ! SetSpecialSchedule(b)
+      Noop
     })
+
+  def period = model.Periods.periodWithin match {
+
+    case period: Periods.Period if Authenticator.opLoggedInUser.nonEmpty =>
+      def fh(h: Int) = (if (h > 12) h - 12 else h).toString
+      def fm(m: Int) = f"$m%02d"
+      val sh = fh(period.start.hour)
+      val sm = fm(period.start.minute)
+      val eh = fh(period.end.hour)
+      val em = fm(period.end.minute)
+
+      "#periodNumber" #> s"${period.num}, $sh:$sm–$eh:$em" &
+      "progress"      #> <progress value={period.timePassedSecs.toString} max={period.totalSecs.toString}></progress>
+
+    case _ =>
+      "#period" #> NodeSeq.Empty
   }
 }
 
@@ -250,8 +258,6 @@ object Testing extends SelectedMusician with Photos {
       idAndTimes.filter(it =>
       (it.opTimeMillis.map(_ <= 0) | false) && ! notifiedMusicianIds.contains(it.musician.id))
     else Vector[IdAndTime]()
-    log.info(idAndTimes)
-    log.info("To notify: " + toNotify)
     notifiedMusicianIds ++= toNotify.map(_.musician.id)
     val notifications = toNotify.map(it => JsRaw(s"""sendNotification("${it.musician.nameNickLast}, it’s time to test")""").cmd)
     val callTimes = idAndTimes.map(it => JsJqHtml(s"#${it.rowId} .qrtime", it.formattedTime))

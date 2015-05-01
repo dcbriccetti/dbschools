@@ -1,7 +1,6 @@
 package com.dbschools.mgb
 package comet
 
-import com.dbschools.mgb.schema.User
 import com.dbschools.mgb.snippet.LiftExtensions._
 import net.liftweb.http.js.JsCmds.Replace
 import net.liftweb.http.{CometActor, CometListener}
@@ -25,6 +24,9 @@ class GeneralSettingsCometActor extends CometActor with CometListener {
     case SetPeriod =>
       replaceDefaultPageSection("periodSpan")
 
+    case ChangeSpecialSchedule =>
+      replaceDefaultPageSection("specialScheduleOuter")
+
     case Start =>
   }
 
@@ -41,4 +43,5 @@ object GeneralSettingsCometDispatcher extends CommonCometDispatcher
 object GeneralSettingsCometActorMessages {
   case object SetServicingQueueCheckbox
   case object SetPeriod
+  case object ChangeSpecialSchedule
 }
