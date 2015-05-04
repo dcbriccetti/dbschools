@@ -32,11 +32,10 @@ class Student extends CometActor with CometListener {
     case Start =>
   }
 
-
   def render = {
     TestingManager.called match {
-      case Nil => PassThru
-      case ems => "#nextTesting *" #> musicianSpans(ems)
+      case musicians if musicians.isEmpty => PassThru
+      case musicians                      => "#nextTesting *" #> musicianSpans(musicians)
     }
   }
 }

@@ -11,7 +11,7 @@ import net.liftweb.util.Props
 import snippet.Authenticator
 import snippet.Selectors.Selection
 import comet._
-import comet.TestingCometActorMessages.SetTimesUntilCall
+import comet.TestingCometActorMessages.UpdateQueueDisplay
 import schema.{AppSchema, Musician, User}
 import model.Periods.{TimeClass, NotInPeriod, InSpecialSchedule}
 
@@ -31,7 +31,7 @@ class TestingManager extends Actor {
 
     case Tick =>
       tickCount += 1
-      TestingCometDispatcher ! SetTimesUntilCall(testingState.timesUntilCall)
+      TestingCometDispatcher ! UpdateQueueDisplay
       StudentCometDispatcher ! Next(called)
 
       val periodNow = Periods.periodWithin
@@ -161,9 +161,7 @@ class TestingManager extends Actor {
 object TestingManager {
   val defaultNextCallMins = Props.getInt("defaultNextCallMins") getOrElse 5
 
-  def called = sortedEnqueued.take(testingState.timesUntilCall.count(_.duration.getMillis <= 0))
-
-  def sortedEnqueued: Seq[EnqueuedMusician] = testingState.enqueuedMusicians.items
+  def called = testingState.enqueuedMusicians.items.take(testingState.timesUntilCall.count(_.duration.getMillis <= 0))
 }
 
 case class EnqueuedMusician(musician: Musician, nextPieceName: String)
@@ -206,7 +204,7 @@ object testingState {
   var specialSchedule = false
 
   /** Returns a Duration for each tester servicing the queue. */
-  def timesUntilCall: Iterable[TesterDuration] = {
+  def timesUntilCall = {
     val now = DateTime.now
     val testingMusiciansFromQueueByTesterId = testingMusicians.filter(_.fromQueue.nonEmpty).groupBy(_.tester.id)
     val durationsFromQueueServicingSessions =
@@ -224,6 +222,6 @@ object testingState {
     }).flatten
     val zeroDurations = (servicingQueueTesterIds -- testingMusiciansFromQueueByTesterId.keySet).
       map {case (testerId, selection) => TesterDuration(testerId, selection, new Duration(0))}
-    durationsFromQueueServicingSessions ++ zeroDurations
+    (durationsFromQueueServicingSessions ++ zeroDurations).toSeq.sortBy(_.duration.millis)
   }
 }

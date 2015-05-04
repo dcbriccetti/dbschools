@@ -89,16 +89,7 @@ class Testing extends SelectedMusician with Photos {
       tm ! DequeueInstrumentsOfMusicians(selectedScheduledIds)
       Noop
     }, "title" -> "Remove all students playing the instruments of the selected students") &
-    ".queueRow"   #> {
-      val durs = Testing.sortedDurs(testingState.timesUntilCall.map(_.duration))
-      val items = enqueuedMusicians.items
-      items.zipWithIndex.map {
-        case (s, i) =>
-          queueRow(s,
-            if (i < durs.count(_.millis < 0)) Some("selected") else None,
-            if (i < durs.size) Some(durs(i)) else None)
-      }
-    } &
+    ".queueRow"   #> enqueuedMusicians.items.map(musician => queueRow(musician, None, None)) &
     "#testerSessionsOuter" #> testerSessions &
     "#message"    #> SHtml.ajaxText("",
       _.trim match {
@@ -211,14 +202,12 @@ object Testing extends SelectedMusician with Photos {
     messageRow(chatMessage)(elemFromTemplate("testing", ".messageRow")).toString().encJs) &
     JsShowId("clearMessages")
 
-  private def sortedDurs(timesUntilCall: Iterable[Duration]) = timesUntilCall.toSeq.sortBy(_.millis)
-
   private var notifiedMusicianIds = Set[Int]()
 
   private case class IdAndTime(rowId: String, musician: Musician, opTimeMillis: Option[Long], formattedTime: String)
 
-  def updateTimesUntilCall(timesUntilCall: Iterable[TesterDuration]) = {
-    val durs = Testing.sortedDurs(timesUntilCall.map(_.duration))
+  def makeUpdateTimesUntilCallJs(testerDurations: Seq[TesterDuration]) = {
+    val durs = testerDurations
     val goTest = "It’s time to test"
     val enqueuedMusicianIds = enqueuedMusicians.items.map(_.musician.id).toSet
     notifiedMusicianIds &= enqueuedMusicianIds // Remove anybody no longer in the queue
@@ -229,8 +218,8 @@ object Testing extends SelectedMusician with Photos {
           if (i >= durs.size)
             ""
           else {
-            if (durs(i).getMillis > 0) {
-              val p = durs(i).toPeriod().withMillis(0)
+            if (durs(i).duration.getMillis > 0) {
+              val p = durs(i).duration.toPeriod().withMillis(0)
               Testing.formatter.print(p) match {
                 case "0 milliseconds" => goTest // todo properly suppress this
                 case nz               => s"Calling in $nz"
@@ -238,10 +227,11 @@ object Testing extends SelectedMusician with Photos {
             } else goTest
           }
         val id = queueRowId(enqueuedMusician.musician.id)
-        IdAndTime(id, enqueuedMusician.musician, if (i >= durs.size) None else Some(durs(i).millis), formattedTime)
+        IdAndTime(id, enqueuedMusician.musician, if (i >= durs.size) None else Some(durs(i).duration.millis),
+          formattedTime)
     }
-    val callTimes = idAndTimes.map(it => JsJqHtml(s"#${it.rowId} .qrtime", it.formattedTime))
-    (makeNotificationJs(idAndTimes) ++ callTimes).fold(Noop)(_ & _)
+    val callTimesJs = idAndTimes.map(it => JsJqHtml(s"#${it.rowId} .qrtime", it.formattedTime))
+    (makeNotificationJs(idAndTimes) ++ callTimesJs).fold(Noop)(_ & _)
   }
 
   private def makeNotificationJs(idAndTimes: Iterable[IdAndTime]) = {

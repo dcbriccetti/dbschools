@@ -11,7 +11,7 @@ import Helpers._
 import snippet.Testing
 import snippet.LiftExtensions._
 import Testing.{queueRowId, sessionRowId, sessionRow}
-import model.{SessionStats, TesterDuration, ChatMessage, TestingMusician}
+import model.{SessionStats, TesterDuration, ChatMessage, TestingMusician, testingState}
 import schema.User
 
 class TestingCometActor extends CometActor with CometListener {
@@ -48,11 +48,12 @@ class TestingCometActor extends CometActor with CometListener {
         JsJqHilite(sel)
       )
 
-    case SetTimesUntilCall(timesUntilCall) =>
+    case UpdateQueueDisplay =>
       val sel = "tr.queueRow"
+      val timesUntilCall = testingState.timesUntilCall
       val selCount = timesUntilCall.count(_.duration.getMillis < 500)
       partialUpdate(JsJqUnStyleRows(sel, selCount, 999999) & JsJqStyleRows(sel, 0, selCount) &
-        Testing.updateTimesUntilCall(timesUntilCall))
+        Testing.makeUpdateTimesUntilCallJs(timesUntilCall))
 
     case Chat(chatMessage) =>
       partialUpdate(Testing.addMessage(chatMessage))
@@ -94,7 +95,7 @@ object TestingCometActorMessages {
   /** Removes a musician from the queue (if it exists), and adds it to a testing session */
   case class MoveMusician(testingMusician: TestingMusician, timesUntilCall: Iterable[TesterDuration])
   case class UpdateAssessmentCount(testingMusician: TestingMusician)
-  case class SetTimesUntilCall(timesUntilCall: Iterable[TesterDuration])
+  object UpdateQueueDisplay
   case class Chat(chatMessage: ChatMessage)
   case object ClearChat
 }
