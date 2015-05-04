@@ -2,7 +2,6 @@ package com.dbschools.mgb.model
 
 class MusicianQueue {
   private var q = Vector[EnqueuedMusician]()
-  var lastTestOrder = true
 
   def isEmpty = q.isEmpty
   def nonEmpty = q.nonEmpty
@@ -36,12 +35,11 @@ class MusicianQueue {
     val ids = musicianIds.toSet
     def matching(m: EnqueuedMusician) = ids.contains(m.musician.id)
     q = q.filter(matching) ++ q.filterNot(matching)
-    lastTestOrder = false
   }
 
   def empty(): Unit = synchronized {
     q = Vector()
   }
 
-  def items = if (lastTestOrder) q.sortBy(_.sortOrder) else q
+  def items = q
 }

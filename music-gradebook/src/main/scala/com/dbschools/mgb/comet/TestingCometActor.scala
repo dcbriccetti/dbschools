@@ -12,7 +12,7 @@ import Helpers._
 import snippet.Testing
 import snippet.LiftExtensions._
 import Testing.{queueRowId, sessionRowId, sessionRow}
-import com.dbschools.mgb.model.{ChatMessage, TestingMusician}
+import com.dbschools.mgb.model.{TesterDuration, ChatMessage, TestingMusician}
 import schema.User
 
 class TestingCometActor extends CometActor with CometListener {
@@ -45,13 +45,13 @@ class TestingCometActor extends CometActor with CometListener {
       val rowId = sessionRowId(tm.musician.id)
       val sel = s"$testerId #$rowId .srasmts"
       partialUpdate(
-        JsJqHtml(sel, tm.numAsmts) &
+        JsJqHtml(sel, tm.numTests) &
         JsJqHilite(sel)
       )
 
     case SetTimesUntilCall(timesUntilCall) =>
       val sel = "tr.queueRow"
-      val selCount = timesUntilCall.count(_.getMillis < 500)
+      val selCount = timesUntilCall.count(_.duration.getMillis < 500)
       partialUpdate(JsJqUnStyleRows(sel, selCount, 999999) & JsJqStyleRows(sel, 0, selCount) &
         Testing.updateTimesUntilCall(timesUntilCall))
 
@@ -93,9 +93,9 @@ object TestingCometDispatcher extends CommonCometDispatcher
 object TestingCometActorMessages {
   case object ReloadPage
   /** Removes a musician from the queue (if it exists), and adds it to a testing session */
-  case class MoveMusician(testingMusician: TestingMusician, timesUntilCall: Iterable[Duration])
+  case class MoveMusician(testingMusician: TestingMusician, timesUntilCall: Iterable[TesterDuration])
   case class UpdateAssessmentCount(testingMusician: TestingMusician)
-  case class SetTimesUntilCall(timesUntilCall: Iterable[Duration])
+  case class SetTimesUntilCall(timesUntilCall: Iterable[TesterDuration])
   case class Chat(chatMessage: ChatMessage)
   case object ClearChat
 }

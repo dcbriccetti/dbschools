@@ -198,18 +198,13 @@ class Students extends SelectedMusician with Photos with Loggable {
   }
 
   private def scheduleSelectedMusicians() {
-    val now = DateTime.now
     val musiciansToEnqueue = selectedMusicians.map(musician => {
-      val lastAsmtTime = lastAssTimeByMusician.get(musician.id)
       val opNextPieceName = for {
         lastPasses  <- lastPassesByMusician.get(musician.id)
         lastPass    <- lastPasses.headOption
         nextPiece   <- Cache.nextPiece(lastPass.piece)
       } yield nextPiece.name.get
-      val longAgo = 60L * 60 * 24 * 365 * 100
-      val secondsSince = lastAsmtTime.map(la => Seconds.secondsBetween(la, now).getSeconds.toLong) | longAgo
-      val sortOrder = -secondsSince
-      EnqueuedMusician(musician, sortOrder, opNextPieceName | Cache.pieces.head.name.get)
+      EnqueuedMusician(musician, opNextPieceName | Cache.pieces.head.name.get)
     })
     Actors.testingManager ! EnqueueMusicians(musiciansToEnqueue)
   }

@@ -93,7 +93,7 @@ class TestingManager extends Actor {
         TestingCometDispatcher ! MoveMusician(newTm, testingState.timesUntilCall)
         newTm
       }
-      tm.numAsmts += 1
+      tm.numTests += 1
       tm.lastActivity = DateTime.now
       TestingCometDispatcher ! UpdateAssessmentCount(tm)
 
@@ -112,10 +112,6 @@ class TestingManager extends Actor {
       else
         testingState.callNowTesterIds -= user.id
       StudentCometDispatcher ! Next(called)
-
-    case SetLastTestOrder(lastTestOrder) =>
-      testingState.enqueuedMusicians.lastTestOrder = lastTestOrder
-      TestingCometDispatcher ! ReloadPage
 
     case SetSpecialSchedule(specialSchedule) =>
       testingState.specialSchedule = specialSchedule
@@ -165,19 +161,21 @@ class TestingManager extends Actor {
 object TestingManager {
   val defaultNextCallMins = Props.getInt("defaultNextCallMins") getOrElse 5
 
-  def called = sortedEnqueued.take(testingState.timesUntilCall.count(_.getMillis <= 0))
+  def called = sortedEnqueued.take(testingState.timesUntilCall.count(_.duration.getMillis <= 0))
 
   def sortedEnqueued: Seq[EnqueuedMusician] = testingState.enqueuedMusicians.items
 }
 
-case class EnqueuedMusician(musician: Musician, sortOrder: Long, nextPieceName: String)
+case class EnqueuedMusician(musician: Musician, nextPieceName: String)
 
 case class TestingMusician(musician: Musician, tester: User, startingTime: DateTime, fromQueue: Option[MusicianQueue]) {
-  var numAsmts = 0
+  var numTests = 0
   var lastActivity = startingTime
 }
 
 case class ChatMessage(time: DateTime, user: User, msg: String)
+
+case class TesterDuration(testerId: Int, selection: Selection, duration: Duration)
 
 object TestingManagerMessages {
   case class EnqueueMusicians(enqueuedMusicians: Iterable[EnqueuedMusician])
@@ -188,7 +186,6 @@ object TestingManagerMessages {
   case class IncrementMusicianAssessmentCount(tester: User, musician: Musician)
   case class SetServicingQueue(tester: User, instrumentSelection: Selection)
   case class SetCallAfterMins(tester: User, mins: Option[Int], callNow: Boolean)
-  case class SetLastTestOrder(lastTestOrder: Boolean)
   case class SetSpecialSchedule(specialSchedule: Boolean)
   case object ClearQueue
   case class Chat(chatMessage: ChatMessage)
@@ -209,24 +206,24 @@ object testingState {
   var specialSchedule = false
 
   /** Returns a Duration for each tester servicing the queue. */
-  def timesUntilCall = {
+  def timesUntilCall: Iterable[TesterDuration] = {
     val now = DateTime.now
     val testingMusiciansFromQueueByTesterId = testingMusicians.filter(_.fromQueue.nonEmpty).groupBy(_.tester.id)
     val durationsFromQueueServicingSessions =
     (for {
-      (testerId, testingMusicians) <- testingMusiciansFromQueueByTesterId
-      if servicingQueueTesterIds contains testerId
+      (testerId, testingMusicians)  <- testingMusiciansFromQueueByTesterId
+      selection                     <- servicingQueueTesterIds get testerId
+      lastStudentStart  = testingMusicians.map(_.startingTime).reduce {(a, b) => if (a > b) a else b}
+      sessionAge        = new Interval(lastStudentStart, now).toDuration
+      opCallNow         = if (callNowTesterIds.contains(testerId)) Some(0) else None
     } yield {
-      val lastStudentStart = testingMusicians.map(_.startingTime).reduce {(a, b) => if (a > b) a else b}
-      val sessionAge = new Interval(lastStudentStart, now).toDuration
-      val opCallNow = if (callNowTesterIds.contains(testerId)) Some(0) else None
       opCallNow orElse callAfterMinsByTesterId(testerId) map(mins => {
         val expectedSessionDuration = new Duration(mins * 60000)
-        expectedSessionDuration - sessionAge
+        TesterDuration(testerId, selection, expectedSessionDuration - sessionAge)
       })
     }).flatten
-    val zeroDurations = (servicingQueueTesterIds -- testingMusiciansFromQueueByTesterId.keySet).toSeq.
-      map(n => new Duration(0))
+    val zeroDurations = (servicingQueueTesterIds -- testingMusiciansFromQueueByTesterId.keySet).
+      map {case (testerId, selection) => TesterDuration(testerId, selection, new Duration(0))}
     durationsFromQueueServicingSessions ++ zeroDurations
   }
 }

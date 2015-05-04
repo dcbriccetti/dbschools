@@ -77,10 +77,6 @@ class Testing extends SelectedMusician with Photos {
       })
     }
 
-    "#lastTestOrder" #> SHtml.ajaxCheckbox(testingState.enqueuedMusicians.lastTestOrder, (checked) => {
-      tm ! SetLastTestOrder(checked)
-      Noop
-    }) &
     "#toTop" #> SHtml.ajaxButton("Top", () => {
       tm ! ToTop(selectedScheduledIds)
       Noop
@@ -94,7 +90,7 @@ class Testing extends SelectedMusician with Photos {
       Noop
     }, "title" -> "Remove all students playing the instruments of the selected students") &
     ".queueRow"   #> {
-      val durs = Testing.sortedDurs(testingState.timesUntilCall)
+      val durs = Testing.sortedDurs(testingState.timesUntilCall.map(_.duration))
       val items = enqueuedMusicians.items
       items.zipWithIndex.map {
         case (s, i) =>
@@ -223,7 +219,7 @@ object Testing extends SelectedMusician with Photos {
     "#srstu *"    #> m.nameNickLast &
     "#srtester *" #> tm.tester.last_name &
     "#srtime *"   #> tmf.print(tm.startingTime) &
-    ".srasmts *"  #> tm.numAsmts
+    ".srasmts *"  #> tm.numTests
   }
 
   def messageRow(chatMessage: ChatMessage) =
@@ -239,13 +235,13 @@ object Testing extends SelectedMusician with Photos {
 
   private var notifiedMusicianIds = Set[Int]()
 
-  def updateTimesUntilCall(timesUntilCall: Iterable[Duration]) = {
-    val durs = Testing.sortedDurs(timesUntilCall)
+  private case class IdAndTime(rowId: String, musician: Musician, opTimeMillis: Option[Long], formattedTime: String)
+
+  def updateTimesUntilCall(timesUntilCall: Iterable[TesterDuration]) = {
+    val durs = Testing.sortedDurs(timesUntilCall.map(_.duration))
     val goTest = "It’s time to test"
     val enqueuedMusicianIds = enqueuedMusicians.items.map(_.musician.id).toSet
     notifiedMusicianIds &= enqueuedMusicianIds // Remove anybody no longer in the queue
-
-    case class IdAndTime(rowId: String, musician: Musician, opTimeMillis: Option[Long], formattedTime: String)
 
     val idAndTimes = enqueuedMusicians.items.zipWithIndex.map {
       case (enqueuedMusician, i) =>
@@ -264,16 +260,17 @@ object Testing extends SelectedMusician with Photos {
         val id = queueRowId(enqueuedMusician.musician.id)
         IdAndTime(id, enqueuedMusician.musician, if (i >= durs.size) None else Some(durs(i).millis), formattedTime)
     }
+    val callTimes = idAndTimes.map(it => JsJqHtml(s"#${it.rowId} .qrtime", it.formattedTime))
+    (makeNotificationJs(idAndTimes) ++ callTimes).fold(Noop)(_ & _)
+  }
 
+  private def makeNotificationJs(idAndTimes: Iterable[IdAndTime]) = {
     val toNotify = if (testingState.desktopNotify)
       idAndTimes.filter(it =>
       (it.opTimeMillis.map(_ <= 0) | false) && ! notifiedMusicianIds.contains(it.musician.id))
     else Vector[IdAndTime]()
     notifiedMusicianIds ++= toNotify.map(_.musician.id)
-    val notifications = toNotify.map(it => JsRaw(s"""sendNotification("${it.musician.nameNickLast}, it’s time to test")""").cmd)
-    val callTimes = idAndTimes.map(it => JsJqHtml(s"#${it.rowId} .qrtime", it.formattedTime))
-
-    (notifications ++ callTimes).fold(Noop)(_ & _)
+    toNotify.map(it => JsRaw(s"""sendNotification("${it.musician.nameNickLast}, it’s time to test")""").cmd)
   }
 
   def clearMessages = JsJqRemove("#messagesTable tbody *") & JsHideId("clearMessages")
