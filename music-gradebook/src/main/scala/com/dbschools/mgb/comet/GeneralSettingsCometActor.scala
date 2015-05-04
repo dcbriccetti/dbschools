@@ -18,10 +18,10 @@ class GeneralSettingsCometActor extends CometActor with CometListener {
 
   override def lowPriority = {
 
-    case SetServicingQueueCheckbox =>
+    case ChangeServicingQueueSelection =>
       replaceDefaultPageSection("queueService")
 
-    case SetPeriod =>
+    case ChangePeriodElements =>
       replaceDefaultPageSection("periodSpan")
 
     case ChangeSpecialSchedule =>
@@ -41,7 +41,7 @@ class GeneralSettingsCometActor extends CometActor with CometListener {
 object GeneralSettingsCometDispatcher extends CommonCometDispatcher
 
 object GeneralSettingsCometActorMessages {
-  case object SetServicingQueueCheckbox
-  case object SetPeriod
+  case object ChangeServicingQueueSelection
+  case object ChangePeriodElements
   case object ChangeSpecialSchedule
 }

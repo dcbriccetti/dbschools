@@ -2,6 +2,7 @@ package com.dbschools.mgb
 package snippet
 
 import java.text.NumberFormat
+
 import scala.xml.NodeSeq
 import scalaz._
 import Scalaz._
@@ -20,6 +21,7 @@ import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
 import AppSchema.users
+import Selectors.Selection
 import model._
 import model.testingState._
 import model.TestingManagerMessages._
@@ -97,7 +99,7 @@ class Testing extends SelectedMusician with Photos {
       items.zipWithIndex.map {
         case (s, i) =>
           queueRow(s,
-            if (i < testingState.timesUntilCall.count(_.millis < 0)) Some("selected") else None,
+            if (i < durs.count(_.millis < 0)) Some("selected") else None,
             if (i < durs.size) Some(durs(i)) else None)
       }
     } &
@@ -117,14 +119,24 @@ class Testing extends SelectedMusician with Photos {
     }, displayNoneIf(chatMessages.isEmpty))
   }
 
-  private val selectors = svTestingSelectors.get
-  selectors.opCallback = Some(() => changeTestingInstrument())
-
-  def changeTestingInstrument(): JsCmd = {
-    Authenticator.opLoggedInUser.foreach(user => tm ! SetServicingQueue(user, selectors.selectedInstId))
+  def changeTestingInstrument(sel: Selection): JsCmd = {
+    Authenticator.opLoggedInUser.foreach(user => tm ! SetServicingQueue(user, sel))
     Reload
   }
-  def queueInstrumentSelector = selectors.instrumentSelector(includeNone = true, exclude = Seq("Unassigned"))
+
+  def queueInstrumentSelector = {
+    import Selectors._
+    val instruments = Cache.instruments.filterNot(_.name.get == "Unassigned").
+      sortBy(_.sequence.get).map(i => i.id.toString -> i.name.get)
+    selector("instrumentSelector", Seq(noneItem, allItem) ++ instruments,
+      Authenticator.opLoggedInUser.flatMap(user => testingState.servicingQueueTesterIds.get(user.id)) | Left(false),
+      changeTestingInstrument, None)
+  }
+
+  def queueService = {
+    val opUser = Authenticator.opLoggedInUser // This appears on every page, even before login
+    "#queue" #> (if (opUser.nonEmpty) PassThru else ClearNodes)
+  }
 
   def desktopNotify = {
     val opUser = Authenticator.opLoggedInUser // This appears on every page, even before login
@@ -270,9 +282,3 @@ object Testing extends SelectedMusician with Photos {
   
   def sessionRowId(musicianId: Int) = "sr" + musicianId
 }
-
-object svTestingSelectors extends SessionVar[Selectors]({
-  val s = new Selectors()
-  s.selectedInstId = Left(false)
-  s
-})

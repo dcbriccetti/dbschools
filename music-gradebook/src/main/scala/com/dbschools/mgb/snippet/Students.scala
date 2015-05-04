@@ -38,7 +38,7 @@ class Students extends SelectedMusician with Photos with Loggable {
   selectors.opCallback = Some(() => replaceContents)
   def yearSelector = selectors.yearSelector
   def groupSelector = selectors.groupSelector
-  def instrumentSelector = selectors.instrumentSelector()
+  def instrumentSelector = selectors.instrumentSelector
 
   private val lastPassFinder = new LastPassFinder()
   private val lastPassesByMusician = lastPassFinder.lastPassed().groupBy(_.musicianId)

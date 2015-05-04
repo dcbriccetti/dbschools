@@ -18,7 +18,7 @@ import model.Periods.{TimeClass, NotInPeriod, InSpecialSchedule}
 class TestingManager extends Actor {
   val log = Logger.getLogger(getClass)
   private var lastPeriodValue: TimeClass = NotInPeriod
-  var tickCount = 0
+  var tickCount = 0L
   import StudentsCometActorMessages._
   import TestingCometActorMessages.{ReloadPage, MoveMusician, UpdateAssessmentCount}
   import TestingManagerMessages._
@@ -37,17 +37,12 @@ class TestingManager extends Actor {
       val periodNow = Periods.periodWithin
       if (periodNow != lastPeriodValue || (periodNow.isInstanceOf[Periods.Period] && tickCount % 10 == 0)) {
         lastPeriodValue = periodNow
-        GeneralSettingsCometDispatcher ! SetPeriod
+        GeneralSettingsCometDispatcher ! ChangePeriodElements
       }
-      if (! inQueueServiceTime) {
-        if (! testingState.servicingQueueTesterIdsReset) {
-          testingState.servicingQueueTesterIds = testingState.servicingQueueTesterIds.empty
-          GeneralSettingsCometDispatcher ! SetServicingQueueCheckbox
-          log.info("Servicing IDs reset")
-          testingState.servicingQueueTesterIdsReset = true
-        }
-      } else {
+      if (inQueueServiceTime) {
         testingState.servicingQueueTesterIdsReset = false
+      } else {
+        resetServicingQueueIdsIfNeeded()
       }
 
     case EnqueueMusicians(scheds) =>
@@ -124,7 +119,7 @@ class TestingManager extends Actor {
 
     case SetSpecialSchedule(specialSchedule) =>
       testingState.specialSchedule = specialSchedule
-      GeneralSettingsCometDispatcher ! SetPeriod
+      GeneralSettingsCometDispatcher ! ChangePeriodElements
       GeneralSettingsCometDispatcher ! ChangeSpecialSchedule
 
     case ClearQueue =>
@@ -144,6 +139,14 @@ class TestingManager extends Actor {
       testingState.chatMessages = Nil
       TestingCometDispatcher ! TestingCometActorMessages.ClearChat
       NoticesDispatcher ! NumChatMsgs(0)
+  }
+
+  private def resetServicingQueueIdsIfNeeded(): Unit = {
+    if (! testingState.servicingQueueTesterIdsReset) {
+      testingState.servicingQueueTesterIds = testingState.servicingQueueTesterIds.empty
+      GeneralSettingsCometDispatcher ! ChangeServicingQueueSelection
+      testingState.servicingQueueTesterIdsReset = true
+    }
   }
 
   private def updateStudentsPage(): Unit =
@@ -209,7 +212,8 @@ object testingState {
   def timesUntilCall = {
     val now = DateTime.now
     val testingMusiciansFromQueueByTesterId = testingMusicians.filter(_.fromQueue.nonEmpty).groupBy(_.tester.id)
-    val durationsFromQueueServicingSessions = (for {
+    val durationsFromQueueServicingSessions =
+    (for {
       (testerId, testingMusicians) <- testingMusiciansFromQueueByTesterId
       if servicingQueueTesterIds contains testerId
     } yield {
