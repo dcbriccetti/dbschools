@@ -1,8 +1,6 @@
 package com.dbschools.mgb
 package snippet
 
-import java.text.NumberFormat
-
 import scala.xml.NodeSeq
 import scalaz._
 import Scalaz._
@@ -36,13 +34,7 @@ class Testing extends SelectedMusician with Photos {
 
     def queueRow(sm: EnqueuedMusician, extraClass: Option[String], timeUntilCall: Option[Duration]): CssSel = {
       val m = sm.musician
-      val mgs = AppSchema.musicianGroups.where(mg => mg.musician_id === m.id and mg.school_year === Terms.currentTerm)
-      val instrumentNames =
-        for {
-          instrumentId  <- mgs.map(_.instrument_id)
-          instrument    <- Cache.instruments.find(_.id == instrumentId)
-        } yield instrument.name.get
-
+      val opInstrumentName = Cache.instruments.find(_.id == sm.instrumentId).map(_.name.get)
       val formattedTime = ~timeUntilCall.map(t => Testing.formatter.print(t.toPeriod))
 
       "tr [id]"     #> Testing.queueRowId(m.id) &
@@ -57,7 +49,7 @@ class Testing extends SelectedMusician with Photos {
       }) &
       "#qrstu *"    #> Testing.studentNameLink(m, test = true) &
       "#qrphoto *"  #> img(m.permStudentId.get) &
-      "#qrinst *"   #> instrumentNames.toSet /* no dups */ .toSeq.sorted.mkString(", ") &
+      "#qrinst *"   #> ~opInstrumentName &
       "#qrpiece *"  #> sm.nextPieceName &
       "#qrtime *"   #> formattedTime
     }

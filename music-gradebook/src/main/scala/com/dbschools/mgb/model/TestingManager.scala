@@ -8,7 +8,6 @@ import org.apache.log4j.Logger
 import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.util.Props
-import snippet.Authenticator
 import snippet.Selectors.Selection
 import comet._
 import comet.TestingCometActorMessages.UpdateQueueDisplay
@@ -31,6 +30,7 @@ class TestingManager extends Actor {
 
     case Tick =>
       tickCount += 1
+      MusicianQueueManager.moveInterestingElementsToTop(testingState.enqueuedMusicians)
       TestingCometDispatcher ! UpdateQueueDisplay
       StudentCometDispatcher ! Next(called)
 
@@ -80,7 +80,7 @@ class TestingManager extends Actor {
     case TestMusician(testingMusician) =>
       if (testingState.enqueuedMusicians -= testingMusician.musician.id) {
         testingState.testingMusicians += testingMusician
-        TestingCometDispatcher ! MoveMusician(testingMusician, testingState.timesUntilCall)
+        TestingCometDispatcher ! MoveMusician(testingMusician, testingState.testingDurations)
         StudentCometDispatcher ! Next(called)
       }
       updateStudentsPage()
@@ -90,7 +90,7 @@ class TestingManager extends Actor {
         // This student wasn’t selected from the queue, so make a TestingMusician record now
         val newTm = TestingMusician(musician, tester, DateTime.now, None)
         testingState.testingMusicians += newTm
-        TestingCometDispatcher ! MoveMusician(newTm, testingState.timesUntilCall)
+        TestingCometDispatcher ! MoveMusician(newTm, testingState.testingDurations)
         newTm
       }
       tm.numTests += 1
@@ -161,10 +161,10 @@ class TestingManager extends Actor {
 object TestingManager {
   val defaultNextCallMins = Props.getInt("defaultNextCallMins") getOrElse 5
 
-  def called = testingState.enqueuedMusicians.items.take(testingState.timesUntilCall.count(_.duration.getMillis <= 0))
+  def called = testingState.enqueuedMusicians.items.take(testingState.testingDurations.count(_.duration.getMillis <= 0))
 }
 
-case class EnqueuedMusician(musician: Musician, nextPieceName: String)
+case class EnqueuedMusician(musician: Musician, instrumentId: Int, nextPieceName: String)
 
 case class TestingMusician(musician: Musician, tester: User, startingTime: DateTime, fromQueue: Option[MusicianQueue]) {
   var numTests = 0
@@ -189,39 +189,4 @@ object TestingManagerMessages {
   case class Chat(chatMessage: ChatMessage)
   case object ClearChat
   case object Tick
-}
-
-object testingState {
-  val enqueuedMusicians = new MusicianQueue()
-  var testingMusicians = Set[TestingMusician]()
-  var chatMessages = List[ChatMessage]()
-  var callAfterMinsByTesterId = Map[Int, Option[Int]]().withDefaultValue(Some(TestingManager.defaultNextCallMins))
-  var servicingQueueTesterIds = Map[Int, Selection]()
-  var servicingQueueTesterIdsReset = false
-  var callNowTesterIds = Set[Int]()
-  var desktopNotifyByTesterId = Map[Int, Boolean]().withDefaultValue(false)
-  def desktopNotify = Authenticator.opLoggedInUser.map(user => desktopNotifyByTesterId(user.id)) | false
-  var specialSchedule = false
-
-  /** Returns a Duration for each tester servicing the queue. */
-  def timesUntilCall = {
-    val now = DateTime.now
-    val testingMusiciansFromQueueByTesterId = testingMusicians.filter(_.fromQueue.nonEmpty).groupBy(_.tester.id)
-    val durationsFromQueueServicingSessions =
-    (for {
-      (testerId, testingMusicians)  <- testingMusiciansFromQueueByTesterId
-      selection                     <- servicingQueueTesterIds get testerId
-      lastStudentStart  = testingMusicians.map(_.startingTime).reduce {(a, b) => if (a > b) a else b}
-      sessionAge        = new Interval(lastStudentStart, now).toDuration
-      opCallNow         = if (callNowTesterIds.contains(testerId)) Some(0) else None
-    } yield {
-      opCallNow orElse callAfterMinsByTesterId(testerId) map(mins => {
-        val expectedSessionDuration = new Duration(mins * 60000)
-        TesterDuration(testerId, selection, expectedSessionDuration - sessionAge)
-      })
-    }).flatten
-    val zeroDurations = (servicingQueueTesterIds -- testingMusiciansFromQueueByTesterId.keySet).
-      map {case (testerId, selection) => TesterDuration(testerId, selection, new Duration(0))}
-    (durationsFromQueueServicingSessions ++ zeroDurations).toSeq.sortBy(_.duration.millis)
-  }
 }

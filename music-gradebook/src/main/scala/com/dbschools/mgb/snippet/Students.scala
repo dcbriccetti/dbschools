@@ -198,14 +198,18 @@ class Students extends SelectedMusician with Photos with Loggable {
   }
 
   private def scheduleSelectedMusicians() {
-    val musiciansToEnqueue = selectedMusicians.map(musician => {
-      val opNextPieceName = for {
+    val mgmsByMusician = selectors.musicianGroups.toVector.groupBy(_.m.id)
+    val musiciansToEnqueue = for {
+      musician  <- selectedMusicians
+      mgms      <- mgmsByMusician.get(musician.id)
+      mgm       <- mgms.headOption
+      instrumentId = mgm.mg.instrument_id
+      opNextPieceName = for {
         lastPasses  <- lastPassesByMusician.get(musician.id)
         lastPass    <- lastPasses.headOption
         nextPiece   <- Cache.nextPiece(lastPass.piece)
       } yield nextPiece.name.get
-      EnqueuedMusician(musician, opNextPieceName | Cache.pieces.head.name.get)
-    })
+    } yield EnqueuedMusician(musician, instrumentId, opNextPieceName | Cache.pieces.head.name.get)
     Actors.testingManager ! EnqueueMusicians(musiciansToEnqueue)
   }
 

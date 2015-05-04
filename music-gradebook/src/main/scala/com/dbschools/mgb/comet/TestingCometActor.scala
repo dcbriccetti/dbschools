@@ -50,10 +50,10 @@ class TestingCometActor extends CometActor with CometListener {
 
     case UpdateQueueDisplay =>
       val sel = "tr.queueRow"
-      val timesUntilCall = testingState.timesUntilCall
-      val selCount = timesUntilCall.count(_.duration.getMillis < 500)
+      val durations = testingState.testingDurations
+      val selCount = durations.count(_.duration.getMillis < 500)
       partialUpdate(JsJqUnStyleRows(sel, selCount, 999999) & JsJqStyleRows(sel, 0, selCount) &
-        Testing.makeUpdateTimesUntilCallJs(timesUntilCall))
+        Testing.makeUpdateTimesUntilCallJs(durations))
 
     case Chat(chatMessage) =>
       partialUpdate(Testing.addMessage(chatMessage))
