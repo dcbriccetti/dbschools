@@ -3,7 +3,6 @@ package comet
 
 import scala.language.postfixOps
 import scala.xml.Text
-import org.scala_tools.time.Imports._
 import net.liftweb.http.{CometListener, CometActor}
 import net.liftweb.http.js.JsCmds.{Reload, JsShowId}
 import net.liftweb.http.js.JE.JsRaw
@@ -12,7 +11,7 @@ import Helpers._
 import snippet.Testing
 import snippet.LiftExtensions._
 import Testing.{queueRowId, sessionRowId, sessionRow}
-import com.dbschools.mgb.model.{TesterDuration, ChatMessage, TestingMusician}
+import model.{SessionStats, TesterDuration, ChatMessage, TestingMusician}
 import schema.User
 
 class TestingCometActor extends CometActor with CometListener {
@@ -67,7 +66,7 @@ class TestingCometActor extends CometActor with CometListener {
   private def uid(user: User) = s"#user${user.id}"
 
   private def updateStats(user: User) = {
-    val ss = Testing.SessionStats(user.id)
+    val ss = SessionStats(user.id)
     val id = uid(user)
     JsJqHtml(s"$id .avgMins", Text(ss.avgMinsStr)) &
     JsJqHtml(s"$id .numSessions", Text(ss.num.toString)) &

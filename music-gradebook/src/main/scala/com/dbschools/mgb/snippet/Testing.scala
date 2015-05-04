@@ -13,7 +13,7 @@ import org.joda.time.format.PeriodFormat
 import net.liftweb._
 import util._
 import Helpers._
-import net.liftweb.http.{SessionVar, SHtml}
+import net.liftweb.http.SHtml
 import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.http.js.JsCmds.{Reload, Noop, JsShowId, JsHideId}
 import net.liftweb.http.js.JsCmd
@@ -64,7 +64,7 @@ class Testing extends SelectedMusician with Photos {
 
     def testerSessions: List[CssSel] = {
       users.filter(_.enabled).toList.sortBy(_.last_name).map(user => {
-        val ss = Testing.SessionStats(user.id)
+        val ss = SessionStats(user.id)
         val rowSels = ss.rows.take(Testing.SessionsToShowPerTester).map(Testing.sessionRow(show = true))
 
         ".testerName *"             #> user.last_name &
@@ -175,26 +175,6 @@ object Testing extends SelectedMusician with Photos {
   private val tmf = DateTimeFormat.forStyle("-M")
 
   private val formatter = PeriodFormat.getDefault
-
-  case class SessionStats(rows: Seq[TestingMusician], num: Int, avgMins: Option[Double], avgMinsStr: String,
-    σ: Option[Double], σStr: String)
-
-  object SessionStats {
-    private val fnum = NumberFormat.getNumberInstance
-    fnum.setMaximumFractionDigits(2)
-
-    def apply(userId: Int): SessionStats = {
-      val rows = testingMusicians.filter(_.tester.id == userId).toSeq.sortBy(-_.startingTime.millis)
-      val n = rows.size
-      val lengths = if (n < 2) List[Double]() else
-        for {
-          i <- 1 until n
-        } yield (rows(i - 1).startingTime.getMillis - rows(i).startingTime.getMillis) / 1000.0 / 60
-      val avgMins = if (n < 2) None else Some(lengths.sum / (n - 1))
-      val opσ = avgMins.map(am => Stats.stdev(lengths, am))
-      SessionStats(rows, n, avgMins, ~avgMins.map(fnum.format), opσ, ~opσ.map(fnum.format))
-    }
-  }
 
   def studentNameLink(m: Musician, test: Boolean) = {
     val title = if (test)

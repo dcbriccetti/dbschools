@@ -7,13 +7,13 @@ import xml.{NodeSeq, Text}
 import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
-import org.joda.time.{Seconds, Days}
+import org.joda.time.Days
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
 import common.{Full, Loggable}
 import util._
 import Helpers._
-import http.{LiftRules, S, SessionVar, SHtml}
+import http.{LiftRules, SessionVar, SHtml}
 import http.provider.servlet.HTTPServletContext
 import SHtml.{ElemAttr, text, number, onSubmitUnit, ajaxRadio, ajaxButton, ajaxCheckbox, link}
 import net.liftweb.http.js.JsCmds._
