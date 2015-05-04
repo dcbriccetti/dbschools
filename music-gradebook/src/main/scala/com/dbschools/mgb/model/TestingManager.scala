@@ -19,7 +19,7 @@ class TestingManager extends Actor {
   private var lastPeriodValue: TimeClass = NotInPeriod
   var tickCount = 0L
   import StudentsCometActorMessages._
-  import TestingCometActorMessages.{ReloadPage, MoveMusician, UpdateAssessmentCount}
+  import TestingCometActorMessages.{RebuildPage, MoveMusician, UpdateAssessmentCount}
   import TestingManagerMessages._
   import TestingManager._
   import comet.NoticesMessages._
@@ -47,20 +47,20 @@ class TestingManager extends Actor {
 
     case EnqueueMusicians(scheds) =>
       testingState.enqueuedMusicians ++= scheds
-      TestingCometDispatcher ! ReloadPage
+      TestingCometDispatcher ! RebuildPage
       updateStudentsPage()
       StudentCometDispatcher ! Next(called)
 
     case DequeueMusicians(ids) =>
       if ((testingState.enqueuedMusicians --= ids) > 0) {
-        TestingCometDispatcher ! ReloadPage
+        TestingCometDispatcher ! RebuildPage
         updateStudentsPage()
         StudentCometDispatcher ! Next(called)
       }
 
     case ToTop(ids) =>
       testingState.enqueuedMusicians.moveToTop(ids)
-      TestingCometDispatcher ! ReloadPage
+      TestingCometDispatcher ! RebuildPage
 
     case DequeueInstrumentsOfMusicians(musicianIds) =>
       if (musicianIds.nonEmpty) {
@@ -122,7 +122,7 @@ class TestingManager extends Actor {
       testingState.enqueuedMusicians.empty()
       testingState.testingMusicians = testingState.testingMusicians.empty
       testingState.servicingQueueTesterIds = testingState.servicingQueueTesterIds.empty
-      TestingCometDispatcher ! ReloadPage
+      TestingCometDispatcher ! RebuildPage
       updateStudentsPage()
       StudentCometDispatcher ! Next(Nil)
 

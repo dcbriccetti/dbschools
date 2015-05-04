@@ -1,11 +1,11 @@
 package com.dbschools.mgb
 package comet
 
-import com.dbschools.mgb.snippet.LiftExtensions._
 import net.liftweb.http.js.JsCmds.Replace
 import net.liftweb.http.{CometActor, CometListener}
 import net.liftweb.util.PassThru
 import org.apache.log4j.Logger
+import snippet.LiftExtensions._
 
 import scala.language.postfixOps
 

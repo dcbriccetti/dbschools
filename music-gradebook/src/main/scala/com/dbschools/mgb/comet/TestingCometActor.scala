@@ -4,7 +4,7 @@ package comet
 import scala.language.postfixOps
 import scala.xml.Text
 import net.liftweb.http.{CometListener, CometActor}
-import net.liftweb.http.js.JsCmds.{Reload, JsShowId}
+import net.liftweb.http.js.JsCmds.{Replace, JsShowId}
 import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.util.{Helpers, PassThru}
 import Helpers._
@@ -22,8 +22,8 @@ class TestingCometActor extends CometActor with CometListener {
 
   override def lowPriority = {
 
-    case ReloadPage =>
-      partialUpdate(Reload)
+    case RebuildPage =>
+      replacePageSection("testingContents")
 
     case MoveMusician(testingMusician, timesUntilCall) =>
       val id = testingMusician.musician.id
@@ -85,13 +85,18 @@ class TestingCometActor extends CometActor with CometListener {
     JsJqPrepend(s"${uid(testingMusician.tester)} table tbody", cssSelProcessRow(row).toString().encJs)
   }
 
+  private def replacePageSection(elemId: String) {
+    val elem = elemFromTemplate("testing", s"#$elemId")
+    partialUpdate(Replace(elemId, elem))
+  }
+
   def render = PassThru
 }
 
 object TestingCometDispatcher extends CommonCometDispatcher
 
 object TestingCometActorMessages {
-  case object ReloadPage
+  case object RebuildPage
   /** Removes a musician from the queue (if it exists), and adds it to a testing session */
   case class MoveMusician(testingMusician: TestingMusician, timesUntilCall: Iterable[TesterDuration])
   case class UpdateAssessmentCount(testingMusician: TestingMusician)

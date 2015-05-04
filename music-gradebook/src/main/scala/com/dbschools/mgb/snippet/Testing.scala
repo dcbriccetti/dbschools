@@ -13,10 +13,12 @@ import util._
 import Helpers._
 import net.liftweb.http.SHtml
 import net.liftweb.http.js.JE.JsRaw
-import net.liftweb.http.js.JsCmds.{Reload, Noop, JsShowId, JsHideId}
+import net.liftweb.http.js.JsCmds.{Noop, JsShowId, JsHideId}
 import net.liftweb.http.js.JsCmd
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
+import comet.TestingCometActorMessages.RebuildPage
+import comet.TestingCometDispatcher
 import schema.{Musician, AppSchema}
 import AppSchema.users
 import Selectors.Selection
@@ -100,7 +102,7 @@ class Testing extends SelectedMusician with Photos {
 
   def changeTestingInstrument(sel: Selection): JsCmd = {
     Authenticator.opLoggedInUser.foreach(user => tm ! SetServicingQueue(user, sel))
-    Reload
+    TestingCometDispatcher ! RebuildPage
   }
 
   def queueInstrumentSelector = {
