@@ -15,6 +15,7 @@ import net.liftweb.http.SHtml
 import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.http.js.JsCmds.{Noop, JsShowId, JsHideId}
 import net.liftweb.http.js.JsCmd
+import net.liftweb.http.js.JsCmds._
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
 import comet.TestingCometActorMessages.RebuildPage
@@ -198,20 +199,7 @@ object Testing extends SelectedMusician with Photos {
 
   private var notifiedMusicianIds = Set[Int]()
 
-  private case class IdAndTime(rowId: String, musician: Musician, opDuration: Option[Duration]) {
-    val goTest = "It’s time to test"
-    def formattedTime = {
-      opDuration.map(duration => {
-        if (duration.getMillis > 0) {
-          val p = duration.toPeriod().withMillis(0)
-          Testing.formatter.print(p) match {
-            case "0 milliseconds" => goTest // todo properly suppress this
-            case nz => s"Calling in $nz"
-          }
-        } else goTest
-      }) | ""
-    }
-  }
+  private case class IdAndTime(rowId: String, musician: Musician, opDuration: Option[Duration])
 
   def makeQueueUpdateAndNotificationJs(testerDurations: Seq[TesterDuration]) = {
     val durs = testerDurations
@@ -234,9 +222,18 @@ object Testing extends SelectedMusician with Photos {
 
     val elementUpdateJs = idAndTimes.map(it => {
       val rowIdSel = s"#${it.rowId}"
-      JsJqHtml(s"$rowIdSel .qrtime", it.formattedTime) &
-      JsClassIf(rowIdSel, "selected", it.opDuration.map(dur => dur.millis <= 0) | false)
+      val progSel = s"$rowIdSel .qrtime progress"
+      val opSeconds = it.opDuration.map(_.millis / 1000)
+      opSeconds match {
+        case Some(secs) if secs > 0 =>
+          (JsRaw(s"jQuery('$progSel').removeClass('hidden');"):JsCmd) &
+          JsJqVal(progSel, secs)
+        case Some(secs)             => JsJqSelectRow(rowIdSel)
+        case _                      => Noop
+      }
     })
+    JsJqUnStyleRows("tr.queueRow", 0, 9999) &
+    JsRaw(s"jQuery('.qrtime progress').addClass('hidden');") &
     (makeNotificationJs(idAndTimes) ++ elementUpdateJs).fold(Noop)(_ & _)
   }
 
