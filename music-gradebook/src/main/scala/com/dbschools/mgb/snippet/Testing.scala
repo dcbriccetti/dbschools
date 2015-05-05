@@ -198,40 +198,52 @@ object Testing extends SelectedMusician with Photos {
 
   private var notifiedMusicianIds = Set[Int]()
 
-  private case class IdAndTime(rowId: String, musician: Musician, opTimeMillis: Option[Long], formattedTime: String)
-
-  def makeUpdateTimesUntilCallJs(testerDurations: Seq[TesterDuration]) = {
-    val durs = testerDurations
+  private case class IdAndTime(rowId: String, musician: Musician, opDuration: Option[Duration]) {
     val goTest = "It’s time to test"
-    val enqueuedMusicianIds = enqueuedMusicians.items.map(_.musician.id).toSet
+    def formattedTime = {
+      opDuration.map(duration => {
+        if (duration.getMillis > 0) {
+          val p = duration.toPeriod().withMillis(0)
+          Testing.formatter.print(p) match {
+            case "0 milliseconds" => goTest // todo properly suppress this
+            case nz => s"Calling in $nz"
+          }
+        } else goTest
+      }) | ""
+    }
+  }
+
+  def makeQueueUpdateAndNotificationJs(testerDurations: Seq[TesterDuration]) = {
+    val durs = testerDurations
+    val musicians = enqueuedMusicians.items
+    val enqueuedMusicianIds = musicians.map(_.musician.id).toSet
     notifiedMusicianIds &= enqueuedMusicianIds // Remove anybody no longer in the queue
 
-    val idAndTimes = enqueuedMusicians.items.zipWithIndex.map {
-      case (enqueuedMusician, i) =>
-        val formattedTime =
-          if (i >= durs.size)
-            ""
-          else {
-            if (durs(i).duration.getMillis > 0) {
-              val p = durs(i).duration.toPeriod().withMillis(0)
-              Testing.formatter.print(p) match {
-                case "0 milliseconds" => goTest // todo properly suppress this
-                case nz               => s"Calling in $nz"
-              }
-            } else goTest
-          }
-        val id = queueRowId(enqueuedMusician.musician.id)
-        IdAndTime(id, enqueuedMusician.musician, if (i >= durs.size) None else Some(durs(i).duration.millis),
-          formattedTime)
+    case class MusicianWithOpDur(m: EnqueuedMusician, opDur: Option[TesterDuration])
+    val musiciansWithOpDurs = {
+      def o[A](xs: Iterable[A]) = xs.map(Some.apply)
+      val zippedOpMs = o(musicians).zipAll(o(durs), None, None)
+      zippedOpMs.collect {case (Some(m), opDur) => MusicianWithOpDur(m, opDur)}
     }
-    val callTimesJs = idAndTimes.map(it => JsJqHtml(s"#${it.rowId} .qrtime", it.formattedTime))
-    (makeNotificationJs(idAndTimes) ++ callTimesJs).fold(Noop)(_ & _)
+    val idAndTimes =
+      for {
+        md            <- musiciansWithOpDurs
+        id            = queueRowId(md.m.musician.id)
+        filteredOpDur = md.opDur.filter(dur => dur.matchesInstrument(md.m.instrumentId))
+      } yield IdAndTime(id, md.m.musician, filteredOpDur.map(_.duration))
+
+    val elementUpdateJs = idAndTimes.map(it => {
+      val rowIdSel = s"#${it.rowId}"
+      JsJqHtml(s"$rowIdSel .qrtime", it.formattedTime) &
+      JsClassIf(rowIdSel, "selected", it.opDuration.map(dur => dur.millis <= 0) | false)
+    })
+    (makeNotificationJs(idAndTimes) ++ elementUpdateJs).fold(Noop)(_ & _)
   }
 
   private def makeNotificationJs(idAndTimes: Iterable[IdAndTime]) = {
     val toNotify = if (testingState.desktopNotify)
       idAndTimes.filter(it =>
-      (it.opTimeMillis.map(_ <= 0) | false) && ! notifiedMusicianIds.contains(it.musician.id))
+      (it.opDuration.map(_.millis <= 0) | false) && ! notifiedMusicianIds.contains(it.musician.id))
     else Vector[IdAndTime]()
     notifiedMusicianIds ++= toNotify.map(_.musician.id)
     toNotify.map(it => JsRaw(s"""sendNotification("${it.musician.nameNickLast}, it’s time to test")""").cmd)

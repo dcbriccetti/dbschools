@@ -173,7 +173,9 @@ case class TestingMusician(musician: Musician, tester: User, startingTime: DateT
 
 case class ChatMessage(time: DateTime, user: User, msg: String)
 
-case class TesterDuration(testerId: Int, selection: Selection, duration: Duration)
+case class TesterDuration(testerId: Int, selection: Selection, duration: Duration) {
+  def matchesInstrument(id: Int) = selection.right.toOption.map(_ == id) getOrElse true
+}
 
 object TestingManagerMessages {
   case class EnqueueMusicians(enqueuedMusicians: Iterable[EnqueuedMusician])
