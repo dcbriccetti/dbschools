@@ -143,13 +143,22 @@ class Testing extends SelectedMusician with Photos {
     case period: Periods.Period if Authenticator.opLoggedInUser.nonEmpty =>
       def fh(h: Int) = (if (h > 12) h - 12 else h).toString
       def fm(m: Int) = f"$m%02d"
+
       val sh = fh(period.start.hour)
       val sm = fm(period.start.minute)
       val eh = fh(period.end.hour)
       val em = fm(period.end.minute)
 
+      val secsLeft = period.totalSecs - period.timePassedSecs
+      val minsLeftCeil = math.ceil(secsLeft / 60.0).toInt
+      val progressSpan =
+        <span id="progressMins">
+          {minsLeftCeil}
+          <progress value={secsLeft.toString} max={period.totalSecs.toString}></progress>
+        </span>
+
       "#periodNumber" #> s"${period.num}, $sh:$sm–$eh:$em" &
-      "progress"      #> <progress value={period.timePassedSecs.toString} max={period.totalSecs.toString}></progress>
+      "progress"      #> progressSpan
 
     case _ =>
       "#period" #> NodeSeq.Empty

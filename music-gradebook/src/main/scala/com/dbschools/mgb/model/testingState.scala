@@ -22,13 +22,11 @@ object testingState {
   def multiQueueItems = {
     val uniqueSels = servicingQueueTesterIds.values.toSet + Selection.AllItems
     if (uniqueSels.size == 1) Seq(QueueSubset(Selection.AllItems, enqueuedMusicians.items)) else {
-      val sortedSels = uniqueSels.toSeq.sortBy(_.value match {
-        case Right(num) => num
-        case Left(b) => Int.MaxValue // All and None sort to the end so a specific instrument matches first
-      })
-      enqueuedMusicians.items.groupBy(m =>
+      val sortedSels = uniqueSels.toSeq.sortBy(selSortOrderSpecificInstrumentsFirst)
+      val unsortedSubsets = enqueuedMusicians.items.groupBy(m =>
         sortedSels.find(_.matches(m.instrumentId)) | Selection.NoItems
       ).map { case (sel, musicians) => QueueSubset(sel, musicians) }
+      unsortedSubsets.toSeq.sortBy(qs => selSortOrderSpecificInstrumentsFirst(qs.sel)).reverse // “All” first
     }
   }
 
@@ -53,6 +51,11 @@ object testingState {
       map {case (testerId, selection) => TesterDuration(testerId, selection, new Duration(0))}
     (durationsFromQueueServicingSessions ++ zeroDurations).toSeq.sortBy(_.duration.millis)
   }
+
+  private def selSortOrderSpecificInstrumentsFirst(sel: Selection) = sel.value match {
+      case Right(num) => num
+      case Left(b) => Int.MaxValue // All and None sort to the end so a specific instrument matches first
+    }
 }
 
 case class QueueSubset(sel: Selection, musicians: Seq[EnqueuedMusician])
