@@ -32,12 +32,12 @@ class Statistics extends Loggable {
 
   def yearSelector = selectors.yearSelector
 
-  private def fromTo = Selectors.rto(selectors.selectedTerm).map(Terms.termFromTo) | Terms.allTermsFromTo
+  private def fromTo = selectors.selectedTerm.rto.map(Terms.termFromTo) | Terms.allTermsFromTo
 
   def assessmentsByGroup  = createTable("Group",  queryByGroup)
   def assessmentsByGrade  = createTable("Grade",  queryByGrade, (gradYear: String) =>
     (Terms.graduationYearAsGrade(gradYear.toInt) -
-    (Terms.currentTerm - (Selectors.rto(selectors.selectedTerm) | Terms.currentTerm))).toString)
+    (Terms.currentTerm - (selectors.selectedTerm.rto | Terms.currentTerm))).toString)
   def assessmentsByTester = createTable("Tester", queryByTester)
 
   private type QueryGm = Query[GroupWithMeasures[PrimitiveTypeMode.StringType, PrimitiveTypeMode.LongType]]

@@ -65,5 +65,5 @@ class Tempos {
   }
 
   private def selectedInstruments =
-    Selectors.rto(selectors.selectedInstId).map(id => allInstruments.filter(_.id == id)) | allInstruments
+    selectors.selectedInstId.rto.map(id => allInstruments.filter(_.id == id)) | allInstruments
 }

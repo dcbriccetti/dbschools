@@ -5,7 +5,7 @@ import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
 import snippet.Authenticator
-import snippet.Selectors.Selection
+import snippet.Selection
 
 object testingState {
   val enqueuedMusicians = new MusicianQueue()
@@ -18,6 +18,19 @@ object testingState {
   var desktopNotifyByTesterId = Map[Int, Boolean]().withDefaultValue(false)
   def desktopNotify = Authenticator.opLoggedInUser.map(user => desktopNotifyByTesterId(user.id)) | false
   var specialSchedule = false
+
+  def multiQueueItems = {
+    val uniqueSels = servicingQueueTesterIds.values.toSet + Selection.AllItems
+    if (uniqueSels.size == 1) Seq(QueueSubset(Selection.AllItems, enqueuedMusicians.items)) else {
+      val sortedSels = uniqueSels.toSeq.sortBy(_.value match {
+        case Right(num) => num
+        case Left(b) => Int.MaxValue // All and None sort to the end so a specific instrument matches first
+      })
+      enqueuedMusicians.items.groupBy(m =>
+        sortedSels.find(_.matches(m.instrumentId)) | Selection.NoItems
+      ).map { case (sel, musicians) => QueueSubset(sel, musicians) }
+    }
+  }
 
   /** Returns a TestingDuration for each tester servicing the queue. */
   def testingDurations = {
@@ -41,3 +54,5 @@ object testingState {
     (durationsFromQueueServicingSessions ++ zeroDurations).toSeq.sortBy(_.duration.millis)
   }
 }
+
+case class QueueSubset(sel: Selection, musicians: Seq[EnqueuedMusician])

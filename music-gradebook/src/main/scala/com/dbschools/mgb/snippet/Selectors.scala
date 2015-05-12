@@ -12,9 +12,10 @@ import schema.MusicianGroup
 
 class Selectors(callback: => Option[() => JsCmd] = None, onlyTestingGroups: Boolean = false) extends Loggable {
   import Selectors._
-  var selectedTerm   : Selection = Right(Terms.currentTerm)
-  var selectedGroupId: Selection = Left(true)
-  var selectedInstId : Selection = Left(true)
+  import Selection.AllItems
+  var selectedTerm    = Selection(Terms.currentTerm)
+  var selectedGroupId = AllItems
+  var selectedInstId  = AllItems
 
   var opCallback = callback
 
@@ -23,7 +24,7 @@ class Selectors(callback: => Option[() => JsCmd] = None, onlyTestingGroups: Bool
   private def updateTerm(opTerm: Selection) = {
     selectedTerm = opTerm
     // Show only the groups with assessments in the term
-    selectedGroupId = Left(true)
+    selectedGroupId = AllItems
     ReplaceOptions(groupSelectorId, groupSelectValues, Full(All)): JsCmd
   }
 
@@ -33,14 +34,14 @@ class Selectors(callback: => Option[() => JsCmd] = None, onlyTestingGroups: Bool
     selector(groupSelectorId, groupSelectValues, selectedGroupId, selectedGroupId = _, opCallback)
 
   private def groupSelectValues =
-    allItem :: Cache.filteredGroups(rto(selectedTerm)).map(gp => gp.group.id.toString -> gp.group.name).toList
+    allItem :: Cache.filteredGroups(selectedTerm.rto).map(gp => gp.group.id.toString -> gp.group.name).toList
 
   def instrumentSelector = {
     val instruments = Cache.instruments.sortBy(_.sequence.get).map(i => i.id.toString -> i.name.get)
     selector("instrumentSelector", allItem +: instruments, selectedInstId, selectedInstId = _, opCallback)
   }
 
-  def musicianGroups = MusicianGroup.selectedMusicians(rto(selectedTerm), rto(selectedGroupId), rto(selectedInstId))
+  def musicianGroups = MusicianGroup.selectedMusicians(selectedTerm.rto, selectedGroupId.rto, selectedInstId.rto)
 }
 
 object Selectors {
@@ -49,24 +50,37 @@ object Selectors {
   val NoneOption = "None"
   val noneItem = (NoneOption, NoneOption)
 
-  /** Left: false = None, true = All; Right(id) */
-  type Selection = Either[Boolean, Int]
-  /** Convert Selections that don’t include None to Option[Int] where None[Int] means All */
-  def rto(s: Selection) = s.right.toOption orElse None
-
   def selector(id: String, items: Seq[(String, String)], opId: Selection, fn: (Selection) => JsCmd,
-    callback: => Option[() => JsCmd]) = {
-    SHtml.ajaxUntrustedSelect(items, Full(opId match {
+  callback: => Option[() => JsCmd]) = {
+    SHtml.ajaxUntrustedSelect(items, Full(opId.value match {
       case Left(false)  => NoneOption
       case Left(true)   => All
       case Right(num)   => num.toString
     }), selString => {
       val sel = selString match {
-        case NoneOption => Left(false)
-        case All        => Left(true)
-        case n          => Right(n.toInt)
+        case NoneOption => Selection.NoItems
+        case All        => Selection.AllItems
+        case n          => Selection(n.toInt)
       }
       fn(sel) & (callback.map(_()) | Noop)
     }, "id" -> id)
   }
+}
+
+/** Left: false = None, true = All; Right(id) */
+case class Selection(value: Either[Boolean, Int]) {
+  /** Convert Selections that don’t include None to Option[Int] where None[Int] means All */
+  def rto = value.right.toOption orElse None
+
+  def matches(id: Int) = value match {
+    case Right(thisId) => id == thisId
+    case Left(b) => b
+  }
+}
+
+object Selection {
+  def apply(all: Boolean): Selection = Selection(Left(all))
+  def apply(id: Int)     : Selection = Selection(Right(id))
+  val AllItems = Selection(all = true)
+  val NoItems  = Selection(all = false)
 }

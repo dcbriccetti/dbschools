@@ -3,7 +3,6 @@ package model
 
 import schema.Piece
 import snippet.svSelectors
-import snippet.Selectors.rto
 
 case class PieceAndInstrument(piece: Piece, instId: Int, opSubInstId: Option[Int] = None)
 
@@ -12,7 +11,7 @@ object PieceAndInstrument extends SelectedMusician {
   def option(lastPassFinder: LastPassFinder): Option[PieceAndInstrument] = {
     val currentGroups = GroupAssignments(opMusician.map(_.id), opSelectedTerm = Some(Terms.currentTerm)).toVector
     val currentInstIds = currentGroups.map(_.instrument.id)
-    val opSelGroupInstId = rto(svSelectors.is.selectedGroupId).flatMap(groupId =>
+    val opSelGroupInstId = svSelectors.is.selectedGroupId.rto.flatMap(groupId =>
       currentGroups.find(_.group.id == groupId)).map(_.instrument.id)
 
     val pi = for {

@@ -8,11 +8,11 @@ import org.apache.log4j.Logger
 import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb.util.Props
-import snippet.Selectors.Selection
 import comet._
 import comet.TestingCometActorMessages.UpdateQueueDisplay
 import schema.{AppSchema, Musician, User}
 import model.Periods.{TimeClass, NotInPeriod, InSpecialSchedule}
+import snippet.{Testing, Selection}
 
 class TestingManager extends Actor {
   val log = Logger.getLogger(getClass)
@@ -30,7 +30,6 @@ class TestingManager extends Actor {
 
     case Tick =>
       tickCount += 1
-      MusicianQueueManager.moveInterestingElementsToTop(testingState.enqueuedMusicians)
       TestingCometDispatcher ! UpdateQueueDisplay
       StudentCometDispatcher ! Next(called)
 
@@ -98,7 +97,7 @@ class TestingManager extends Actor {
       TestingCometDispatcher ! UpdateAssessmentCount(tm)
 
     case SetServicingQueue(user, instrumentSelection) =>
-      instrumentSelection match {
+      instrumentSelection.value match {
         case Left(false) =>
           testingState.servicingQueueTesterIds -= user.id
         case _ =>
@@ -161,7 +160,7 @@ class TestingManager extends Actor {
 object TestingManager {
   val defaultNextCallMins = Props.getInt("defaultNextCallMins") getOrElse 5
 
-  def called = testingState.enqueuedMusicians.items.take(testingState.testingDurations.count(_.duration.getMillis <= 0))
+  def called = Testing.idAndTimes.filter(_.opDuration.map(_.getMillis <= 0) | false).map(_.musician)
 }
 
 case class EnqueuedMusician(musician: Musician, instrumentId: Int, nextPieceName: String)
@@ -174,7 +173,7 @@ case class TestingMusician(musician: Musician, tester: User, startingTime: DateT
 case class ChatMessage(time: DateTime, user: User, msg: String)
 
 case class TesterDuration(testerId: Int, selection: Selection, duration: Duration) {
-  def matchesInstrument(id: Int) = selection.right.toOption.map(_ == id) getOrElse true
+  def matchesInstrument(id: Int) = selection.value.right.toOption.map(_ == id) getOrElse true
 }
 
 object TestingManagerMessages {

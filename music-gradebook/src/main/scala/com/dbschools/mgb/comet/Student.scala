@@ -5,7 +5,8 @@ import net.liftweb.http.{CometListener, CometActor}
 import net.liftweb.http.js.JsCmds.SetHtml
 import net.liftweb.util.PassThru
 import snippet.Testing.studentNameLink
-import model.{TestingManager, EnqueuedMusician}
+import model.TestingManager
+import schema.Musician
 
 class Student extends CometActor with CometListener {
   import StudentMessages._
@@ -15,17 +16,17 @@ class Student extends CometActor with CometListener {
 
   override protected def dontCacheRendering = true
 
-  private def musicianSpans(musicians: Seq[EnqueuedMusician]) =
-    musicians.map(em => <span style="margin-right: 1em">{studentNameLink(em.musician, test = true)} </span>)
+  private def musicianSpans(musicians: Iterable[Musician]) =
+    musicians.toSeq.map(m => <span style="margin-right: 1em">{studentNameLink(m, test = true)} </span>)
 
-  private var lastNames = Seq[String]()
+  private var lastNames: Iterable[String] = Seq()
 
   override def lowPriority = {
 
-    case Next(enqueuedMusicians) =>
-      val theseNames = enqueuedMusicians.map(_.musician.nameFirstNickLast)
+    case Next(musicians) =>
+      val theseNames = musicians.map(_.nameFirstNickLast)
       if (theseNames != lastNames) {
-        partialUpdate(SetHtml("nextTesting", musicianSpans(enqueuedMusicians)))
+        partialUpdate(SetHtml("nextTesting", musicianSpans(musicians)))
         lastNames = theseNames
       }
 
@@ -41,7 +42,7 @@ class Student extends CometActor with CometListener {
 }
 
 object StudentMessages {
-  case class Next(enqueuedMusicians: Seq[EnqueuedMusician])
+  case class Next(musicians: Iterable[Musician])
 }
 
 object StudentCometDispatcher extends CommonCometDispatcher

@@ -10,7 +10,7 @@ import schema.Group
 import schema.Musician
 import schema.MusicianGroup
 import org.joda.time.DateTime
-import com.dbschools.mgb.snippet.{Selectors, svSortingStudentsBy, svSelectors}
+import snippet.{svSortingStudentsBy, svSelectors}
 import Cache.lastAssTimeByMusician
 
 case class GroupAssignment(musician: Musician, group: Group, musicianGroup: MusicianGroup, instrument: Instrument)
@@ -40,11 +40,10 @@ object GroupAssignments extends Loggable {
   }
 
   def sorted(lastPassesByMusician: Map[Int, Iterable[LastPass]]) = {
-    import Selectors._
     val longAgo = new DateTime("1000-01-01").toDate
 
-    val byYear = GroupAssignments(None, rto(svSelectors.selectedTerm), rto(svSelectors.selectedGroupId),
-      rto(svSelectors.selectedInstId)).toSeq.sortBy(_.musicianGroup.school_year)
+    val byYear = GroupAssignments(None, svSelectors.selectedTerm.rto, svSelectors.selectedGroupId.rto,
+      svSelectors.selectedInstId.rto).toSeq.sortBy(_.musicianGroup.school_year)
 
     svSortingStudentsBy.is match {
       case SortStudentsBy.Name =>

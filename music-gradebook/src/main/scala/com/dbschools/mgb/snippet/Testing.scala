@@ -22,7 +22,6 @@ import comet.TestingCometActorMessages.RebuildPage
 import comet.TestingCometDispatcher
 import schema.{Musician, AppSchema}
 import AppSchema.users
-import Selectors.Selection
 import model._
 import model.testingState._
 import model.TestingManagerMessages._
@@ -84,7 +83,8 @@ class Testing extends SelectedMusician with Photos {
       tm ! DequeueInstrumentsOfMusicians(selectedScheduledIds)
       Noop
     }, "title" -> "Remove all students playing the instruments of the selected students") &
-    ".queueRow"   #> enqueuedMusicians.items.map(musician => queueRow(musician, None, None)) &
+    ".queueColumn" #> multiQueueItems.map(queueSubset =>
+      ".queueRow"  #> queueSubset.musicians.map(musician => queueRow(musician, None, None))) &
     "#testerSessionsOuter" #> testerSessions &
     "#message"    #> SHtml.ajaxText("",
       _.trim match {
@@ -111,7 +111,8 @@ class Testing extends SelectedMusician with Photos {
     val instruments = Cache.instruments.filterNot(_.name.get == "Unassigned").
       sortBy(_.sequence.get).map(i => i.id.toString -> i.name.get)
     selector("instrumentSelector", Seq(noneItem, allItem) ++ instruments,
-      Authenticator.opLoggedInUser.flatMap(user => testingState.servicingQueueTesterIds.get(user.id)) | Left(false),
+      Authenticator.opLoggedInUser.flatMap(user =>
+        testingState.servicingQueueTesterIds.get(user.id)) | Selection.NoItems,
       changeTestingInstrument, None)
   }
 
@@ -199,26 +200,30 @@ object Testing extends SelectedMusician with Photos {
 
   private var notifiedMusicianIds = Set[Int]()
 
-  private case class IdAndTime(rowId: String, musician: Musician, opDuration: Option[Duration])
+  case class IdAndTime(rowId: String, musician: Musician, opDuration: Option[Duration])
 
-  def makeQueueUpdateAndNotificationJs(testerDurations: Seq[TesterDuration]) = {
-    val durs = testerDurations
-    val musicians = enqueuedMusicians.items
-    val enqueuedMusicianIds = musicians.map(_.musician.id).toSet
-    notifiedMusicianIds &= enqueuedMusicianIds // Remove anybody no longer in the queue
-
+  def idAndTimes = {
     case class MusicianWithOpDur(m: EnqueuedMusician, opDur: Option[TesterDuration])
-    val musiciansWithOpDurs = {
-      def o[A](xs: Iterable[A]) = xs.map(Some.apply)
-      val zippedOpMs = o(musicians).zipAll(o(durs), None, None)
-      zippedOpMs.collect {case (Some(m), opDur) => MusicianWithOpDur(m, opDur)}
-    }
-    val idAndTimes =
-      for {
-        md            <- musiciansWithOpDurs
-        id            = queueRowId(md.m.musician.id)
-        filteredOpDur = md.opDur.filter(dur => dur.matchesInstrument(md.m.instrumentId))
-      } yield IdAndTime(id, md.m.musician, filteredOpDur.map(_.duration))
+
+    for {
+      (sel, durs) <- testingState.testingDurations.groupBy(_.selection)
+      subQueues   <- testingState.multiQueueItems.groupBy(_.sel).get(sel).toSeq
+      subQueue    <- subQueues.headOption.toSeq // There is only one
+      musiciansWithOpDurs = {
+        def o[A](xs: Iterable[A]) = xs.map(Some.apply)
+        val zippedOpMs = o(subQueue.musicians).zipAll(o(durs), None, None)
+        zippedOpMs.collect {case (Some(m), opDur) => MusicianWithOpDur(m, opDur)}
+      }
+      md            <- musiciansWithOpDurs
+      id            = queueRowId(md.m.musician.id)
+      filteredOpDur = md.opDur.filter(dur => dur.matchesInstrument(md.m.instrumentId))
+    } yield IdAndTime(id, md.m.musician, filteredOpDur.map(_.duration))
+  }
+
+  def makeQueueUpdateAndNotificationJs = {
+
+    val enqueuedMusicianIds = enqueuedMusicians.items.map(_.musician.id).toSet
+    notifiedMusicianIds &= enqueuedMusicianIds // Remove anybody no longer in the queue
 
     val elementUpdateJs = idAndTimes.map(it => {
       val rowIdSel = s"#${it.rowId}"

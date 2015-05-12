@@ -49,7 +49,7 @@ class TestingCometActor extends CometActor with CometListener {
       )
 
     case UpdateQueueDisplay =>
-      partialUpdate(Testing.makeQueueUpdateAndNotificationJs(testingState.testingDurations))
+      partialUpdate(Testing.makeQueueUpdateAndNotificationJs)
 
     case Chat(chatMessage) =>
       partialUpdate(Testing.addMessage(chatMessage))

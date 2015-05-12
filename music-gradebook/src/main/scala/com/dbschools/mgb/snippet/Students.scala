@@ -125,9 +125,9 @@ class Students extends SelectedMusician with Photos with Loggable {
       }, flattrs(disableIf(model.testingState.enqueuedMusicians.isEmpty &&
         model.testingState.testingMusicians.isEmpty)): _*)
 
-    (if (selectors.selectedTerm   .isRight) ".schYear" #> none[String] else PassThru) andThen (
-    (if (selectors.selectedGroupId.isRight) ".group"   #> none[String] else PassThru) andThen (
-    (if (selectors.selectedInstId .isRight) ".instr"   #> none[String] else PassThru) andThen (
+    (if (selectors.selectedTerm   .value.isRight) ".schYear" #> none[String] else PassThru) andThen (
+    (if (selectors.selectedGroupId.value.isRight) ".group"   #> none[String] else PassThru) andThen (
+    (if (selectors.selectedInstId .value.isRight) ".instr"   #> none[String] else PassThru) andThen (
     (if (svPicturesDisplay.is == PicturesDisplay.Large) "#studentsTable"     #> NodeSeq.Empty else PassThru) andThen (
     (if (svPicturesDisplay.is != PicturesDisplay.Large) "#studentsContainer" #> NodeSeq.Empty else PassThru) andThen (
 
@@ -240,15 +240,18 @@ trait Photos {
       absPath  = ctx.getRealPath("/" + relPath)
     } yield Paths(relPath, absPath)
 
-  def img(permId: Long) = {
+  def pictureFilename(permId: Long) = {
     def fn(dir: String) = s"$dir/$permId.jpg"
 
-    (for {
+    for {
       p <- paths(permId)
       fnr = fn(p.rel)
       f = new File(fn(p.abs)) if f.exists
-    } yield <img src={fnr} title={s"<img style='width: 172px;' src='$fnr'/>"}/>) getOrElse NodeSeq.Empty
+    } yield fnr
   }
+
+  def img(permId: Long) = pictureFilename(permId).map(fnr =>
+    <img src={fnr} title={s"<img style='width: 172px;' src='$fnr'/>"}/>) getOrElse NodeSeq.Empty
 }
 
 object svSortingStudentsBy extends SessionVar[SortStudentsBy.Value](SortStudentsBy.Name)
