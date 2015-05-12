@@ -103,6 +103,7 @@ class TestingManager extends Actor {
         case _ =>
           testingState.servicingQueueTesterIds += user.id -> instrumentSelection
       }
+      StudentCometDispatcher ! Next(called)
 
     case SetCallAfterMins(user, mins, callNow) =>
       testingState.callAfterMinsByTesterId += user.id -> mins
