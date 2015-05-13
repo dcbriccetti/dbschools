@@ -175,13 +175,14 @@ class Students extends SelectedMusician with Photos with Loggable {
         ".avgPassedPerDayThisTerm *"  #> (if (numDays == 0) "" else nfmt.format(passedThisTerm.toFloat / numDays)) &
         ".lastAss  *" #> ~lastAsmtTime.map(fmt.print) &
         ".daysSince *" #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
-        ".lastPass *" #> formatLastPasses(lastPassesByMusician.get(row.musician.id))
+        ".lastPass *" #> formatLastPasses(row)
       })
     })))))
   }
 
-  private def formatLastPasses(opLastPasses: Option[Iterable[LastPass]]): NodeSeq = {
-    val lastPasses = opLastPasses.getOrElse(Seq[LastPass]()).map(lp => Text(lp.toString))
+  private def formatLastPasses(row: GroupAssignment): NodeSeq = {
+    val passes = lastPassesByMusician.getOrElse(row.musician.id, Seq[LastPass]())
+    val lastPasses = passes.map(lp => Text(lp.formatted(passes.size > 1 || lp.instrumentId != row.instrument.id)))
     lastPasses.fold(NodeSeq.Empty)(_ ++ <br/> ++ _).drop(1)
   }
 

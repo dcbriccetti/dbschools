@@ -39,9 +39,9 @@ case class LastPass(musicianId: Int, instrumentId: Int, opSubinstrumentId: Optio
     piece: Piece, testOrder: Int, position: Int) {
   def subinstruments(id: Int) = Cache.subinstruments.find(_.id == id)
   def instrumentName(id: Int) = Cache.instruments.find(_.id == id).map(_.name.get)
-  override def toString = {
+  override def toString = formatted(withInstrument = true)
+  def formatted(withInstrument: Boolean = false) = {
     val opSi = opSubinstrumentId.flatMap(subinstruments)
-    piece.name.get + " on " + ~instrumentName(instrumentId) + ~opSi.map(Subinstrument.suffix)
+    piece.name.get + (if (withInstrument) " on " + ~instrumentName(instrumentId) + ~opSi.map(Subinstrument.suffix) else "")
   }
 }
-
