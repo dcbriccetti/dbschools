@@ -1,12 +1,19 @@
-package com.dbschools.mgb.model
+package com.dbschools.mgb
+package model
 
-import com.dbschools.mgb.schema.{Group, Piece, AppSchema}
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.PrimitiveTypeMode.{inTransaction => inT}
 import org.joda.time.DateTime
 import scalaz._
 import Scalaz._
 import Terms.{toTs, termStart, currentTerm}
+import schema.{Group, Piece, AppSchema}
+
+case class TestingStats(
+  numTests:             Int,
+  longestPassingStreak: Int,
+  percentPassed:        Int
+)
 
 object Cache {
   var groups = readGroups
@@ -16,6 +23,7 @@ object Cache {
   var tags = readTags
   var pieces = readPieces
   var tempos = readTempos
+  var testingStatsByMusician = readTestingStats()
 
   private var _lastAssTimeByMusician = inT(for {
     gm <- from(AppSchema.assessments)(a => groupBy(a.musician_id) compute max(a.assessment_time))
@@ -68,6 +76,25 @@ object Cache {
   private def readTags        = inT {AppSchema.predefinedComments.toSeq.sortBy(_.commentText)}
   private def readPieces      = inT {AppSchema.pieces.toSeq.sortBy(_.testOrder.get)}
   private def readTempos      = inT {AppSchema.tempos.toSeq.sortBy(_.instrumentId)}
+  private def readTestingStats(opMusicianId: Option[Int] = None) = inT {
+    val asByM = from(AppSchema.assessments)(a =>
+      where(a.musician_id === opMusicianId.?)
+      select(a.musician_id, a.pass) orderBy(a.musician_id, a.assessment_time)).groupBy(_._1)
+    asByM.map {
+      case (mid, tests) =>
+        val passFails = tests.map(_._2)
+        mid -> TestingStats(passFails.size, longestStreak(passFails),
+          if (passFails.isEmpty) 0 else math.round(passFails.count(_ == true) * 100 / passFails.size))
+    }
+  }
+
+  private def longestStreak(passFails: Iterable[Boolean]) = {
+    case class StreakInfo(longest: Int, current: Int)
+    passFails.foldLeft(StreakInfo(0, 0))((si, pass) => {
+      val newCurrent = if (pass) si.current + 1 else 0
+      StreakInfo(math.max(newCurrent, si.longest), newCurrent)
+    }).longest
+  }
 
   def init(): Unit = {}
 
@@ -88,6 +115,8 @@ object Cache {
   def invalidatePieces(): Unit = { pieces = readPieces }
 
   def invalidateTempos(): Unit = { tempos = readTempos }
+
+  def updateTestingStats(musicianId: Int): Unit = testingStatsByMusician ++= readTestingStats(Some(musicianId))
 
   def nextPiece(piece: Piece) = pieces.find(_.testOrder.get.compareTo(piece.testOrder.get) > 0)
 

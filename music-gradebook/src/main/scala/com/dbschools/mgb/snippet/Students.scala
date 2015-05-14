@@ -173,9 +173,11 @@ class Students extends SelectedMusician with Photos with Loggable {
         ".passedThisTerm *"           #> passedThisTerm &
         ".daysTestedThisTerm *"       #> numDays &
         ".avgPassedPerDayThisTerm *"  #> (if (numDays == 0) "" else nfmt.format(passedThisTerm.toFloat / numDays)) &
-        ".lastAss  *" #> ~lastAsmtTime.map(fmt.print) &
-        ".daysSince *" #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
-        ".lastPass *" #> formatLastPasses(row)
+        ".passedPct *"  #> ~Cache.testingStatsByMusician.get(row.musician.id).map(_.percentPassed) &
+        ".lastAss  *"   #> ~lastAsmtTime.map(fmt.print) &
+        ".passStreak *" #> ~Cache.testingStatsByMusician.get(row.musician.id).map(_.longestPassingStreak) &
+        ".daysSince *"  #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
+        ".lastPass *"   #> formatLastPasses(row)
       })
     })))))
   }

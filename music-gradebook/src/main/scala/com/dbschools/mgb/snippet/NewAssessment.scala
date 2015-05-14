@@ -134,8 +134,10 @@ class NewAssessment extends SelectedMusician {
         AppSchema.assessmentTags.insert(selectedCommentIds.map(id => AssessmentTag(asmt.id, id)))
         
         Cache.updateLastAssTime(asmt.musician_id, asmtTime)
-        if (pass)
+        if (pass) {
           Cache.incrementNumPassesThisTermByMusician(asmt.musician_id)
+          Cache.updateTestingStats(asmt.musician_id)
+        }
 
         val row = createAssessmentRow(asmt, asmtTime, musician, user)
         ActivityCometDispatcher ! ActivityStatusUpdate(row)
