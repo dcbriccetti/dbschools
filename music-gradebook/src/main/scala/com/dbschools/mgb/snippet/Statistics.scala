@@ -14,8 +14,8 @@ import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JsCmds.Replace
 import net.liftweb.common.Loggable
 import schema.AppSchema
-import AppSchema.{groups, musicianGroups, musicians, assessments, users}
-import model.Terms
+import AppSchema._
+import model.{Cache, Terms}
 import model.Terms.toTs
 
 class Statistics extends Loggable {
@@ -34,24 +34,42 @@ class Statistics extends Loggable {
 
   private def fromTo = selectors.selectedTerm.rto.map(Terms.termFromTo) | Terms.allTermsFromTo
 
-  def assessmentsByGroup  = createTable("Group",  queryByGroup)
+  def assessmentsByGroup = {
+    val (dtFrom, dtTo) = fromTo
+    val gps = Cache.filteredGroups(selectors.selectedTerm.value.right.toOption)
+    val namesToPer = gps.map(gp => gp.group.name -> gp.period).toMap
+    val groupIds = gps.map(_.group.id)
+    val q = join(groups, musicianGroups, musicians, assessments)((g, mg, m, a) =>
+      where(
+        mg.school_year === dtFrom.getYear
+        and g.doesTesting === true
+        and a.assessment_time.between(toTs(dtFrom), toTs(dtTo))
+      )
+      groupBy (g.name, a.pass)
+      compute count(a.id)
+      on(
+        g.id === mg.group_id,
+        mg.musician_id === m.musician_id.get,
+        m.musician_id.get === a.musician_id
+      )
+    )
+    case class Npf(name: String, passes: Long, failures: Long)
+    val npfs = q.groupBy(_.key._1).map {case (name, gm) =>
+      val (p, f) = gm.partition(_.key._2)
+      Npf(name, p.head.measures, f.head.measures)
+    }.toSeq.sortBy(npf => namesToPer.getOrElse(npf.name, 0))
+    val passesMap   = npfs.map(npf => npf.name -> npf.passes  ).toMap
+    val failuresMap = npfs.map(npf => npf.name -> npf.failures).toMap
+    css("Group", npfs.map(_.name), passesMap, failuresMap)
+  }
+
   def assessmentsByGrade  = createTable("Grade",  queryByGrade, (gradYear: String) =>
     (Terms.graduationYearAsGrade(gradYear.toInt) -
     (Terms.currentTerm - (selectors.selectedTerm.rto | Terms.currentTerm))).toString)
+
   def assessmentsByTester = createTable("Tester", queryByTester)
 
   private type QueryGm = Query[GroupWithMeasures[PrimitiveTypeMode.StringType, PrimitiveTypeMode.LongType]]
-
-  private def queryByGroup(pass: Boolean) = {
-    val (dtFrom, dtTo) = fromTo
-    from(groups, musicianGroups, musicians, assessments)((g, mg, m, a) =>
-      where(g.id === mg.group_id and mg.musician_id === m.musician_id.get and mg.school_year === dtFrom.getYear
-        and m.musician_id.get === a.musician_id
-        and a.pass === pass and a.assessment_time.between(toTs(dtFrom), toTs(dtTo)))
-        groupBy g.name
-        compute count(a.id)
-    )
-  }
 
   private def queryByGrade(pass: Boolean) = {
     val (dtFrom, dtTo) = fromTo
@@ -81,7 +99,7 @@ class Statistics extends Loggable {
     def queryToMap(query: QueryGm) = query.map(gm => keyTransformer(gm.key) -> gm.measures).toMap
     val passesMap   = queryToMap(query(true))
     val failuresMap = queryToMap(query(false))
-    css(rowHeading, passesMap.keys.toSet ++ failuresMap.keys.toSet, passesMap, failuresMap)
+    css(rowHeading, (passesMap.keys.toSet ++ failuresMap.keys).toSeq.sorted, passesMap, failuresMap)
   }
 
   private val numf = NumberFormat.getNumberInstance
@@ -90,7 +108,7 @@ class Statistics extends Loggable {
   private def css(rowHeading: String, groupNames: Iterable[String],
       passesMap: Map[String, Long], failuresMap: Map[String, Long]) =
     ".rowHeading *"   #> rowHeading &
-    ".assessmentsRow" #> groupNames.toSeq.sorted.map(x => {
+    ".assessmentsRow" #> groupNames.map(x => {
       val passes = passesMap.getOrElse(x, 0L)
       val failures = failuresMap.getOrElse(x, 0L)
       val total = passes + failures
