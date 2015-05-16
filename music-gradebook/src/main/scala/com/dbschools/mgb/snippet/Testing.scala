@@ -63,11 +63,11 @@ class Testing extends SelectedMusician with Photos {
       "#qrtime *"   #> formattedTime &
       ".streak"     #> streak.map(s => {
         val classes = s"label ${s._2}"
-        <span title="Most consecutive passes, all years" class={classes}>{s._1}</span>
+        <span title="Most consecutive passes" class={classes}>{s._1}</span>
       }).getOrElse(NodeSeq.Empty) &
       ".passPct"    #> (for {stats <- opStats; if stats.numTests >= 10 && stats.percentPassed >= 95} yield {
         val classes = "label label-primary"
-        <span title="Percentage of tests passed, all years" class={classes}>{stats.percentPassed}%</span>
+        <span title="Percentage of tests passed" class={classes}>{stats.percentPassed}%</span>
       }).getOrElse(NodeSeq.Empty)
     }
 
@@ -199,7 +199,7 @@ object Testing extends SelectedMusician with Photos {
         Authenticator.opLoggedInUser.foreach(user =>
           Actors.testingManager ! TestMusician(TestingMusician(m, user, DateTime.now,
             Some(testingState.enqueuedMusicians))))
-    }, <span title={title}>{m.nameNickLast}</span>)
+    }, <span title={title}>{m.nameNickLast}</span>, "target" -> "student")
   }
 
   def sessionRow(show: Boolean)(tm: TestingMusician): CssSel = {

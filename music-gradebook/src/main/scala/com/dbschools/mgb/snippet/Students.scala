@@ -47,7 +47,8 @@ class Students extends SelectedMusician with Photos with Loggable {
     () => svSelectedMusician(None), Text("New Student"))
 
   def sortBy = {
-    val orders = Seq(SortStudentsBy.Name, SortStudentsBy.LastAssessment, SortStudentsBy.LastPiece)
+    val orders = Seq(SortStudentsBy.Name, SortStudentsBy.LastAssessment,
+      SortStudentsBy.LastPassed, SortStudentsBy.NumPassed, SortStudentsBy.PctPassed, SortStudentsBy.Streak)
     ajaxRadio[SortStudentsBy.Value](orders, Full(svSortingStudentsBy.is), (s) => {
       svSortingStudentsBy(s)
       replaceContents
@@ -219,7 +220,7 @@ class Students extends SelectedMusician with Photos with Loggable {
   private def studentLink(m: Musician) = {
     link(ApplicationPaths.studentDetails.href, () => {
       svSelectedMusician(Some(m))
-    }, Text(m.nameNickLast))
+    }, Text(m.nameNickLast), "target" -> "student")
   }
 }
 

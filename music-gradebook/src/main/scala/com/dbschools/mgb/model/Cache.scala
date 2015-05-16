@@ -78,7 +78,7 @@ object Cache {
   private def readTempos      = inT {AppSchema.tempos.toSeq.sortBy(_.instrumentId)}
   private def readTestingStats(opMusicianId: Option[Int] = None) = inT {
     val asByM = from(AppSchema.assessments)(a =>
-      where(a.musician_id === opMusicianId.?)
+      where(a.musician_id === opMusicianId.? and a.assessment_time > toTs(termStart(currentTerm)))
       select(a.musician_id, a.pass) orderBy(a.musician_id, a.assessment_time)).groupBy(_._1)
     asByM.map {
       case (mid, tests) =>

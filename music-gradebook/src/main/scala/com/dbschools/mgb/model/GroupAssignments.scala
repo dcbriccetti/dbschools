@@ -50,9 +50,19 @@ object GroupAssignments extends Loggable {
         byYear.sortBy(_.musician.nameLastFirstNick)
       case SortStudentsBy.LastAssessment =>
         byYear.sortBy(ga => lastAssTimeByMusician.get(ga.musician.id).map(_.toDate) | longAgo)
-      case SortStudentsBy.LastPiece =>
+      case SortStudentsBy.LastPassed =>
         def pos(id: Int) =
           lastPassesByMusician.get(id).toList.flatten.sortBy(-_.testOrder).lastOption.map(_.testOrder) | 0
+        byYear.sortBy(ga => -pos(ga.musician.id))
+      case SortStudentsBy.NumPassed =>
+        val np = Cache.numPassesThisTermByMusician
+        def pos(id: Int) = ~np.get(id)
+        byYear.sortBy(ga => -pos(ga.musician.id))
+      case SortStudentsBy.PctPassed =>
+        def pos(id: Int) = ~Cache.testingStatsByMusician.get(id).map(_.percentPassed)
+        byYear.sortBy(ga => -pos(ga.musician.id))
+      case SortStudentsBy.Streak =>
+        def pos(id: Int) = ~Cache.testingStatsByMusician.get(id).map(_.longestPassingStreak)
         byYear.sortBy(ga => -pos(ga.musician.id))
     }
   }
