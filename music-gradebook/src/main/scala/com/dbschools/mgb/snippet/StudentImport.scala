@@ -1,4 +1,5 @@
-package com.dbschools.mgb.snippet
+package com.dbschools.mgb
+package snippet
 
 import scalaz._
 import Scalaz._
@@ -6,8 +7,8 @@ import org.squeryl.PrimitiveTypeMode._
 import org.apache.log4j.Logger
 import net.liftweb.util.Helpers._
 import net.liftweb.http.SHtml
-import com.dbschools.mgb.schema.{MusicianGroup, Musician, AppSchema}
-import com.dbschools.mgb.model.Terms
+import schema.{MusicianGroup, Musician, AppSchema}
+import model.Terms
 
 class StudentImport {
   private val log = Logger.getLogger(getClass)
@@ -18,7 +19,7 @@ class StudentImport {
     def n(s: String) = asInt(s).toOption | 0
 
     def process(): Unit = {
-      val musicians = AppSchema.musicians.map(m => m.permStudentId.get -> m).toMap
+      val musiciansByPermId = AppSchema.musicians.map(m => m.permStudentId.get -> m).toMap
       val musicianGroupsByMusicianId = AppSchema.musicianGroups.where(mg => mg.school_year === Terms.currentTerm).
         groupBy(_.musician_id)
       val insts = AppSchema.instruments.map(i => i.id -> i).toMap
@@ -38,7 +39,7 @@ class StudentImport {
         val period  = n(cols(4))
         val groupId = groupIdsByPeriod(period) // OK to fail
 
-        val (musician, isNew) = musicians.get(id).map((_, false)) | {
+        val (musician, isNew) = musiciansByPermId.get(id).map((_, false)) | {
           val newM = Musician.createRecord.permStudentId(id).last_name(last).first_name(first).
             graduation_year(Terms.gradeAsGraduationYear(grade))
           AppSchema.musicians.insert(newM)
@@ -52,7 +53,6 @@ class StudentImport {
             if distinctInstrumentIds.size == 1
           } yield insts(distinctInstrumentIds.head)
         ) | uainst
-
 
         val alreadyAssigned = maybeGroups.map(_.exists(_.group_id == groupId)) | false
         if (! alreadyAssigned) {
