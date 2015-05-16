@@ -19,24 +19,37 @@
         }
         $(document).ready(activateTips);
 
-        function drawChart(id, xs, ys, attribs) {
+        function drawChart(id, xs, ys, attribs, axisAttribs) {
             var graph = $('#pg' + id)[0];
             var c = graph.getContext('2d');
 
             c.beginPath();
+            c.strokeStyle = "gray";
             c.moveTo(0, 0);
             c.lineTo(0, graph.height);
             c.lineTo(graph.width, graph.height);
             c.stroke();
+
+            var yBottom = graph.height - 2;
 
             for (var i = 0; i < xs.length; ++i) {
                 if (attribs[i] == '1')
                     c.fillStyle = "green";
                 else
                     c.fillStyle = "black";
-                c.fillRect(xs[i], graph.height - ys[i], 2, 2);
+                c.fillRect(xs[i], yBottom - ys[i], 2, 1);
             }
-
+            var axisColors = ["black", "red", "blue", "green"];
+            if (axisAttribs.length > 1) {
+                c.moveTo(xs[0], graph.height);
+                for (var j = 0; j < axisAttribs.length - 1; ++j) {
+                    c.beginPath();
+                    c.strokeStyle = axisColors[axisAttribs[j]];
+                    c.moveTo(xs[j], graph.height);
+                    c.lineTo(xs[j + 1], graph.height);
+                    c.stroke();
+                }
+            }
         }
     </script>
 

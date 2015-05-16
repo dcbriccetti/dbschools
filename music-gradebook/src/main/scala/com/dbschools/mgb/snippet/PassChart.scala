@@ -28,6 +28,10 @@ object PassChart {
       val xScale = PassGraphWidth / maxDays.toFloat
       val yScale = PassGraphHeight / mostPasses.toFloat
       def toA(vals: Iterable[Int]) = vals.mkString("[", ",", "]")
+      case class ChartData(x: Int, y: Int, attrib: Int, axisAttrib: Int)
+      val piecesById = Cache.pieces.map(p => p.id -> p).toMap
+      val bookNames = Array("Red", "Blue", "Green")
+
       JsRaw(ga.map {
         case (mid, tests) =>
           val streakTimes = (Cache.testingStatsByMusician.get(mid).map(_.longestPassingStreakTimes) getOrElse Seq()).toSet
@@ -37,12 +41,20 @@ object PassChart {
             val d = new DateTime(test.assessment_time)
             val nd = Days.daysBetween(curTermStart, d).getDays
             np += 1
-            (nd, np, if (streakTimes contains test.assessment_time.getTime) 1 else 0)
+            val bookIndex =
+            for {
+              piece <- piecesById.get(test.pieceId)
+              i = bookNames.indexWhere(bn => piece.name.get startsWith bn)
+              if i >= 0
+            } yield i
+            ChartData(nd, np, if (streakTimes contains test.assessment_time.getTime) 1 else 0,
+              bookIndex.map(_ + 1) getOrElse 0)
           })
-          val xs = toA(points.map(n => (n._1 * xScale).toInt))
-          val ys = toA(points.map(n => (n._2 * yScale).toInt))
-          val attribs = toA(points.map(_._3))
-          JsRaw(s"drawChart($mid, $xs, $ys, $attribs);"): JsCmd
+          val xs = toA(points.map(n => (n.x * xScale).toInt))
+          val ys = toA(points.map(n => (n.y * yScale).toInt))
+          val attribs = toA(points.map(_.attrib))
+          val axisAttribs = toA(points.map(_.axisAttrib))
+          JsRaw(s"drawChart($mid, $xs, $ys, $attribs, $axisAttribs);"): JsCmd
       }.fold(Noop)(_ & _))
     })
   }
