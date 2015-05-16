@@ -17,6 +17,8 @@ object Terms {
     (if (n.getMonthOfYear >= yearEndMonth) n else n.minus(1.year)).getYear
   }
 
+  def nextTerm = currentTerm + 1
+
   def graduationYearAsGrade(graduationYear: Int, schoolYear: Int = currentTerm) =
     8 - (graduationYear - schoolYear)
 

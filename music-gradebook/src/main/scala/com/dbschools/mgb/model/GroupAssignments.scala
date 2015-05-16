@@ -24,19 +24,21 @@ object GroupAssignments extends Loggable {
     opTesting:              Option[Boolean] = None
   ) = {
     import AppSchema._
-    val rows = from(musicians, groups, musicianGroups, instruments)((m, g, mg, i) =>
+    val rows = join(musicians, musicianGroups, groups, instruments)((m, mg, g, i) =>
       where(
         m.musician_id.get === opMusicianId.? and
-        m.musician_id.get === mg.musician_id and
         g.doesTesting     === opTesting.? and
         mg.group_id       === opSelectedGroupId.? and
-        mg.group_id       === g.id and
         mg.instrument_id  === opSelectedInstrumentId.? and
-        mg.instrument_id  === i.idField.get and
         mg.school_year    === opSelectedTerm.?
       )
       select GroupAssignment(m, g, mg, i)
       orderBy(mg.school_year.desc, m.last_name.get, m.first_name.get, g.name)
+      on(
+        m.musician_id.get === mg.musician_id,
+        mg.group_id       === g.id,
+        mg.instrument_id  === i.idField.get
+        )
     )
     rows
   }
