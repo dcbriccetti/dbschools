@@ -37,7 +37,7 @@ object Terms {
 
   def toTs(dt: DateTime) = new Timestamp(dt.millis)
 
-  def termStart(term: Int) = new DateTime(term, yearEndMonth, 1, 0, 0, 0, 0)
+  def termStart(term: Int) = new DateTime(term, 8, 26, 0, 0, 0, 0) // todo don't hard code
 
   def termEnd(term: Int) = termStart(term) + 1.year
 

@@ -10,9 +10,9 @@ import Terms.{toTs, termStart, currentTerm}
 import schema.{Group, Piece, AppSchema}
 
 case class TestingStats(
-  numTests:             Int,
-  longestPassingStreak: Int,
-  percentPassed:        Int
+  numTests:                   Int,
+  longestPassingStreakTimes:  Seq[Long],
+  percentPassed:              Int
 )
 
 object Cache {
@@ -76,23 +76,27 @@ object Cache {
   private def readTags        = inT {AppSchema.predefinedComments.toSeq.sortBy(_.commentText)}
   private def readPieces      = inT {AppSchema.pieces.toSeq.sortBy(_.testOrder.get)}
   private def readTempos      = inT {AppSchema.tempos.toSeq.sortBy(_.instrumentId)}
+
+  case class MuTimePass(id: Int, time: Long, pass: Boolean)
   private def readTestingStats(opMusicianId: Option[Int] = None) = inT {
     val asByM = from(AppSchema.assessments)(a =>
       where(a.musician_id === opMusicianId.? and a.assessment_time > toTs(termStart(currentTerm)))
-      select(a.musician_id, a.pass) orderBy(a.musician_id, a.assessment_time)).groupBy(_._1)
+      select MuTimePass(a.musician_id, a.assessment_time.getTime, a.pass)
+      orderBy(a.musician_id, a.assessment_time)).groupBy(_.id)
     asByM.map {
-      case (mid, tests) =>
-        val passFails = tests.map(_._2)
-        mid -> TestingStats(passFails.size, longestStreak(passFails),
+      case (mid, mtps) =>
+        val passFails = mtps.map(_.pass)
+        mid -> TestingStats(passFails.size, longestStreak(mtps),
           if (passFails.isEmpty) 0 else math.round(passFails.count(_ == true) * 100 / passFails.size))
     }
   }
 
-  private def longestStreak(passFails: Iterable[Boolean]) = {
-    case class StreakInfo(longest: Int, current: Int)
-    passFails.foldLeft(StreakInfo(0, 0))((si, pass) => {
-      val newCurrent = if (pass) si.current + 1 else 0
-      StreakInfo(math.max(newCurrent, si.longest), newCurrent)
+  private def longestStreak(mtps: Iterable[MuTimePass]) = {
+    type Times = Seq[Long]
+    case class StreakInfo(longest: Times, current: Times)
+    mtps.foldLeft(StreakInfo(Seq(), Seq()))((si, mtp) => {
+      val newCurrent = if (mtp.pass) si.current :+ mtp.time else Seq()
+      StreakInfo(if (newCurrent.size > si.longest.size) newCurrent else si.longest, newCurrent)
     }).longest
   }
 

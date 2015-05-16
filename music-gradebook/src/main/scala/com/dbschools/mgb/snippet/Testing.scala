@@ -41,7 +41,7 @@ class Testing extends SelectedMusician with Photos {
       val opStats = Cache.testingStatsByMusician.get(m.id)
       val streak = for {
         stats <- opStats
-        streak = stats.longestPassingStreak
+        streak = stats.longestPassingStreakTimes.size
         if streak >= 10
         cls = if (streak >= 30) "label-success" else if (streak >= 20) "label-primary" else "label-default"
       } yield (streak, cls)

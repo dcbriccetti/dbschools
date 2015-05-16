@@ -62,7 +62,7 @@ object GroupAssignments extends Loggable {
         def pos(id: Int) = ~Cache.testingStatsByMusician.get(id).map(_.percentPassed)
         byYear.sortBy(ga => -pos(ga.musician.id))
       case SortStudentsBy.Streak =>
-        def pos(id: Int) = ~Cache.testingStatsByMusician.get(id).map(_.longestPassingStreak)
+        def pos(id: Int) = ~Cache.testingStatsByMusician.get(id).map(_.longestPassingStreakTimes.size)
         byYear.sortBy(ga => -pos(ga.musician.id))
     }
   }

@@ -3,6 +3,7 @@ package snippet
 
 import java.io.File
 import java.text.NumberFormat
+
 import xml.{NodeSeq, Text}
 import scalaz._
 import Scalaz._
@@ -126,6 +127,8 @@ class Students extends SelectedMusician with Photos with Loggable {
       }, flattrs(disableIf(model.testingState.enqueuedMusicians.isEmpty &&
         model.testingState.testingMusicians.isEmpty)): _*)
 
+    def makeDrawCharts = PassChart.create(groupAssignments)
+
     (if (selectors.selectedTerm   .value.isRight) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.selectedGroupId.value.isRight) ".group"   #> none[String] else PassThru) andThen (
     (if (selectors.selectedInstId .value.isRight) ".instr"   #> none[String] else PassThru) andThen (
@@ -174,13 +177,18 @@ class Students extends SelectedMusician with Photos with Loggable {
         ".passedThisTerm *"           #> passedThisTerm &
         ".daysTestedThisTerm *"       #> numDays &
         ".avgPassedPerDayThisTerm *"  #> (if (numDays == 0) "" else nfmt.format(passedThisTerm.toFloat / numDays)) &
-        ".passedPct *"  #> ~Cache.testingStatsByMusician.get(row.musician.id).map(_.percentPassed) &
+        ".passedPct *"  #> s"${~Cache.testingStatsByMusician.get(row.musician.id).map(_.percentPassed)}%" &
+        ".passGraph [id]"     #> s"pg${row.musician.id}" &
+        ".passGraph [width]"  #> PassChart.PassGraphWidth &
+        ".passGraph [height]" #> PassChart.PassGraphHeight &
         ".lastAss  *"   #> ~lastAsmtTime.map(fmt.print) &
-        ".passStreak *" #> ~Cache.testingStatsByMusician.get(row.musician.id).map(_.longestPassingStreak) &
+        ".passStreak *" #> ~Cache.testingStatsByMusician.get(row.musician.id).map(_.longestPassingStreakTimes.size) &
         ".daysSince *"  #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
         ".lastPass *"   #> formatLastPasses(row)
       })
-    })))))
+    } &
+    "#drawCharts" #> makeDrawCharts
+    )))))
   }
 
   private def formatLastPasses(row: GroupAssignment): NodeSeq = {

@@ -13,6 +13,33 @@
         <label style="margin-left: 3em;">Pictures: <span data-lift="Students.picturesDisplay"></span></label>
     </div>
 
+    <script language="JavaScript">
+        function activateTips() {
+            $(".studentRow img").tooltip({'placement': 'right', 'html': true});
+        }
+        $(document).ready(activateTips);
+
+        function drawChart(id, xs, ys, attribs) {
+            var graph = $('#pg' + id)[0];
+            var c = graph.getContext('2d');
+
+            c.beginPath();
+            c.moveTo(0, 0);
+            c.lineTo(0, graph.height);
+            c.lineTo(graph.width, graph.height);
+            c.stroke();
+
+            for (var i = 0; i < xs.length; ++i) {
+                if (attribs[i] == '1')
+                    c.fillStyle = "green";
+                else
+                    c.fillStyle = "black";
+                c.fillRect(xs[i], graph.height - ys[i], 2, 2);
+            }
+
+        }
+    </script>
+
     <div id="dynamicSection" data-lift="Students">
         <div data-lift="comet?type=StudentsCometActor" style="margin-top: .5em;">
             <span style="margin-right: .5em; font-size: 120%;">Testing Queue: <span id="count"></span></span>
@@ -37,6 +64,7 @@
                 <th title="In this term, the number of days tested">Days</th>
                 <th title="In this term, the average passes per day tested">Avg</th>
                 <th title="Most consecutive passes">Streak</th>
+                <th>Passes over Time</th>
                 <th>Last Test</th>
                 <th>Days</th>
                 <th>Last Passed</th>
@@ -56,6 +84,7 @@
                 <td style="text-align: right;" class="daysTestedThisTerm"/>
                 <td style="text-align: right;" class="avgPassedPerDayThisTerm"/>
                 <td style="text-align: right;" class="passStreak"/>
+                <td><canvas class="passGraph"></canvas></td>
                 <td class="lastAss"/>
                 <td style="text-align: right;" class="daysSince"/>
                 <td class="lastPass"/>
@@ -68,13 +97,8 @@
                 <span class='stuName'></span>
             </div>
         </div>
+        <span id="drawCharts"></span>
     </div>
-    <script language="JavaScript">
-        function activateTips() {
-            $(".studentRow img").tooltip({'placement': 'right', 'html': true});
-        }
-        $(document).ready(activateTips);
-    </script>
 </div>
 </body>
 </html>
