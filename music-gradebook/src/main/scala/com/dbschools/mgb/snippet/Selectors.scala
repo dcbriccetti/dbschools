@@ -34,7 +34,7 @@ class Selectors(callback: => Option[() => JsCmd] = None, onlyTestingGroups: Bool
     selector(groupSelectorId, groupSelectValues, selectedGroupId, selectedGroupId = _, opCallback)
 
   private def groupSelectValues =
-    allItem :: Cache.filteredGroups(selectedTerm.rto).map(gp => gp.group.id.toString -> gp.group.name).toList
+    allItem :: Cache.filteredGroups(selectedTerm.rto).map(gp => gp.group.id.toString -> gp.group.shortOrLongName).toList
 
   def instrumentSelector = {
     val instruments = Cache.instruments.sortBy(_.sequence.get).map(i => i.id.toString -> i.name.get)
@@ -75,6 +75,11 @@ case class Selection(value: Either[Boolean, Int]) {
   def matches(id: Int) = value match {
     case Right(thisId) => id == thisId
     case Left(b) => b
+  }
+
+  def isAll = value match {
+    case Left(true) => true
+    case _ => false
   }
 }
 

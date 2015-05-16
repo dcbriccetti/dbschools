@@ -20,13 +20,15 @@ object GroupAssignments extends Loggable {
     opMusicianId:           Option[Int],
     opSelectedTerm:         Option[Int] = None,
     opSelectedGroupId:      Option[Int] = None,
-    opSelectedInstrumentId: Option[Int] = None
+    opSelectedInstrumentId: Option[Int] = None,
+    opTesting:              Option[Boolean] = None
   ) = {
     import AppSchema._
     val rows = from(musicians, groups, musicianGroups, instruments)((m, g, mg, i) =>
       where(
         m.musician_id.get === opMusicianId.? and
         m.musician_id.get === mg.musician_id and
+        g.doesTesting     === opTesting.? and
         mg.group_id       === opSelectedGroupId.? and
         mg.group_id       === g.id and
         mg.instrument_id  === opSelectedInstrumentId.? and
@@ -42,8 +44,10 @@ object GroupAssignments extends Loggable {
   def sorted(lastPassesByMusician: Map[Int, Iterable[LastPass]]) = {
     val longAgo = new DateTime("1000-01-01").toDate
 
-    val byYear = GroupAssignments(None, svSelectors.selectedTerm.rto, svSelectors.selectedGroupId.rto,
-      svSelectors.selectedInstId.rto).toSeq.sortBy(_.musicianGroup.school_year)
+    val group = svSelectors.selectedGroupId
+    val opTesting = if (group.isAll) Some(true) else None
+    val byYear = GroupAssignments(None, svSelectors.selectedTerm.rto, group.rto,
+      svSelectors.selectedInstId.rto, opTesting).toSeq.sortBy(_.musicianGroup.school_year)
 
     svSortingStudentsBy.is match {
       case SortStudentsBy.Name =>

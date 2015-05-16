@@ -99,7 +99,7 @@ class GroupsSummary {
         SHtml.link(href, () => {
           selectors.selectedGroupId = Selection(gp.group.id)
           selectors.selectedInstId = AllItems
-          }, Text(gp.group.shortName | gp.group.name))
+          }, Text(gp.group.shortOrLongName))
         }
       </th>)}<td>Totals</td>
       </tr>

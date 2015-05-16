@@ -23,7 +23,7 @@ class GroupAssignments extends SelectedMusician {
   private val log = Logger.getLogger(getClass)
   private var selectedMusicianGroups = Set[Int]()
   private def groupSelectorValues(term: Int = Terms.currentTerm) =
-    Cache.filteredGroups(Some(term)).map(gp => (gp.group.id.toString, gp.group.name)).toSeq
+    Cache.filteredGroups(Some(term)).map(gp => (gp.group.id.toString, gp.group.shortOrLongName))
   private var newAssignmentGroupId = groupSelectorValues().head._1.toInt
   private val opMusicianDetails = opMusician.map(musician =>
     MusicianDetails(musician, model.GroupAssignments(Some(musician.id)),

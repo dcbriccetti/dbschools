@@ -31,13 +31,14 @@
             c.stroke();
 
             var yBottom = graph.height - 2;
+            var rectWidth = 2;
 
             for (var i = 0; i < xs.length; ++i) {
                 if (attribs[i] == '1')
-                    c.fillStyle = "green";
+                    c.fillStyle = "brown";
                 else
                     c.fillStyle = "black";
-                c.fillRect(xs[i], yBottom - ys[i], 2, 1);
+                c.fillRect(xs[i], yBottom - ys[i], rectWidth, 1);
             }
             var axisColors = ["black", "red", "blue", "green"];
             if (axisAttribs.length > 1) {

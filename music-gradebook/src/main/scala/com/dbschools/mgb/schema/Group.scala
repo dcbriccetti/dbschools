@@ -11,6 +11,7 @@ case class Group(
   @Column("does_testing") doesTesting:  Boolean
 ) extends KeyedEntity[Int] {
   def this() = this(0, "", Some(""), false)
+  def shortOrLongName = shortName getOrElse name
 }
 
 object Group {

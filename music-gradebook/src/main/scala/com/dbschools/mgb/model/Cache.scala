@@ -140,6 +140,6 @@ object Cache {
         group   <- Cache.groups
         period  <- groupIdToPeriod.get(group.id)
       } yield GroupPeriod(group, period)
-    unsorted.toSeq.sortBy(gp => (gp.period, gp.group.shortName | gp.group.name))
+    unsorted.toSeq.sortBy(gp => (gp.period, gp.group.shortOrLongName))
   }
 }
