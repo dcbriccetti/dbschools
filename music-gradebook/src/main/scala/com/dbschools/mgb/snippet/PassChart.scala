@@ -9,9 +9,15 @@ import org.joda.time.Days
 import org.squeryl.PrimitiveTypeMode._
 import model.{GroupAssignment, Cache, Terms}
 import model.Terms._
-import schema.AppSchema
+import schema.{Piece, AppSchema}
 
-object PassChart {
+trait ChartFeatures {
+  val bookNames = Array("Red", "Blue", "Green")
+  def findBookIndex(piece: Piece) = bookNames.indexWhere(bn => piece.name.get startsWith bn)
+  def toA(vals: Iterable[Int]) = vals.mkString("[", ",", "]")
+}
+
+object PassChart extends ChartFeatures {
   val PassGraphWidth = 100
   val PassGraphHeight = 50
 
@@ -27,10 +33,8 @@ object PassChart {
       val mostPasses = ga.values.foldLeft(0)((n, tests) => math.max(tests.count(_.pass), n))
       val xScale = PassGraphWidth / maxDays.toFloat
       val yScale = PassGraphHeight / mostPasses.toFloat
-      def toA(vals: Iterable[Int]) = vals.mkString("[", ",", "]")
       case class ChartData(x: Int, y: Int, attrib: Int, axisAttrib: Int)
       val piecesById = Cache.pieces.map(p => p.id -> p).toMap
-      val bookNames = Array("Red", "Blue", "Green")
 
       JsRaw(ga.map {
         case (mid, tests) =>
@@ -44,7 +48,7 @@ object PassChart {
             val bookIndex =
             for {
               piece <- piecesById.get(test.pieceId)
-              i = bookNames.indexWhere(bn => piece.name.get startsWith bn)
+              i = findBookIndex(piece)
               if i >= 0
             } yield i
             ChartData(nd, np, if (streakTimes contains test.assessment_time.getTime) 1 else 0,

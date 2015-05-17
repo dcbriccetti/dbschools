@@ -52,9 +52,22 @@
                 }
             }
         }
+
+        function drawLocationsChart(counts, colors) {
+            var graph = $('#locationsGraph')[0];
+            var c = graph.getContext('2d');
+            var barColors = ["black", "red", "blue", "green"];
+            for (var i = 0; i < counts.length; ++i) {
+                var height = counts[i] * 3;
+                c.strokeStyle = barColors[colors[i]];
+                c.strokeRect(1 + i * 3, graph.height - height, 2, height);
+            }
+        }
     </script>
 
     <div id="dynamicSection" data-lift="Students">
+        <div><canvas id="locationsGraph"></canvas></div>
+
         <div data-lift="comet?type=StudentsCometActor" style="margin-top: .5em;">
             <span style="margin-right: .5em; font-size: 120%;">Testing Queue: <span id="count"></span></span>
             <span id="clearSchedule" class="btn"
@@ -109,6 +122,7 @@
             </tr>
             </tbody>
         </table>
+
         <div id='studentsContainer'>
             <div class='photoContainer' style='display: inline; float: left; margin: 1em;'>
                 <span class='photo'></span><br/>
@@ -116,6 +130,7 @@
             </div>
         </div>
         <span id="drawCharts"></span>
+        <span id="drawLocationsChart"></span>
     </div>
 </div>
 </body>
