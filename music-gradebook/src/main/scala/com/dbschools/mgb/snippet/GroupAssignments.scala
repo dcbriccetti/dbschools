@@ -104,13 +104,8 @@ class GroupAssignments extends SelectedMusician {
 
   private def groupSelector(ga: GroupAssignment) =
     SHtml.ajaxSelect(groupSelectorValues(ga.musicianGroup.school_year), Full(ga.musicianGroup.group_id.toString), gid => {
-      val intGid = gid.toInt
-      AppSchema.musicianGroups.update(mg =>
-        where(mg.id === ga.musicianGroup.id)
-        set(mg.group_id := intGid)
-      )
-      val newG = ~Cache.groups.find(_.id == intGid).map(_.name)
-      opMusicianDetails.foreach(md => log.info(s"Moved ${md.musician.nameFirstNickLast} to group $newG"))
+      val musicianName = ~opMusicianDetails.map(_.musician.nameFirstNickLast)
+      model.GroupAssignments.moveToGroup(ga.musicianGroup.id, gid.toInt, musicianName)
       Noop
     })
 

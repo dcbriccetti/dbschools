@@ -68,6 +68,7 @@ class Students extends SelectedMusician with Photos with Loggable {
   var grade = 6
   var name = ""
   var selectedMusicians = Vector[Musician]()
+  var moveToGroup = Selection.NoItems
 
   def newStudent = {
 
@@ -92,7 +93,10 @@ class Students extends SelectedMusician with Photos with Loggable {
     def cbId(musicianId: Int) = "mcb" + musicianId
 
     def enableButtons =
-      JsEnableIf("#schedule", selectedMusicians.nonEmpty) & Students.adjustButtons
+      JsEnableIf("#schedule", selectedMusicians.nonEmpty) & JsEnableIf("#moveToGroup", selectedMusicians.nonEmpty) &
+        JsEnableIf("#moveToGroupSelector", selectedMusicians.nonEmpty) & Students.adjustButtons
+
+    def uncheckAll = JsCheckIf(".sel input", false)
 
     def testAllButton = ajaxButton("Test All", () => {
       groupAssignments.foreach(selectedMusicians :+= _.musician)
@@ -115,9 +119,7 @@ class Students extends SelectedMusician with Photos with Loggable {
       ajaxButton("Add Checked", () => {
         scheduleSelectedMusicians()
         selectedMusicians = Vector()
-        groupAssignments.map(row => {
-          JsCheckIf("#" + cbId(row.musician.id), false)
-        }).fold(Noop)(_ & _) & enableButtons
+        uncheckAll & enableButtons
       }, flattrs(disableIf(selectedMusicians.isEmpty)): _*)
 
     def clearScheduleButton =
@@ -126,6 +128,25 @@ class Students extends SelectedMusician with Photos with Loggable {
         Noop
       }, flattrs(disableIf(model.testingState.enqueuedMusicians.isEmpty &&
         model.testingState.testingMusicians.isEmpty)): _*)
+
+    def moveToGroupButton =
+      ajaxButton("Move to", () => {
+        moveToGroup.rto.map(groupId => {
+          val selIds = selectedMusicians.map(_.musician_id.get).toSet
+          groupAssignments.withFilter(ga => selIds contains ga.musician.id).foreach(ga => {
+            model.GroupAssignments.moveToGroup(ga.musicianGroup.id, groupId, ga.musician.nameFirstNickLast)
+          })
+          selectedMusicians = Vector()
+          replaceContents
+        }) getOrElse Noop
+      }, flattrs(disableIf(selectedMusicians.isEmpty)): _*)
+
+    def moveToGroupSelector = {
+      import Selectors._
+      val disables = Seq(disableIf(selectedMusicians.isEmpty)).flatten
+      selector("moveToGroupSelector", Selectors.groupsWithoutAll(selectors.selectedTerm),
+        Selection.NoItems, s => moveToGroup = s, None, disables: _*)
+    }
 
     def makeDrawCharts = PassChart.create(groupAssignments)
 
@@ -139,6 +160,8 @@ class Students extends SelectedMusician with Photos with Loggable {
     "#autoSelect"             #> autoSelectButton &
     "#schedule"               #> scheduleButton &
     "#clearSchedule"          #> clearScheduleButton &
+    "#moveToGroup"            #> moveToGroupButton &
+    "#moveToGroupSelector"    #> moveToGroupSelector &
     ".photoContainer"         #> {
       var lastId = -1
       val uniqMs = groupAssignments.map(_.musician).filter(m =>

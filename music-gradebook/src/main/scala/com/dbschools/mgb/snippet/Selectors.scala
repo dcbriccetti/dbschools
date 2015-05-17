@@ -7,6 +7,8 @@ import net.liftweb.common.{Loggable, Full}
 import net.liftweb.http._
 import js.JsCmd
 import js.JsCmds.{Noop, ReplaceOptions}
+import SHtml.ElemAttr
+import SHtml.ElemAttr._
 import model.{Cache, Terms}
 import schema.MusicianGroup
 
@@ -33,8 +35,7 @@ class Selectors(callback: => Option[() => JsCmd] = None, onlyTestingGroups: Bool
   def groupSelector =
     selector(groupSelectorId, groupSelectValues, selectedGroupId, selectedGroupId = _, opCallback)
 
-  private def groupSelectValues =
-    allItem :: Cache.filteredGroups(selectedTerm.rto).map(gp => gp.group.id.toString -> gp.group.shortOrLongName).toList
+  private def groupSelectValues = allItem :: Selectors.groupsWithoutAll(selectedTerm)
 
   def instrumentSelector = {
     val instruments = Cache.instruments.sortBy(_.sequence.get).map(i => i.id.toString -> i.name.get)
@@ -50,8 +51,15 @@ object Selectors {
   val NoneOption = "None"
   val noneItem = (NoneOption, NoneOption)
 
-  def selector(id: String, items: Seq[(String, String)], opId: Selection, fn: (Selection) => JsCmd,
-  callback: => Option[() => JsCmd]) = {
+  def selector(
+    id:       String,
+    items:    Seq[(String, String)],
+    opId:     Selection,
+    fn:       (Selection) => JsCmd,
+    callback: => Option[() => JsCmd],
+    attrs:    (String, String)*
+  ) = {
+    val allAttrs = attrs :+ "id" -> id
     SHtml.ajaxUntrustedSelect(items, Full(opId.value match {
       case Left(false)  => NoneOption
       case Left(true)   => All
@@ -63,8 +71,11 @@ object Selectors {
         case n          => Selection(n.toInt)
       }
       fn(sel) & (callback.map(_()) | Noop)
-    }, "id" -> id)
+    }, allAttrs: _*)
   }
+  
+  def groupsWithoutAll(selectedTerm: Selection) =
+    Cache.filteredGroups(selectedTerm.rto).map(gp => gp.group.id.toString -> gp.group.shortOrLongName).toList
 }
 
 /** Left: false = None, true = All; Right(id) */

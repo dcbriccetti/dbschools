@@ -1,6 +1,7 @@
 package com.dbschools.mgb
 package model
 
+import org.apache.log4j.Logger
 import org.squeryl.PrimitiveTypeMode._
 import scalaz._
 import Scalaz._
@@ -16,6 +17,8 @@ import Cache.lastAssTimeByMusician
 case class GroupAssignment(musician: Musician, group: Group, musicianGroup: MusicianGroup, instrument: Instrument)
 
 object GroupAssignments extends Loggable {
+  private val log = Logger.getLogger(getClass)
+
   def apply(
     opMusicianId:           Option[Int],
     opSelectedTerm:         Option[Int] = None,
@@ -71,5 +74,14 @@ object GroupAssignments extends Loggable {
         def pos(id: Int) = ~Cache.testingStatsByMusician.get(id).map(_.longestPassingStreakTimes.size)
         byYear.sortBy(ga => -pos(ga.musician.id))
     }
+  }
+  
+  def moveToGroup(musicianGroupId: Int, newId: Int, musicianName: String): Unit = {
+    AppSchema.musicianGroups.update(mg =>
+      where(mg.id === musicianGroupId)
+      set(mg.group_id := newId)
+    )
+    val newG = ~Cache.groups.find(_.id == newId).map(_.name)
+    log.info(s"Moved $musicianName to group $newG")
   }
 }
