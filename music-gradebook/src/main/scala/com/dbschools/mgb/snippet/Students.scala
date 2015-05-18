@@ -159,8 +159,12 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Logg
     def moveToGroupSelector = {
       import Selectors._
       val disables = Seq(disableIf(selectedMusicians.isEmpty)).flatten
-      selector("moveToGroupSelector", Selectors.groupsWithoutAll(selectors.selectedTerm),
-        Selection.NoItems, s => moveToGroup = s, None, disables: _*)
+      val groupsWithoutAll = Selectors.groupsWithoutAll(selectors.selectedTerm)
+      moveToGroup = groupsWithoutAll match {
+        case first :: rest  => Selection(first._1.toInt)
+        case _              => Selection.NoItems
+      }
+      selector("moveToGroupSelector", groupsWithoutAll, moveToGroup, s => moveToGroup = s, None, disables: _*)
     }
 
     def makeDrawCharts = PassChart.create(groupAssignments)

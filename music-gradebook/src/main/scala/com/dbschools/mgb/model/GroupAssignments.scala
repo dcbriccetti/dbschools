@@ -77,11 +77,15 @@ object GroupAssignments extends Loggable {
   }
   
   def moveToGroup(musicianGroupId: Int, newId: Int, musicianName: String): Unit = {
-    AppSchema.musicianGroups.update(mg =>
-      where(mg.id === musicianGroupId)
-      set(mg.group_id := newId)
-    )
-    val newG = ~Cache.groups.find(_.id == newId).map(_.name)
-    log.info(s"Moved $musicianName to group $newG")
+    try {
+      AppSchema.musicianGroups.update(mg =>
+        where(mg.id === musicianGroupId)
+          set (mg.group_id := newId)
+      )
+      val newG = ~Cache.groups.find(_.id == newId).map(_.name)
+      log.info(s"Moved $musicianName to group $newG")
+    } catch {
+      case e: Exception => log.error(s"Move to group $musicianGroupId, $newId, $musicianName failed: " + e.getMessage)
+    }
   }
 }

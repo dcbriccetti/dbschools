@@ -54,13 +54,13 @@ object Selectors {
   def selector(
     id:       String,
     items:    Seq[(String, String)],
-    opId:     Selection,
+    selection:Selection,
     fn:       (Selection) => JsCmd,
     callback: => Option[() => JsCmd],
     attrs:    (String, String)*
   ) = {
     val allAttrs = attrs :+ "id" -> id
-    SHtml.ajaxUntrustedSelect(items, Full(opId.value match {
+    SHtml.ajaxUntrustedSelect(items, Full(selection.value match {
       case Left(false)  => NoneOption
       case Left(true)   => All
       case Right(num)   => num.toString
