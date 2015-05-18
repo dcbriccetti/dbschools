@@ -8,10 +8,12 @@ import scalaz._
 import Scalaz._
 import Terms.{toTs, termStart, currentTerm}
 import schema.{Group, Piece, AppSchema}
+import Cache.TrendInfo
 
 case class TestingStats(
   numTests:                   Int,
-  longestPassingStreakTimes:  Seq[Long],
+  longestPassingStreakTimes:  Seq[DateTime],
+  trendInfo:                  Option[TrendInfo],
   percentPassed:              Int
 )
 
@@ -77,27 +79,52 @@ object Cache {
   private def readPieces      = inT {AppSchema.pieces.toSeq.sortBy(_.testOrder.get)}
   private def readTempos      = inT {AppSchema.tempos.toSeq.sortBy(_.instrumentId)}
 
-  case class MuTimePass(id: Int, time: Long, pass: Boolean)
+  case class MusicianTimePass(id: Int, time: DateTime, pass: Boolean)
+
   private def readTestingStats(opMusicianId: Option[Int] = None) = inT {
-    val asByM = from(AppSchema.assessments)(a =>
+    val testsByMusician = from(AppSchema.assessments)(a =>
       where(a.musician_id === opMusicianId.? and a.assessment_time > toTs(termStart(currentTerm)))
-      select MuTimePass(a.musician_id, a.assessment_time.getTime, a.pass)
+      select MusicianTimePass(a.musician_id, new DateTime(a.assessment_time.getTime), a.pass)
       orderBy(a.musician_id, a.assessment_time)).groupBy(_.id)
-    asByM.map {
-      case (mid, mtps) =>
+    testsByMusician.map {
+      case (musicianId, mtps) =>
         val passFails = mtps.map(_.pass)
-        mid -> TestingStats(passFails.size, longestStreak(mtps),
+        val a = trend(mtps)
+        musicianId -> TestingStats(passFails.size, longestStreak(mtps), a,
           if (passFails.isEmpty) 0 else math.round(passFails.count(_ == true) * 100 / passFails.size))
     }
   }
 
-  private def longestStreak(mtps: Iterable[MuTimePass]) = {
-    type Times = Seq[Long]
+  private def longestStreak(mtps: Iterable[MusicianTimePass]) = {
+    type Times = Seq[DateTime]
     case class StreakInfo(longest: Times, current: Times)
     mtps.foldLeft(StreakInfo(Seq(), Seq()))((si, mtp) => {
       val newCurrent = if (mtp.pass) si.current :+ mtp.time else Seq()
       StreakInfo(if (newCurrent.size > si.longest.size) newCurrent else si.longest, newCurrent)
     }).longest
+  }
+
+  case class TrendInfo(passingImprovement: Float, recentDailyPassCounts: Seq[Int])
+
+  private def trend(mtps: Iterable[MusicianTimePass]) = {
+    val NumDaysToConsider = 5
+    val NumDaysToConsiderCurrent = 2
+    val groupedTests = mtps.groupBy(_.time.withTimeAtStartOfDay)
+    if (groupedTests.size < NumDaysToConsider) none[TrendInfo] else {
+      val datesOfTests = groupedTests.keys.toSeq.sortBy(_.getMillis).takeRight(NumDaysToConsider)
+      val testsEachDay = datesOfTests map groupedTests
+      val recentDailyPassCounts = testsEachDay.map(_.count(_.pass == true))
+      val beforeDays = recentDailyPassCounts take NumDaysToConsider - NumDaysToConsiderCurrent
+      val latestDays  = recentDailyPassCounts takeRight NumDaysToConsiderCurrent
+      def avg(s: Seq[Int]) = s.sum.toFloat / s.size
+      val avgBefore = avg(beforeDays)
+      val avgLatest = avg(latestDays)
+      val changeInAverages = avgLatest - avgBefore
+      val passingImprovement = // Avoid divide by zero
+        if (avgBefore == 0f && avgLatest == 0f) 0f else
+        changeInAverages / (if (avgBefore == 0f) avgLatest else avgBefore)
+      Some(TrendInfo(passingImprovement, recentDailyPassCounts))
+    }
   }
 
   def init(): Unit = {}

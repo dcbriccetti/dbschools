@@ -51,7 +51,7 @@ object PassChart extends ChartFeatures {
               i = findBookIndex(piece)
               if i >= 0
             } yield i
-            ChartData(nd, np, if (streakTimes contains test.assessment_time.getTime) 1 else 0,
+            ChartData(nd, np, if (streakTimes contains new DateTime(test.assessment_time.getTime)) 1 else 0,
               bookIndex.map(_ + 1) getOrElse 0)
           })
           val xs = toA(points.map(n => (n.x * xScale).toInt))

@@ -204,12 +204,22 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Logg
 
       val nfmt = NumberFormat.getInstance
       nfmt.setMaximumFractionDigits(2)
+      nfmt.setMinimumFractionDigits(2)
+      val nfmt0 = NumberFormat.getInstance
+      nfmt0.setMaximumFractionDigits(0)
+
 
       val now = DateTime.now
       groupAssignments.map(row => {
         val lastAsmtTime = lastAssTimeByMusician.get(row.musician.id)
         val passedThisTerm = ~Cache.numPassesThisTermByMusician.get(row.musician.id)
         val numDays = ~Cache.numDaysTestedThisYearByMusician.get(row.musician.id)
+        val passingImprovement =
+          for {
+            stats <- Cache.testingStatsByMusician.get(row.musician.id)
+            ti    <- stats.trendInfo
+            title = "Recent passes per day: " + ti.recentDailyPassCounts.mkString(", ")
+          } yield <span title={title}>{nfmt0.format(ti.passingImprovement * 100) + "%"}</span>
         ".sel      *" #> selectionCheckbox(row.musician) &
         ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
         ".stuName  *" #> studentLink(row.musician) &
@@ -226,6 +236,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Logg
         ".passGraph [height]" #> PassChart.PassGraphHeight &
         ".lastAss  *"   #> ~lastAsmtTime.map(fmt.print) &
         ".passStreak *" #> ~Cache.testingStatsByMusician.get(row.musician.id).map(_.longestPassingStreakTimes.size) &
+        ".passingImprovement *" #> passingImprovement &
         ".daysSince *"  #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
         ".lastPass *"   #> formatLastPasses(row)
       })
