@@ -39,12 +39,12 @@ class Testing extends SelectedMusician with Photos {
       val opInstrumentName = Cache.instruments.find(_.id == sm.instrumentId).map(_.name.get)
       val formattedTime = ~timeUntilCall.map(t => Testing.formatter.print(t.toPeriod))
       val opStats = Cache.testingStatsByMusician.get(m.id)
-      val streak = for {
+      val streaks = for {
         stats <- opStats
         streak = stats.longestPassingStreakTimes.size
         if streak >= 10
         cls = if (streak >= 30) "label-success" else if (streak >= 20) "label-primary" else "label-default"
-      } yield (streak, cls)
+      } yield (streak / 10 * 10, cls)
 
       "tr [id]"     #> Testing.queueRowId(m.id) &
       "tr [class+]" #> ~extraClass &
@@ -61,13 +61,13 @@ class Testing extends SelectedMusician with Photos {
       "#qrinst *"   #> ~opInstrumentName &
       "#qrpiece *"  #> sm.nextPieceName &
       "#qrtime *"   #> formattedTime &
-      ".streak"     #> streak.map(s => {
+      ".streak"     #> streaks.map(s => {
         val classes = s"label ${s._2}"
-        <span title="Most consecutive passes" class={classes}>{s._1}</span>
+        <span title="Number of consecutive passes" class={classes}>{s._1} in a Row</span>
       }).getOrElse(NodeSeq.Empty) &
       ".passPct"    #> (for {stats <- opStats; if stats.numTests >= 10 && stats.percentPassed >= 95} yield {
         val classes = "label label-primary"
-        <span title="Percentage of tests passed" class={classes}>{stats.percentPassed}%</span>
+        <span title="Percentage of tests passed" class={classes}>High Pass %</span>
       }).getOrElse(NodeSeq.Empty)
     }
 
