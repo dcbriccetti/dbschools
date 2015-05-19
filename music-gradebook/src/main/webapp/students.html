@@ -2,6 +2,7 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
+    <script src="js/locationsGraph.js"></script>
     <div>
         School Years: <span><span data-lift="Students.yearSelector"/></span>
         Groups: <span><span data-lift="Students.groupSelector"/></span>
@@ -50,17 +51,6 @@
                     c.lineTo(xs[j + 1], graph.height);
                     c.stroke();
                 }
-            }
-        }
-
-        function drawLocationsChart(counts, colors) {
-            var graph = $('#locationsGraph')[0];
-            var c = graph.getContext('2d');
-            var barColors = ["black", "red", "blue", "green"];
-            for (var i = 0; i < counts.length; ++i) {
-                var height = counts[i] * 3;
-                c.strokeStyle = barColors[colors[i]];
-                c.strokeRect(1 + i * 3, graph.height - height, 2, height);
             }
         }
     </script>

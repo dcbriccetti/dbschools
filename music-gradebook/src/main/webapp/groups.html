@@ -2,6 +2,7 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
+    <script src="js/locationsGraph.js"></script>
     <div>
         School Years: <span><span data-lift="GroupsSummary.yearSelector"/></span>
     </div>
@@ -16,6 +17,19 @@
             <tr id="totals"></tr>
             </tbody>
         </table>
+
+        <table class="table table-condensed table-bordered autoWidth">
+            <thead>
+            <tr><th>Group Name</th><th>Current Student Locations</th></tr>
+            </thead>
+            <tbody>
+            <tr class="groupGraphRow">
+                <td id="groupName"></td>
+                <td><canvas class="locationsGraph"></canvas></td>
+            </tr>
+            </tbody>
+        </table>
+        <span id="drawLocationsCharts"></span>
     </div>
 </div>
 </body>

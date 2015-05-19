@@ -1,7 +1,7 @@
 package com.dbschools.mgb
 package snippet
 
-import scala.xml.Text
+import scala.xml.{NodeSeq, Text}
 import scalaz._
 import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
@@ -10,11 +10,11 @@ import net.liftweb.http.SHtml
 import net.liftweb.http.js.JsCmds.Replace
 import bootstrap.liftweb.ApplicationPaths
 import schema.{Instrument, AppSchema}
-import model.{Cache, Terms}
+import com.dbschools.mgb.model.{LastPassFinder, Cache, Terms}
 import snippet.LiftExtensions._
 import Selection._
 
-class GroupsSummary {
+class GroupsSummary extends LocationsGraph {
   private val href = ApplicationPaths.students.href
   private val selectors = svSelectors.is
 
@@ -105,8 +105,24 @@ class GroupsSummary {
       </tr>
     }
 
+    val lastPassFinder = new LastPassFinder()
+    val lastPassesByMusician = lastPassFinder.lastPassed().groupBy(_.musicianId)
+    def lgId(gid: Int) = s"lg$gid"
+    val testingPeriods = groupPeriods.filter(_.group.doesTesting)
+
     "#heading"  #> heading &
     "#detail"   #> detailRows &
-    "#totals"   #> totalsRow
+    "#totals"   #> totalsRow &
+    ".groupGraphRow" #> testingPeriods.map(gp => {
+      "#groupName *" #> gp.group.shortOrLongName &
+      ".locationsGraph [id]" #> lgId(gp.group.id) &
+      ".locationsGraph [width]"  #> LocationsGraphWidth &
+      ".locationsGraph [height]" #> LocationsGraphHeight
+    }) &
+    "#drawLocationsCharts" #> testingPeriods.map(gp => {
+      val groupAssignments = model.GroupAssignments(None, svSelectors.selectedTerm.rto, Some(gp.group.id),
+        svSelectors.selectedInstId.rto, Some(true)).toSeq
+      makeLocationsChart("#" + lgId(gp.group.id), groupAssignments, lastPassesByMusician)
+    }).fold(NodeSeq.Empty)(_ ++ _)
   }
 }

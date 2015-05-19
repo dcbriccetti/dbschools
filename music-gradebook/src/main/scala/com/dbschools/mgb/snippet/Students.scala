@@ -27,7 +27,7 @@ import model._
 import model.TestingManagerMessages._
 import Cache.lastAssTimeByMusician
 
-class Students extends SelectedMusician with Photos with ChartFeatures with Loggable {
+class Students extends SelectedMusician with Photos with ChartFeatures with LocationsGraph with Loggable {
   private val selectors = svSelectors.is
 
   private def replaceContents = {
@@ -89,21 +89,6 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Logg
 
     val groupAssignments = GroupAssignments.sorted(lastPassesByMusician)
     svGroupAssignments(groupAssignments)
-
-    def makeLocationCounts = {
-      val counts = Array.fill(Cache.pieces.size)(0)
-      val musicianIds = groupAssignments.map(_.musician.id).toSet
-      for {
-        (mid, passes) <- lastPassesByMusician
-        if musicianIds contains mid
-        pass <- passes
-      } counts(pass.position) += 1
-      counts
-    }
-
-    val locationCounts = makeLocationCounts
-    val LocationsGraphWidth = 3 * Cache.pieces.size
-    def locationsGraphHeight = 3 * 5
 
     def cbId(musicianId: Int) = "mcb" + musicianId
 
@@ -168,11 +153,6 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Logg
     }
 
     def makeDrawCharts = PassChart.create(groupAssignments)
-
-    def makeLocationsChart = {
-      val pieceColors = Cache.pieces.map(p => findBookIndex(p) + 1)
-      Script(JsRaw(s"drawLocationsChart(${toA(locationCounts)}, ${toA(pieceColors)})"))
-    }
 
     (if (selectors.selectedTerm   .value.isRight) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.selectedGroupId.value.isRight) ".group"   #> none[String] else PassThru) andThen (
@@ -246,9 +226,9 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Logg
       })
     } &
     "#locationsGraph [width]"  #> LocationsGraphWidth &
-    "#locationsGraph [height]" #> locationsGraphHeight &
+    "#locationsGraph [height]" #> LocationsGraphHeight &
     "#drawCharts"         #> makeDrawCharts &
-    "#drawLocationsChart" #> makeLocationsChart
+    "#drawLocationsChart" #> makeLocationsChart("#locationsGraph", groupAssignments, lastPassesByMusician)
     )))))
   }
 
