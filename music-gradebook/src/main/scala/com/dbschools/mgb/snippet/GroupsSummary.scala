@@ -121,7 +121,7 @@ class GroupsSummary extends LocationsGraph {
     }) &
     "#drawLocationsCharts" #> testingPeriods.map(gp => {
       val groupAssignments = model.GroupAssignments(None, svSelectors.selectedTerm.rto, Some(gp.group.id),
-        svSelectors.selectedInstId.rto, Some(true)).toSeq
+        None, Some(true)).toSeq
       makeLocationsChart("#" + lgId(gp.group.id), groupAssignments, lastPassesByMusician)
     }).fold(NodeSeq.Empty)(_ ++ _)
   }
