@@ -8,7 +8,7 @@ import org.apache.log4j.Logger
 import net.liftweb.util.Helpers._
 import net.liftweb.http.SHtml
 import schema.{Musician, MusicianGroup, AppSchema}
-import model.Terms
+import com.dbschools.mgb.model.{Cache, Terms}
 
 class StudentImport {
   private val log = Logger.getLogger(getClass)
@@ -19,20 +19,23 @@ class StudentImport {
 
     def process(): Unit = {
       val musicians = AppSchema.musicians.map(m => m.permStudentId.get -> m).toMap
-      val musicianGroupsByMusicianId = AppSchema.musicianGroups.where(mg => mg.school_year === importTerm).
-        groupBy(_.musician_id)
+      val testingGroupIds = Cache.groups.withFilter(_.doesTesting).map(_.id).toSet
+      def m(term: Int) = AppSchema.musicianGroups.where(_.school_year === term).
+        filter(mg => testingGroupIds.contains(mg.group_id)).groupBy(_.musician_id)
+      val musicianGroupsByMusicianIdImportTerm = m(importTerm)
+      val musicianGroupsByMusicianIdCurrentTerm = m(Terms.currentTerm)
       val insts = AppSchema.instruments.map(i => i.id -> i).toMap
-      val uainst = insts.values.find(_.name.get == "Unassigned").get // OK to fail
-      val newGroup = 3 // Cadet
+      val UnassignedInstrumentId = insts.values.find(_.name.get == "Unassigned").get // OK to fail
+      val CadetBandGroup = 3
 
       val allLines = data.split("\n").map(_.trim.split("\t")) // Pairs of stu -> perm, then student data
       val (idPairs, students) = allLines.partition(_.length == 2)
       val stuToPerm = idPairs.map(ids => ids(0).toInt -> ids(1).toInt).toMap
 
       students.foreach(cols => {
-        val stuId = cols(0).toInt
-        val last = cols(1)
-        val first = cols(2)
+        val stuId     = cols(0).toInt
+        val last      = cols(1)
+        val first     = cols(2)
         val nextGrade = cols(3).toInt
 
         stuToPerm.get(stuId) match {
@@ -47,23 +50,30 @@ class StudentImport {
               (newM, true)
             }
 
-            val groupsForMusician = musicianGroupsByMusicianId.get(musician.musician_id.get)
-            val instrument = (
+            val instrumentId = (
               for {
-                musicianGroups <- groupsForMusician
+                musicianGroups <- musicianGroupsByMusicianIdCurrentTerm.get(musician.musician_id.get)
                 distinctInstrumentIds = musicianGroups.map(_.instrument_id).toSeq.distinct
                 if distinctInstrumentIds.size == 1
               } yield insts(distinctInstrumentIds.head)
-              ) | uainst
+              ) | UnassignedInstrumentId
 
-            val alreadyAssigned = groupsForMusician.map(_.exists(_.group_id == newGroup)) | false
+            val newGroupId = (
+              for {
+                musicianGroups <- musicianGroupsByMusicianIdCurrentTerm.get(musician.musician_id.get)
+                groupIds = musicianGroups.map(_.group_id).toSeq.distinct
+                if groupIds.size == 1
+              } yield groupIds.head
+              ) | CadetBandGroup
+
+            val alreadyAssigned = musicianGroupsByMusicianIdImportTerm.get(musician.musician_id.get).
+              map(_.exists(_.group_id == newGroupId)) | false
             if (! alreadyAssigned) {
-              AppSchema.musicianGroups.insert(MusicianGroup(0, musician.id,
-                newGroup, instrument.id, Terms.nextTerm))
+              AppSchema.musicianGroups.insert(MusicianGroup(0, musician.id, newGroupId, instrumentId.id, importTerm))
             }
 
             val state = (isNew ? "new " | "") + (alreadyAssigned ? "group already assigned " | "")
-            log.info(s"$id $last $first $nextGrade $state${instrument.name}")
+            log.info(s"$id $last $first $nextGrade $state${instrumentId.name}")
         }
       })
     }
