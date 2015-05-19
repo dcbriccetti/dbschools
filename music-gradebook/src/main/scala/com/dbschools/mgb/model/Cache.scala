@@ -1,9 +1,10 @@
 package com.dbschools.mgb
 package model
 
+import org.apache.log4j.Logger
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.PrimitiveTypeMode.{inTransaction => inT}
-import org.joda.time.DateTime
+import org.joda.time.{Days, DateTime}
 import scalaz._
 import Scalaz._
 import Terms.{toTs, termStart, currentTerm}
@@ -18,6 +19,7 @@ case class TestingStats(
 )
 
 object Cache {
+  val log = Logger.getLogger(getClass)
   var groups = readGroups
   var groupTerms = readGroupTerms
   var instruments = readInstruments
@@ -104,29 +106,23 @@ object Cache {
     }).longest
   }
 
-  case class TrendInfo(passingImprovement: Float, recentDailyPassCounts: Seq[Int])
+  case class TrendInfo(passingImprovement: Double, recentDailyPassCounts: Seq[Int])
 
-  private def trend(mtps: Iterable[MusicianTimePass]) = {
-    val NumDaysToConsider = 5
-    val NumDaysToConsiderCurrent = 2
-    val groupedTests = mtps.groupBy(_.time.withTimeAtStartOfDay)
-    if (groupedTests.size < NumDaysToConsider) none[TrendInfo] else {
-      val datesOfTests = groupedTests.keys.toSeq.sortBy(_.getMillis).takeRight(NumDaysToConsider)
-      val testsEachDay = datesOfTests map groupedTests
-      val recentDailyPassCounts = testsEachDay.map(_.count(_.pass == true))
-      val beforeDays = recentDailyPassCounts take NumDaysToConsider - NumDaysToConsiderCurrent
-      val latestDays  = recentDailyPassCounts takeRight NumDaysToConsiderCurrent
-      def avg(s: Seq[Int]) = s.sum.toFloat / s.size
-      val avgBefore = avg(beforeDays)
-      val avgLatest = avg(latestDays)
-      val changeInAverages = avgLatest - avgBefore
-      val passingImprovement = // Avoid divide by zero
-        if (avgBefore == 0f && avgLatest == 0f) 0f else
-        changeInAverages / (if (avgBefore == 0f) avgLatest else avgBefore)
-      Some(TrendInfo(passingImprovement, recentDailyPassCounts))
+  private def trend(mtps: Iterable[MusicianTimePass], numDays: Int = 5, maxPerDay: Int = 3) = {
+    mtps.groupBy(_.time.withTimeAtStartOfDay) match {
+      case passesByDay if passesByDay.size >= numDays =>
+        val datesOfRecentTests = passesByDay.keys.toSeq.sortBy(_.getMillis).takeRight(numDays)
+        val testsEachDay = datesOfRecentTests map passesByDay
+        val recentDailyPassesCountsWithTime = testsEachDay.map(t =>
+          t.head.time -> math.min(maxPerDay, t.count(_.pass == true)))
+        val points = recentDailyPassesCountsWithTime.map(ct =>
+          Stats.Point(Days.daysBetween(testsEachDay.head.head.time, ct._1).getDays, ct._2))
+        val recentDailyPassCounts = testsEachDay.map(_.count(_.pass == true))
+        Some(TrendInfo(Stats.regressionSlope(points), recentDailyPassCounts))
+      case _ => none[TrendInfo]
     }
   }
-
+  
   def init(): Unit = {}
 
   def invalidateGroups(): Unit = { groups = readGroups }

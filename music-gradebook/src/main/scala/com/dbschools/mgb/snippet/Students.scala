@@ -223,7 +223,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Logg
             stats <- Cache.testingStatsByMusician.get(row.musician.id)
             ti    <- stats.trendInfo
             title = "Recent passes per day: " + ti.recentDailyPassCounts.mkString(", ")
-          } yield <span title={title}>{nfmt0.format(ti.passingImprovement * 100) + "%"}</span>
+          } yield <span title={title}>{nfmt.format(ti.passingImprovement)}</span>
         ".sel      *" #> selectionCheckbox(row.musician) &
         ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
         ".stuName  *" #> studentLink(row.musician) &

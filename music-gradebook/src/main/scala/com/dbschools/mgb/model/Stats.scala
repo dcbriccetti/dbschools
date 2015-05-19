@@ -12,4 +12,21 @@ object Stats {
       sqrt(sumSqDiffs / list.size)
     }
   }
+
+  case class Point(x: Int, y: Double)
+
+  def regressionSlope(points: Iterable[Point]) = {
+    val xs = points.map(_.x)
+    val ys = points.map(_.y)
+    val xys = points.map(c => c.x * c.y)
+    val xmean = xs.sum / xs.size
+    val ymean = ys.sum / ys.size
+    val xymean = xys.sum / xys.size
+    val xssq = xs.map(x => x * x)
+    val xssqmean = xssq.sum / xssq.size
+    val num = xmean * ymean - xymean
+    val denom = xmean * xmean - xssqmean
+    num / denom
+  }
+
 }
