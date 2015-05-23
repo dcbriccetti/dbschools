@@ -198,9 +198,10 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         val lastAsmtTime = lastAssTimeByMusician.get(row.musician.id)
         val passedThisTerm = ~Cache.numPassesThisTermByMusician.get(row.musician.id)
         val numDays = ~Cache.numDaysTestedThisYearByMusician.get(row.musician.id)
+        val opStats = Cache.testingStatsByMusician.get(row.musician.id)
         val passingImprovement =
           for {
-            stats <- Cache.testingStatsByMusician.get(row.musician.id)
+            stats <- opStats
             ti    <- stats.trendInfo
             title = "Recent passes per day: " + ti.recentDailyPassCounts.mkString(", ")
           } yield <span title={title}>{nfmt.format(ti.passingImprovement)}</span>
@@ -214,12 +215,12 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         ".passedThisTerm *"           #> passedThisTerm &
         ".daysTestedThisTerm *"       #> numDays &
         ".avgPassedPerDayThisTerm *"  #> (if (numDays == 0) "" else nfmt.format(passedThisTerm.toFloat / numDays)) &
-        ".passedPct *"  #> s"${~Cache.testingStatsByMusician.get(row.musician.id).map(_.percentPassed)}%" &
+        ".passedPct *"  #> s"${~opStats.map(_.percentPassed)}%" &
         ".passGraph [id]"     #> s"pg${row.musician.id}" &
         ".passGraph [width]"  #> PassChart.PassGraphWidth &
         ".passGraph [height]" #> PassChart.PassGraphHeight &
         ".lastAss  *"   #> ~lastAsmtTime.map(fmt.print) &
-        ".passStreak *" #> ~Cache.testingStatsByMusician.get(row.musician.id).map(_.longestPassingStreakTimes.size) &
+        ".passStreak *" #> ~opStats.map(_.longestPassingStreakTimes.size) &
         ".passingImprovement *" #> passingImprovement &
         ".daysSince *"  #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
         ".lastPass *"   #> formatLastPasses(row)

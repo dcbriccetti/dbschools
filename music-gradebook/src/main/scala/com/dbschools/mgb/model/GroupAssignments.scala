@@ -51,14 +51,14 @@ object GroupAssignments extends Loggable {
 
     val group = svSelectors.selectedGroupId
     val opTesting = if (group.isAll) Some(true) else None
-    val byYear = GroupAssignments(None, svSelectors.selectedTerm.rto, group.rto,
+    val assignments = GroupAssignments(None, svSelectors.selectedTerm.rto, group.rto,
       svSelectors.selectedInstId.rto, opTesting).toSeq.sortBy(_.musicianGroup.school_year)
 
     svSortingStudentsBy.is match {
       case SortStudentsBy.Name =>
-        byYear.sortBy(_.musician.nameLastFirstNick)
+        assignments.sortBy(_.musician.nameLastFirstNick)
       case SortStudentsBy.LastAssessment =>
-        byYear.sortBy(ga => lastAssTimeByMusician.get(ga.musician.id).map(_.toDate) | longAgo)
+        assignments.sortBy(ga => lastAssTimeByMusician.get(ga.musician.id).map(_.toDate) | longAgo)
       case SortStudentsBy.LastPassed =>
         def pos(id: Int) = ~(
           for {
@@ -66,17 +66,17 @@ object GroupAssignments extends Loggable {
             sortedPasses    =  passes.toSeq.sortBy(-_.testOrder)
             highestLastPass <- sortedPasses.headOption
           } yield highestLastPass.testOrder)
-        byYear.sortBy(ga => -pos(ga.musician.id))
+        assignments.sortBy(ga => -pos(ga.musician.id))
       case SortStudentsBy.NumPassed =>
         val np = Cache.numPassesThisTermByMusician
         def pos(id: Int) = ~np.get(id)
-        byYear.sortBy(ga => -pos(ga.musician.id))
+        assignments.sortBy(ga => -pos(ga.musician.id))
       case SortStudentsBy.PctPassed =>
         def pos(id: Int) = ~Cache.testingStatsByMusician.get(id).map(_.percentPassed)
-        byYear.sortBy(ga => -pos(ga.musician.id))
+        assignments.sortBy(ga => -pos(ga.musician.id))
       case SortStudentsBy.Streak =>
         def pos(id: Int) = ~Cache.testingStatsByMusician.get(id).map(_.longestPassingStreakTimes.size)
-        byYear.sortBy(ga => -pos(ga.musician.id))
+        assignments.sortBy(ga => -pos(ga.musician.id))
     }
   }
   

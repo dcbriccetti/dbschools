@@ -19,13 +19,16 @@ class LastPassFinder {
       upTo:       Option[DateTime]  = None
   ): Iterable[LastPass] =
   {
-    from(AppSchema.assessments, AppSchema.pieces, AppSchema.musicianGroups)((a, p, mg) =>
-      where(a.pass === true and a.musician_id === musicianId.? and
-        a.pieceId === p.id and a.assessment_time < upTo.map(toTs).? and
-        a.musician_id === mg.musician_id and mg.school_year === Terms.currentTerm and a.instrument_id === mg.instrument_id)
+    join(AppSchema.assessments, AppSchema.pieces, AppSchema.musicianGroups)((a, p, mg) =>
+      where(
+        a.pass === true and
+        a.assessment_time < upTo.map(toTs).? and
+        a.musician_id === musicianId.? and
+        mg.school_year === Terms.currentTerm)
       groupBy(a.musician_id, a.instrument_id, a.subinstrument_id)
       compute max(p.testOrder.get)
       orderBy max(p.testOrder.get).desc
+      on(a.pieceId === p.id, a.musician_id === mg.musician_id and a.instrument_id === mg.instrument_id)
     ).map(group => {
       val testOrder = group.measures.get
       val pieceId = pieceOrderToId(testOrder)
