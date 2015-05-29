@@ -14,6 +14,7 @@ object ApplicationPaths {
   val activity          = new Path("Activity",    "activity")
   val stats             = new Path("Statistics",  "stats")
   val students          = new Path("Students",    "students")
+  val learnStudents     = new Path("Learn Students", "learnStudents")
   val testing           = new Path("Testing",     "testing")
   val editStudent       = new Path("Edit Student", "editStudent")
   val studentDetails    = new Path("Student Details", "studentDetails")

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<body class="lift:content_id=main">
+<div id="main" class="lift:surround?with=default;at=content">
+    <div id="finished" class="h2" style="display: none">Finished</div>
+    <div id="running" data-lift="LearnStudents">
+        <div id="picture"></div>
+        <div id="backButtons" style="margin-top: .5em;"><span id="showBackButton"></span></div>
+
+        <div id="back" style="display: none">
+            <div class="h3" id="name"></div>
+            <div id="frontButtons" style="margin-top: .2em"><span id="buttons"></span></div>
+        </div>
+    </div>
+    <script>
+        $(document).keypress(function(event) {
+            var s = String.fromCharCode(event.charCode);
+            if (s == ' ') {
+                $('#showBackButton:visible').click();
+                $('#score3:visible').click();
+            } else if (s >= '1' && s <= '4') {
+                $('#score' + s).click();
+            }
+        })
+    </script>
+</div>
+</body>
+</html>

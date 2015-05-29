@@ -48,6 +48,7 @@ class Boot {
       groups.menu               >> loggedIn,
       noGroups.menu             >> loggedIn,
       students.menu             >> loggedIn,
+      learnStudents.menu        >> loggedIn >> Hidden,
       testing.menu              >> loggedIn,
       editStudent.menu          >> loggedIn >> Hidden,
       studentDetails.menu       >> loggedIn >> Hidden,
