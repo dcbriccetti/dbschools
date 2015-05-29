@@ -9,7 +9,7 @@
 
         <div id="back" style="display: none">
             <div class="h3" id="name"></div>
-            <div id="frontButtons" style="margin-top: .5em"><span id="buttons"></span></div>
+            <div style="margin-top: .5em"><span id="buttons"></span></div>
         </div>
     </div>
     <script>
@@ -18,7 +18,7 @@
             if (s == ' ') {
                 $('#showBackButton:visible').click();
                 $('#score3:visible').click();
-            } else if (s >= '1' && s <= '4') {
+            } else if ($('#back:visible').length > 0 && s >= '1' && s <= '7') {
                 $('#score' + s).click();
             }
         })

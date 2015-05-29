@@ -8,6 +8,5 @@ case class LearnState(
   id:               Int,
   user_id:          Int,
   musician_id:      Int,
-  ease:             Float,
   due:              Timestamp
 ) extends KeyedEntity[Int]

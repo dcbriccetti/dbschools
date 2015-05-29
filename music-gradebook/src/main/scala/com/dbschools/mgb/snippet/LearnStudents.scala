@@ -1,6 +1,7 @@
 package com.dbschools.mgb
 package snippet
 
+import java.sql.Timestamp
 import scala.xml.Text
 import scala.collection.mutable.{Queue=>MQueue}
 import scalaz._, Scalaz._
@@ -17,22 +18,34 @@ import model.{Terms, GroupAssignment}
 class LearnStudents extends Photos {
   private val userId = Authenticator.opLoggedInUser.get.id
   val NumNew = 10
-  val InitialEase = 2.5f
 
-  case class State(gas: Iterable[GroupAssignment]) {
-    val queue = new MQueue[GroupAssignment]
-    queue ++= gas
-    var opThisGa = dequeue()
+  case class State(groupAssignments: Iterable[GroupAssignment]) {
+    private val queue = new MQueue[GroupAssignment]
+    queue ++= groupAssignments
+    var opCurrent = dequeue()
     var front = true
+    def next(): Unit = opCurrent = dequeue()
+    def requeueCurrent(): Unit = opCurrent.foreach(ga => queue.enqueue(ga))
+
+    def saveDue(due: Timestamp) =
+      opCurrent.map(ga => {
+        val opLs = AppSchema.learnStates.where(ls =>
+          ls.user_id === userId and ls.musician_id === ga.musician.id).headOption
+        opLs.map(ls => {
+          AppSchema.learnStates.update(ls.copy(due = due))
+          ls
+        }) getOrElse AppSchema.learnStates.insert(LearnState(0, userId, ga.musician.id, due))
+      })
+    
     private def dequeue() = if (queue.isEmpty) None else Some(queue.dequeue())
-    def next(): Unit = opThisGa = dequeue()
-    def requeueCurrent(): Unit = opThisGa.foreach(ga => queue.enqueue(ga))
   }
 
   private val queueItems = {
-    val groupAssignments = model.GroupAssignments.assignments.toVector
+    val groupAssignments = model.GroupAssignments.assignments.filter(ga =>
+      pictureFilename(ga.musician.permStudentId.get).nonEmpty).toVector
     val musicianIds = groupAssignments.map(_.musician.id)
-    val learnStates = AppSchema.learnStates.where(ls =>
+    val learnStates = if (musicianIds.isEmpty) Vector[LearnState]() else
+      AppSchema.learnStates.where(ls =>
       ls.user_id === userId and (ls.musician_id in musicianIds)).toVector
     val dueMusIds = learnStates.withFilter(_.due.getTime <= DateTime.now.getMillis).map(_.musician_id).toSet
     val mids = learnStates.map(_.musician_id).toSet
@@ -41,38 +54,32 @@ class LearnStudents extends Photos {
     dueCurrentGas ++ newGas.take(NumNew)
   }
   private val state = State(queueItems)
-  val RequeueScores = Set(1)
 
   case class GradeButton(title: String, score: Int)
 
-  val buttons = Seq(
-    GradeButton("Missed", 1),
-    GradeButton("Hard",   2),
-    GradeButton("Good",   3),
-    GradeButton("Easy",   4)
-  )
+  val buttons = {
+    val min = 60
+    val day = min * 60 * 24
+    val b = GradeButton.apply _
+    Seq(
+      b("0 Mins",   0        ),
+      b("10 Mins",  min * 10 ),
+      b("1 Day",    day      ),
+      b("3 Days",   day * 3  ),
+      b("1 Week",   day * 7  ),
+      b("30 Days",  day * 30 ),
+      b("1 Year",   day * 365)
+    )
+  }
 
-  def push(score: Int) = {
-    if (RequeueScores contains score) state.requeueCurrent()
-    def newEase(ease: Float, score: Int) = ease
-    def newDue(ease: Float) = Terms.toTs(DateTime.now.plusMinutes(10))
-    state.opThisGa.map(ga => {
-      val opLs = AppSchema.learnStates.where(ls =>
-        ls.user_id === userId and ls.musician_id === ga.musician.id).headOption
-      opLs.map(ls => {
-        val ne = newEase(ls.ease, score)
-        AppSchema.learnStates.update(ls.copy(ease = ne, due = newDue(ne)))
-        ls
-      }) getOrElse {
-        val ne = InitialEase
-        AppSchema.learnStates.insert(LearnState(0, userId, ga.musician.id, ne, newDue(ne)))
-      }
-    })
+  def schedule(delaySeconds: Int) = {
+    if (delaySeconds == 0) state.requeueCurrent()
+    state.saveDue(Terms.toTs(DateTime.now.plusSeconds(delaySeconds)))
     state.next()
-    state.opThisGa.map(ga => {
+    state.opCurrent.map(groupAssignment => {
       state.front = true
-      SetHtml("name", Text(info(ga))) &
-      SetHtml("picture", img(ga.musician.permStudentId.get)) &
+      SetHtml("name", Text(info(groupAssignment))) &
+      SetHtml("picture", img(groupAssignment.musician.permStudentId.get)) &
       JsHideId("back") & JsShowId("showBackButton")
     }) | JsHideId("running") & JsShowId("finished")
   }
@@ -85,8 +92,9 @@ class LearnStudents extends Photos {
   val buttonClass = "class" -> "btn btn-primary"
   val buttonStyle = "style" -> "margin-right: .5em;"
 
-  val ajaxButtons = buttons.map(b => {
-    SHtml.ajaxButton(b.title, () => push(b.score), buttonClass, buttonStyle, "id" -> s"score${b.score}")
+  val ajaxButtons = buttons.zipWithIndex.map(b => {
+    SHtml.ajaxButton(b._1.title, () => schedule(b._1.score), buttonClass, buttonStyle,
+      "id" -> s"score${b._2 + 1}", "style" -> "width: 5em; margin-right: .5em")
   })
 
   private def info(ga: GroupAssignment) = {
@@ -95,10 +103,10 @@ class LearnStudents extends Photos {
   }
 
   def render = {
-    state.opThisGa.map(thisGa => {
-      "#name *" #> info(thisGa) &
-      "#picture *" #> img(thisGa.musician.permStudentId.get) &
-      "#buttons" #> ajaxButtons &
+    state.opCurrent.map(groupAssignment => {
+      "#name *"         #> info(groupAssignment) &
+      "#picture *"      #> img(groupAssignment.musician.permStudentId.get) &
+      "#buttons"        #> ajaxButtons &
       "#showBackButton" #> SHtml.ajaxButton("Show Name", () => showBack, buttonClass, buttonStyle)
     }) getOrElse ClearNodes
   }
