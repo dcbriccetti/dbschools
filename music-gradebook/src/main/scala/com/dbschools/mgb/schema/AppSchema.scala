@@ -25,6 +25,8 @@ object AppSchema extends Schema {
   val predefinedComments  = table[PredefinedComment]  ("predefined_comment")
   val rejectionReasons    = table[RejectionReason]    ("rejection_reason")
   val tempos              = table[Tempo]              ("tempo")
+  val learnStates         = table[LearnState]         ("learn_state")
+  on(learnStates)(ls => declare(columns(ls.user_id, ls.musician_id) are(unique, indexed("learn_state_user_id_musician_id"))))
 
   val groupToGroupTerms   = oneToManyRelation(groups, groupTerms).via((g, t) => g.id === t.groupId)
 }
