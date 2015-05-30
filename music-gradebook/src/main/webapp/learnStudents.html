@@ -13,15 +13,18 @@
         </div>
     </div>
     <script>
-        $(document).keypress(function(event) {
-            var s = String.fromCharCode(event.charCode);
-            if (s == ' ') {
-                $('#showBackButton:visible').click();
-                $('#score3:visible').click();
-            } else if ($('#back:visible').length > 0 && s >= '1' && s <= '7') {
-                $('#score' + s).click();
-            }
-        })
+        $(document).ready(function() {
+            $("#fullTopStuff").hide();
+            $(document).keypress(function(event) {
+                var s = String.fromCharCode(event.charCode);
+                if (s == ' ') {
+                    $('#showBackButton:visible').click();
+                    $('#score3:visible').click();
+                } else if ($('#back:visible').length > 0 && s >= '1' && s <= '7') {
+                    $('#score' + s).click();
+                }
+            });
+        });
     </script>
 </div>
 </body>
