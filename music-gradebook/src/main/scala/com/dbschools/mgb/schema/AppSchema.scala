@@ -5,6 +5,8 @@ import org.squeryl.PrimitiveTypeMode._
 
 object AppSchema extends Schema {
   val users               = table[User]               ("music_user")
+  val roles               = table[Role]
+  val userRoles           = table[UserRole]
   val musicians           = table[Musician]           ("musician")
   val groups              = table[Group]              ("music_group")
   val groupTerms          = table[GroupTerm]
@@ -29,4 +31,6 @@ object AppSchema extends Schema {
   on(learnStates)(ls => declare(columns(ls.user_id, ls.musician_id) are(unique, indexed("learn_state_user_id_musician_id"))))
 
   val groupToGroupTerms   = oneToManyRelation(groups, groupTerms).via((g, t) => g.id === t.groupId)
+  val userToUserRoles     = oneToManyRelation(users, userRoles).via((u, ur) => u.id === ur.userId)
+  val roleToUserRoles     = oneToManyRelation(roles, userRoles).via((r, ur) => r.id === ur.roleId)
 }

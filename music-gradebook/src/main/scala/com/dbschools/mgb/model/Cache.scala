@@ -28,6 +28,7 @@ object Cache {
   var pieces = readPieces
   var tempos = readTempos
   var testingStatsByMusician = readTestingStats()
+  var canWriteUsers = readCanWrite()
 
   private var _lastAssTimeByMusician = inT(for {
     gm <- from(AppSchema.assessments)(a => groupBy(a.musician_id) compute max(a.assessment_time))
@@ -95,6 +96,10 @@ object Cache {
         musicianId -> TestingStats(passFails.size, longestStreak(mtps), a,
           if (passFails.isEmpty) 0 else math.round(passFails.count(_ == true) * 100 / passFails.size))
     }
+  }
+
+  private def readCanWrite() = inT {
+    AppSchema.userRoles.withFilter(_.roleId == 1).map(_.userId).toSet
   }
 
   private def longestStreak(mtps: Iterable[MusicianTimePass]) = {

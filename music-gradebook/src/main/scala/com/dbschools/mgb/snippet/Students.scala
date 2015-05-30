@@ -157,8 +157,9 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
     (if (selectors.selectedTerm   .value.isRight) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.selectedGroupId.value.isRight) ".group"   #> none[String] else PassThru) andThen (
     (if (selectors.selectedInstId .value.isRight) ".instr"   #> none[String] else PassThru) andThen (
-    (if (svPicturesDisplay.is == PicturesDisplay.Large) "#studentsTable"     #> NodeSeq.Empty else PassThru) andThen (
-    (if (svPicturesDisplay.is != PicturesDisplay.Large) "#studentsContainer" #> NodeSeq.Empty else PassThru) andThen (
+    (if (svPicturesDisplay.is == PicturesDisplay.Large) "#studentsTable"     #> ClearNodes else PassThru) andThen (
+    (if (svPicturesDisplay.is != PicturesDisplay.Large) "#studentsContainer" #> ClearNodes else PassThru) andThen (
+    (if (!Authenticator.canWrite) "#moveToControls" #> ClearNodes else PassThru) andThen (
 
     "#testAll"                #> testAllButton &
     "#autoSelect"             #> autoSelectButton &
@@ -230,7 +231,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
     "#locationsGraph [height]" #> LocationsGraphHeight &
     "#drawCharts"         #> makeDrawCharts &
     "#drawLocationsChart" #> makeLocationsChart("#locationsGraph", groupAssignments, lastPassesByMusician)
-    )))))
+    ))))))
   }
 
   private def formatLastPasses(row: GroupAssignment): NodeSeq = {

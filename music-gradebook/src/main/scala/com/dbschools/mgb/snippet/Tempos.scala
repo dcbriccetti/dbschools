@@ -33,27 +33,30 @@ class Tempos {
       <td> {
         val currentTempoStr = getTempo(iid)
 
-        SHtml.ajaxText(currentTempoStr, t => {
-          val newTempoStr = t.trim
-          if (newTempoStr != currentTempoStr) {
-            if (newTempoStr.isEmpty) {
-              if (iid.nonEmpty) { // Mustn’t remove default tempo
-                AppSchema.tempos.deleteWhere(t => t.pieceId === p.id and t.instrumentId === iid)
+        if (! Authenticator.canWrite)
+          currentTempoStr
+        else
+          SHtml.ajaxText(currentTempoStr, t => {
+            val newTempoStr = t.trim
+            if (newTempoStr != currentTempoStr) {
+              if (newTempoStr.isEmpty) {
+                if (iid.nonEmpty) { // Mustn’t remove default tempo
+                  AppSchema.tempos.deleteWhere(t => t.pieceId === p.id and t.instrumentId === iid)
+                  Cache.invalidateTempos()
+                }
+              } else {
+                Helpers.asInt(newTempoStr).foreach(newTempo => {
+                  if (currentTempoStr.isEmpty) {
+                    AppSchema.tempos.insert(Tempo(0, p.id, iid, newTempo))
+                  } else {
+                    AppSchema.tempos.update(t => where(t.pieceId === p.id and t.instrumentId === iid)
+                      set (t.tempo := newTempo))
+                  }
+                })
                 Cache.invalidateTempos()
               }
-            } else {
-              Helpers.asInt(newTempoStr).foreach(newTempo => {
-                if (currentTempoStr.isEmpty) {
-                  AppSchema.tempos.insert(Tempo(0, p.id, iid, newTempo))
-                } else {
-                  AppSchema.tempos.update(t => where(t.pieceId === p.id and t.instrumentId === iid)
-                    set (t.tempo := newTempo))
-                }
-              })
-              Cache.invalidateTempos()
             }
-          }
-        }, "size" -> "3")
+          }, "size" -> "3")
       } </td>)
 
     <tr><td>{p.name.get}</td>{tempoCols}</tr>

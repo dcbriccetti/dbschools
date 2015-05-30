@@ -11,7 +11,7 @@ import net.liftweb.util.Helpers._
 import net.liftweb.util.{PassThru, ClearNodes, Props, BCrypt}
 import net.liftweb.http.js.JsCmds.{Script, Noop, RedirectTo, FocusOnLoad}
 import schema.{User, AppSchema}
-import model.testingState
+import model.{Cache, testingState}
 
 class Authenticator extends FormHelper {
   val log = Logger.getLogger(getClass)
@@ -60,6 +60,7 @@ object Authenticator {
   object svLoggedInUser extends SessionVar[Option[User]](None)
   def loggedIn = svLoggedInUser.is.nonEmpty
   def opLoggedInUser = svLoggedInUser.is
+  def canWrite = opLoggedInUser.map(u => Cache.canWriteUsers contains u.id) | false
 
   def metronome(num: Int): Unit = {
     opLoggedInUser.foreach(user => {

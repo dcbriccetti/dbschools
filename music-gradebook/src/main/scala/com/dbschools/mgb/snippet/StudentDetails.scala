@@ -1,7 +1,7 @@
 package com.dbschools.mgb
 package snippet
 
-import scala.xml.Text
+import scala.xml.{NodeSeq, Text}
 import scalaz._
 import Scalaz._
 import net.liftweb._
@@ -12,7 +12,7 @@ import Helpers._
 import bootstrap.liftweb.ApplicationPaths
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.common.Full
-import com.dbschools.mgb.model._
+import model._
 import model.TestingManagerMessages.SetCallAfterMins
 
 class StudentDetails extends Collapsible with SelectedMusician with Photos {
@@ -51,14 +51,17 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       val showQueueControls = ! qEmpty && testerServicingQueue
       val showIfShow = if (showQueueControls) "show" else "hide"
       val hideIfShow = if (showQueueControls) "hide" else "show"
+      val allowIfCanWrite = if (Authenticator.canWrite) PassThru else ClearNodes
 
       collapseSels.reduce(_ & _) &
+      "#groupsPanel"        #> allowIfCanWrite &
+      "#assessmentPanel"    #> allowIfCanWrite &
       "#nextStu1 [class+]"  #> showIfShow &
       "#nextStu2 [class+]"  #> hideIfShow &
       "#callNext [class+]"  #> showIfShow &
       "#photo"              #> img(m.permStudentId.get) &
       "#name *"             #> m.nameFirstNickLast &
-      "#edit *"             #> link(ApplicationPaths.editStudent.href, () => {}, Text("Edit")) &
+      "#edit *"             #> (if (Authenticator.canWrite) link(ApplicationPaths.editStudent.href, () => {}, Text("Edit")) else NodeSeq.Empty) &
       ".grade"              #> Terms.graduationYearAsGrade(m.graduation_year.get) &
       ".stuId"              #> m.permStudentId.toString() &
       "#lastPiece *"        #> StudentDetails.lastPiece(lastPassFinder, m.id) &
