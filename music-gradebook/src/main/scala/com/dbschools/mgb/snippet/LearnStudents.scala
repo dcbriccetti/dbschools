@@ -27,15 +27,12 @@ class LearnStudents extends Photos {
     def next(): Unit = opCurrent = dequeue()
     def requeueCurrent(): Unit = opCurrent.foreach(ga => queue.enqueue(ga))
 
-    def saveDue(due: Timestamp) =
-      opCurrent.map(ga => {
-        val opLs = AppSchema.learnStates.where(ls =>
-          ls.user_id === userId and ls.musician_id === ga.musician.id).headOption
-        opLs.map(ls => {
-          AppSchema.learnStates.update(ls.copy(due = due))
-          ls
-        }) getOrElse AppSchema.learnStates.insert(LearnState(0, userId, ga.musician.id, due))
-      })
+    def saveDue(due: Timestamp): Unit = opCurrent.foreach(ga => AppSchema.learnStates.where(ls =>
+      ls.user_id === userId and ls.musician_id === ga.musician.id).headOption match {
+        case Some(ls) => AppSchema.learnStates.update(ls.copy(due = due))
+        case _        => AppSchema.learnStates.insert(LearnState(0, userId, ga.musician.id, due))
+      }
+    )
     
     private def dequeue() = if (queue.isEmpty) None else Some(queue.dequeue())
   }
