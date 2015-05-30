@@ -10,10 +10,9 @@ import http._
 import net.liftweb.util.FieldError
 import bootstrap.liftweb.ApplicationPaths
 import schema.{Musician, AppSchema}
-import model.{SelectedMusician, Terms}
+import model.{SelectedMusician, Terms, UserLoggable}
 
-class EditStudent extends LiftScreen with SelectedMusician {
-  private val log = Logger.getLogger(getClass)
+class EditStudent extends LiftScreen with SelectedMusician with UserLoggable {
   private val m = svSelectedMusician.is | Musician.createRecord
 
   private val grade = field(s"Grade in ${Terms.formatted(Terms.currentTerm)}",
@@ -39,7 +38,7 @@ class EditStudent extends LiftScreen with SelectedMusician {
     m.graduation_year.set(Terms.gradeAsGraduationYear(grade.get))
     AppSchema.musicians.insertOrUpdate(m)
     val action = m.isPersisted ? "Edited" | "Created"
-    log.info(s"$action musician $m")
+    info(s"$action musician $m")
     svSelectedMusician(Some(m))
     S.redirectTo(ApplicationPaths.studentDetails.href)
   }

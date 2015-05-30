@@ -10,4 +10,6 @@ case class User(
   last_name:  String,
   enabled:    Boolean,
   metronome:  Int
-) extends KeyedEntity[Int]
+) extends KeyedEntity[Int] {
+  def name = s"$first_name $last_name"
+}

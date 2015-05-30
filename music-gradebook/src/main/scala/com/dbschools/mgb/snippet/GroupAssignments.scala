@@ -13,13 +13,13 @@ import net.liftweb.common.Full
 import net.liftweb.http.js.JsCmds.Confirm
 import net.liftweb.util.Helpers._
 import schema.{Assessment, Musician, MusicianGroup, AppSchema}
-import model.{Cache, GroupAssignment, SelectedMusician, Terms}
+import model.{Cache, GroupAssignment, SelectedMusician, Terms, UserLoggable}
 
 case class MusicianDetails(musician: Musician, groups: Iterable[GroupAssignment], assessments: Iterable[Assessment])
 
 object rvMusicianDetails extends RequestVar[Option[MusicianDetails]](None)
 
-class GroupAssignments extends SelectedMusician {
+class GroupAssignments extends SelectedMusician with UserLoggable {
   private val log = Logger.getLogger(getClass)
   private var selectedMusicianGroups = Set[Int]()
   private def groupSelectorValues(term: Int = Terms.currentTerm) =
@@ -38,7 +38,7 @@ class GroupAssignments extends SelectedMusician {
           SHtml.ajaxInvoke(() => {
             val ids = selectedMusicianGroups
             AppSchema.musicianGroups.deleteWhere(_.id in ids)
-            log.info("Deleted group assignment(s): " + ids)
+            info("Deleted group assignment(s): " + ids)
             selectedMusicianGroups = selectedMusicianGroups.empty
             Reload
           }))
@@ -65,7 +65,7 @@ class GroupAssignments extends SelectedMusician {
         } else {
           val musicianGroup = MusicianGroup(0, musician.id, newAssignmentGroupId, instrumentId, term)
           AppSchema.musicianGroups.insert(musicianGroup)
-          log.info("Made musician assignment: " + musicianGroup)
+          info("Made musician assignment: " + musicianGroup)
         }
       }
       Reload
@@ -118,7 +118,7 @@ class GroupAssignments extends SelectedMusician {
           set(mg.instrument_id := intIid)
         )
         val newI = ~Cache.instruments.find(_.id == intIid).map(_.name.get)
-        opMusicianDetails.foreach(md => log.info(s"Changed ${md.musician.nameFirstNickLast} to instrument $newI"))
+        opMusicianDetails.foreach(md => info(s"Changed ${md.musician.nameFirstNickLast} to instrument $newI"))
         Reload // Todo Instead, update the instrument(s) to test on
       })
 }

@@ -5,7 +5,6 @@ import org.apache.log4j.Logger
 import org.squeryl.PrimitiveTypeMode._
 import scalaz._
 import Scalaz._
-import net.liftweb.common.Loggable
 import schema.{AppSchema, Instrument}
 import schema.Group
 import schema.Musician
@@ -16,7 +15,7 @@ import Cache.lastAssTimeByMusician
 
 case class GroupAssignment(musician: Musician, group: Group, musicianGroup: MusicianGroup, instrument: Instrument)
 
-object GroupAssignments extends Loggable {
+object GroupAssignments extends UserLoggable {
   private val log = Logger.getLogger(getClass)
 
   def apply(
@@ -90,7 +89,7 @@ object GroupAssignments extends Loggable {
           set (mg.group_id := newId)
       )
       val newG = ~Cache.groups.find(_.id == newId).map(_.name)
-      log.info(s"Moved $musicianName to group $newG")
+      info(s"Moved $musicianName to group $newG")
     } catch {
       case e: Exception => log.error(s"Move to group $musicianGroupId, $newId, $musicianName failed: " + e.getMessage)
     }

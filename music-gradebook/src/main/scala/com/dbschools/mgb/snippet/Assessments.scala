@@ -5,21 +5,18 @@ import scala.xml.{NodeSeq, Text}
 import collection.mutable.{Set => MSet}
 import scalaz._
 import Scalaz._
-import org.apache.log4j.Logger
 import net.liftweb._
 import util._
 import Helpers._
 import net.liftweb.http.{RequestVar, SHtml}
 import net.liftweb.http.js.JsCmds._
-import com.dbschools.mgb.model.{TagCounts, SelectedMusician, AssessmentRow, AssessmentRows}
+import model.{TagCounts, SelectedMusician, AssessmentRow, AssessmentRows, UserLoggable}
 import schema.{Musician, Subinstrument}
 import LiftExtensions._
 
 object rvSelectedAsmts extends RequestVar[MSet[Int]](MSet[Int]())
 
-class Assessments extends SelectedMusician with TagCounts {
-  private val log = Logger.getLogger(getClass)
-
+class Assessments extends SelectedMusician with TagCounts with UserLoggable {
   def render = renderAllOrOne(opMusician)
 
   def renderWithStudents = renderAllOrOne(none[Musician])
@@ -46,7 +43,7 @@ class Assessments extends SelectedMusician with TagCounts {
         s"Are you sure you want to remove the ${selAsses.size} selected assessments? This can not be undone.",
         SHtml.ajaxInvoke(() => {
           model.Assessments.delete(selAsses)
-          log.info("Deleted assessment(s): " + selAsses)
+          info("Deleted assessment(s): " + selAsses)
           rvSelectedAsmts(rvSelectedAsmts.is.empty)
           Reload
         }))
