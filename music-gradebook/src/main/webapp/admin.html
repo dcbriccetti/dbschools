@@ -2,18 +2,27 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
-    <h2>Administration</h2>
     <h3>Add or Update User</h3>
+
     <form data-lift="form.ajax">
-      <div data-lift="Admin.addUser">
-        <input type="text" id="userName" placeholder="User name"/>
-        <input type="text" id="password" placeholder="Password"/>
-        <input type="text" id="firstName" placeholder="First name"/>
-        <input type="text" id="lastName" placeholder="Last name"/><br/>
-        <input type="checkbox" id="canWrite"/> <label for="canWrite">Can make changes</label>
-        <br/>
-        <input type="submit">
-      </div>
+        <div data-lift="Admin.addUser">
+            <div class="form-group">
+                <input type="text" id="userName" placeholder="User name"/>
+            </div>
+            <div class="form-group">
+                <input type="text" id="password" placeholder="Password"/>
+            </div>
+            <div class="form-group">
+                <input type="text" id="firstName" placeholder="First name"/>
+            </div>
+            <div class="form-group">
+                <input type="text" id="lastName" placeholder="Last name"/><br/>
+            </div>
+            <div class="form-group">
+                <input type="checkbox" id="canWrite"/> <label for="canWrite">Can make changes</label>
+            </div>
+            <input type="submit" class="btn btn-default">
+        </div>
     </form>
 </div>
 </body>
