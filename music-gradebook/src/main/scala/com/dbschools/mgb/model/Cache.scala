@@ -29,6 +29,7 @@ object Cache {
   var tempos = readTempos
   var testingStatsByMusician = readTestingStats()
   var canWriteUsers = readCanWrite()
+  var adminUsers = readAdmins()
 
   private var _lastAssTimeByMusician = inT(for {
     gm <- from(AppSchema.assessments)(a => groupBy(a.musician_id) compute max(a.assessment_time))
@@ -98,8 +99,12 @@ object Cache {
     }
   }
 
-  private def readCanWrite() = inT {
-    AppSchema.userRoles.withFilter(_.roleId == 1).map(_.userId).toSet
+  private def readCanWrite() = usersWithRole(Roles.Write.id)
+
+  private def readAdmins() = usersWithRole(Roles.Admin.id)
+
+  private def usersWithRole(role: Int) = inT {
+    AppSchema.userRoles.withFilter(_.roleId == role).map(_.userId).toSet
   }
 
   private def longestStreak(mtps: Iterable[MusicianTimePass]) = {

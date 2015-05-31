@@ -5,6 +5,7 @@ object ApplicationPaths {
   val home              = new Path("Home", "index")
   val logIn             = new Path("Log In", "logIn")
   val logout            = new Path("Log Out", "logOut")
+  val admin             = new Path("Admin", "admin")
 
   val noGroups          = new Path("No Groups", "noGroups")
   val groups            = new Path("Groups", "groups")

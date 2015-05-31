@@ -60,7 +60,9 @@ object Authenticator {
   object svLoggedInUser extends SessionVar[Option[User]](None)
   def loggedIn = svLoggedInUser.is.nonEmpty
   def opLoggedInUser = svLoggedInUser.is
-  def canWrite = opLoggedInUser.map(u => Cache.canWriteUsers contains u.id) | false
+  private def userIn(ids: Set[Int]) = opLoggedInUser.map(u => ids contains u.id) | false
+  def canWrite = userIn(Cache.canWriteUsers)
+  def isAdmin  = userIn(Cache.adminUsers)
 
   def metronome(num: Int): Unit = {
     opLoggedInUser.foreach(user => {

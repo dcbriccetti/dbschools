@@ -40,11 +40,13 @@ class Boot {
 
     val loggedIn    = If(() => Authenticator.loggedIn,   "Not logged in")
     val notLoggedIn = If(() => ! Authenticator.loggedIn, "Already logged in")
+    val isAdmin     = If(() => Authenticator.isAdmin,    "Not an administrator")
 
     // Build SiteMap
     def sitemap = SiteMap(
       home.menu,
       logIn.menu                >> notLoggedIn,
+      admin.menu                >> isAdmin,
       groups.menu               >> loggedIn,
       noGroups.menu             >> loggedIn,
       students.menu             >> loggedIn,
