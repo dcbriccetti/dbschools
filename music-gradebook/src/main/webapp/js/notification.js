@@ -27,6 +27,7 @@ function sendNotification(msg) {
             if (permission === "granted") {
                 var notification = new Notification(msg);
                 setNotificationTimeout(notification);
+                return notification;
             }
         });
     }

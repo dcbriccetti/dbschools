@@ -8,6 +8,9 @@ import org.apache.log4j.Logger
 import org.squeryl.PrimitiveTypeMode._
 import org.scala_tools.time.Imports._
 import org.joda.time.format.PeriodFormat
+import net.liftweb.json._
+import net.liftweb.json.JsonDSL._
+import net.liftweb.json.JsonAST.JObject
 import net.liftweb._
 import util._
 import Helpers._
@@ -113,8 +116,12 @@ class Testing extends SelectedMusician with Photos {
     "#clearMessages" #> SHtml.ajaxButton("Clear", () => {
       tm ! ClearChat
       Noop
-    }, displayNoneIf(chatMessages.isEmpty))
+    }, displayNoneIf(chatMessages.isEmpty)) &
+    "#queueUpdateJs" #> (Testing.makeQueueUpdateJs(alwaysGet = true).map(js => Script(js)) getOrElse NodeSeq.Empty) &
+    "#optionsJs" #> Script(jsSetDesktopNotify)
   }
+
+  private def jsSetDesktopNotify: JsCmd = JsRaw(s"var desktopNotify = ${testingState.desktopNotify}")
 
   def changeTestingInstrument(sel: Selection): JsCmd = {
     Authenticator.opLoggedInUser.foreach(user => tm ! SetServicingQueue(user, sel))
@@ -142,7 +149,7 @@ class Testing extends SelectedMusician with Photos {
     "#notify"                 #> (if (opUser.nonEmpty) PassThru else ClearNodes) andThen
     "#desktopNotifyCheckbox"  #> SHtml.ajaxCheckbox(testingState.desktopNotify, notify => {
       opUser.foreach(user => testingState.desktopNotifyByTesterId += user.id -> notify)
-      Noop
+      jsSetDesktopNotify
     })
   }
 
@@ -222,57 +229,42 @@ object Testing extends SelectedMusician with Photos {
     messageRow(chatMessage)(elemFromTemplate("testing", ".messageRow")).toString().encJs) &
     JsShowId("clearMessages")
 
-  private var notifiedMusicianIds = Set[Int]()
-
-  case class IdAndTime(rowId: String, musician: Musician, opDuration: Option[Duration])
+  case class IdAndTime(rowId: String, musician: Musician, time: Option[DateTime])
 
   def idAndTimes = {
-    case class MusicianWithOpDur(m: EnqueuedMusician, opDur: Option[TesterDuration])
+    case class MusicianWithTime(m: EnqueuedMusician, time: TesterAvailableTime)
 
     for {
-      (sel, durs) <- testingState.testingDurations.groupBy(_.selection)
+      (sel, durs) <- testingState.testerAvailableTimes.groupBy(_.selection)
       subQueues   <- testingState.multiQueueItems.groupBy(_.sel).get(sel).toSeq
       subQueue    <- subQueues.headOption.toSeq // There is only one
-      musiciansWithOpDurs = {
+      musiciansWithDurs = {
         def o[A](xs: Iterable[A]) = xs.map(Some.apply)
         val zippedOpMs = o(subQueue.musicians).zipAll(o(durs), None, None)
-        zippedOpMs.collect {case (Some(m), opDur) => MusicianWithOpDur(m, opDur)}
+        zippedOpMs.collect {case (Some(m), Some(t)) => MusicianWithTime(m, t)}
       }
-      md            <- musiciansWithOpDurs
-      id            = queueRowId(md.m.musician.id)
-      filteredOpDur = md.opDur.filter(dur => dur.matchesInstrument(md.m.instrumentId))
-    } yield IdAndTime(id, md.m.musician, filteredOpDur.map(_.duration))
+      md          <- musiciansWithDurs
+      id          =  queueRowId(md.m.musician.id)
+      if md.time.matchesInstrument(md.m.instrumentId)
+    } yield IdAndTime(id, md.m.musician, md.time.time)
   }
 
-  def makeQueueUpdateAndNotificationJs = {
+  private var lastIdAndTimes: Iterable[IdAndTime] = Seq[IdAndTime]()
 
-    val enqueuedMusicianIds = enqueuedMusicians.items.map(_.musician.id).toSet
-    notifiedMusicianIds &= enqueuedMusicianIds // Remove anybody no longer in the queue
-
-    val elementUpdateJs = idAndTimes.map(it => {
-      val rowIdSel = s"#${it.rowId}"
-      val progSel = s"$rowIdSel .qrtime progress"
-      val opSeconds = it.opDuration.map(_.millis / 1000)
-      opSeconds match {
-        case Some(secs) if secs > 0 =>
-          (JsRaw(s"jQuery('$progSel').removeClass('hidden');"):JsCmd) &
-          JsJqVal(progSel, secs)
-        case Some(secs)             => JsJqSelectRow(rowIdSel)
-        case _                      => Noop
-      }
-    })
-    JsJqUnStyleRows("tr.queueRow", 0, 9999) &
-    JsRaw(s"jQuery('.qrtime progress').addClass('hidden');") &
-    (makeNotificationJs(idAndTimes) ++ elementUpdateJs).fold(Noop)(_ & _)
-  }
-
-  private def makeNotificationJs(idAndTimes: Iterable[IdAndTime]) = {
-    val toNotify = if (testingState.desktopNotify)
-      idAndTimes.filter(it =>
-      (it.opDuration.map(_.millis <= 0) | false) && ! notifiedMusicianIds.contains(it.musician.id))
-    else Vector[IdAndTime]()
-    notifiedMusicianIds ++= toNotify.map(_.musician.id)
-    toNotify.map(it => JsRaw(s"""sendNotification("${it.musician.nameNickLast}, it’s time to test")""").cmd)
+  def makeQueueUpdateJs(alwaysGet: Boolean = false): Option[JsCmd] = {
+    val newIdAndTimes = idAndTimes
+    if (newIdAndTimes != lastIdAndTimes || alwaysGet) {
+      lastIdAndTimes = newIdAndTimes
+      val json = JArray(
+        newIdAndTimes.toList.map(it =>
+          JObject(List(
+            JField("rowId", it.rowId),
+            JField("name", it.musician.nameNickLast),
+            JField("time", it.time.map(_.millis) | 0)
+          ))
+        ))
+      Some(JsRaw("studentCalls = " + pretty(render(json))): JsCmd)
+    } else None
   }
 
   def clearMessages = JsJqRemove("#messagesTable tbody *") & JsHideId("clearMessages")

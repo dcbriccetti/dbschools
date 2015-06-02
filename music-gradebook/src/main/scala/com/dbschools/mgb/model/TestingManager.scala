@@ -79,7 +79,7 @@ class TestingManager extends Actor {
     case TestMusician(testingMusician) =>
       if (testingState.enqueuedMusicians -= testingMusician.musician.id) {
         testingState.testingMusicians += testingMusician
-        TestingCometDispatcher ! MoveMusician(testingMusician, testingState.testingDurations)
+        TestingCometDispatcher ! MoveMusician(testingMusician, testingState.testerAvailableTimes)
         StudentCometDispatcher ! Next(called)
       }
       updateStudentsPage()
@@ -89,7 +89,7 @@ class TestingManager extends Actor {
         // This student wasn’t selected from the queue, so make a TestingMusician record now
         val newTm = TestingMusician(musician, tester, DateTime.now, None)
         testingState.testingMusicians += newTm
-        TestingCometDispatcher ! MoveMusician(newTm, testingState.testingDurations)
+        TestingCometDispatcher ! MoveMusician(newTm, testingState.testerAvailableTimes)
         newTm
       }
       tm.numTests += 1
@@ -161,7 +161,7 @@ class TestingManager extends Actor {
 object TestingManager {
   val defaultNextCallMins = Props.getInt("defaultNextCallMins") getOrElse 5
 
-  def called = Testing.idAndTimes.filter(_.opDuration.map(_.getMillis <= 0) | false).map(_.musician)
+  def called = Testing.idAndTimes.filter(_.time.isEmpty).map(_.musician)
 }
 
 case class EnqueuedMusician(musician: Musician, instrumentId: Int, nextPieceName: String)
@@ -173,7 +173,7 @@ case class TestingMusician(musician: Musician, tester: User, startingTime: DateT
 
 case class ChatMessage(time: DateTime, user: User, msg: String)
 
-case class TesterDuration(testerId: Int, selection: Selection, duration: Duration) {
+case class TesterAvailableTime(testerId: Int, selection: Selection, time: Option[DateTime] /* None = now */) {
   def matchesInstrument(id: Int) = selection.value.right.toOption.map(_ == id) getOrElse true
 }
 

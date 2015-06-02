@@ -11,7 +11,7 @@ import Helpers._
 import snippet.Testing
 import snippet.LiftExtensions._
 import Testing.{queueRowId, sessionRowId, sessionRow}
-import model.{SessionStats, TesterDuration, ChatMessage, TestingMusician, testingState}
+import model.{SessionStats, TesterAvailableTime, ChatMessage, TestingMusician}
 import schema.User
 
 class TestingCometActor extends CometActor with CometListener {
@@ -49,7 +49,7 @@ class TestingCometActor extends CometActor with CometListener {
       )
 
     case UpdateQueueDisplay =>
-      partialUpdate(Testing.makeQueueUpdateAndNotificationJs)
+      Testing.makeQueueUpdateJs().foreach(js => partialUpdate(js))
 
     case Chat(chatMessage) =>
       partialUpdate(Testing.addMessage(chatMessage))
@@ -94,7 +94,7 @@ object TestingCometDispatcher extends CommonCometDispatcher
 object TestingCometActorMessages {
   case object RebuildPage
   /** Removes a musician from the queue (if it exists), and adds it to a testing session */
-  case class MoveMusician(testingMusician: TestingMusician, timesUntilCall: Iterable[TesterDuration])
+  case class MoveMusician(testingMusician: TestingMusician, testerAvailableTimes: Iterable[TesterAvailableTime])
   case class UpdateAssessmentCount(testingMusician: TestingMusician)
   object UpdateQueueDisplay
   case class Chat(chatMessage: ChatMessage)
