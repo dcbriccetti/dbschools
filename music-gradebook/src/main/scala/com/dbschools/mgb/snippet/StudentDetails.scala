@@ -76,7 +76,8 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
     (for {
       indexStr <- S.attr("index")
       index    <- Helpers.asInt(indexStr)
-    } yield s"#collapse$index [class+]" #> (if (collapsibleShowing(index)) "in" else "")) getOrElse PassThru
+      if collapsibleShowing(index)
+    } yield s"#collapse$index [class+]" #> "in") getOrElse PassThru
 
 }
 
