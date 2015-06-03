@@ -45,7 +45,6 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
 
     val lastPassFinder = new LastPassFinder
     opMusician.map(m => {
-      val collapseSels = (0 to 2).map(n => s"#collapse$n [class+]" #> (if (collapsibleShowing(n)) "in" else ""))
       val qEmpty = testingState.enqueuedMusicians.isEmpty
       val testerServicingQueue = testingState.servicingQueueTesterIds contains Authenticator.opLoggedInUser.get.id
       val showQueueControls = ! qEmpty && testerServicingQueue
@@ -53,7 +52,6 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       val hideIfShow = if (showQueueControls) "hide" else "show"
       val allowIfCanWrite = if (Authenticator.canWrite) PassThru else ClearNodes
 
-      collapseSels.reduce(_ & _) &
       "#groupsPanel"        #> allowIfCanWrite &
       "#assessmentPanel"    #> allowIfCanWrite &
       "#nextStu1 [class+]"  #> showIfShow &
@@ -73,6 +71,13 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
   }
 
   def js = collapseMonitorJs(collapsibleShowing)
+
+  def expand =
+    (for {
+      indexStr <- S.attr("index")
+      index    <- Helpers.asInt(indexStr)
+    } yield s"#collapse$index [class+]" #> (if (collapsibleShowing(index)) "in" else "")) getOrElse PassThru
+
 }
 
 object StudentDetails {
