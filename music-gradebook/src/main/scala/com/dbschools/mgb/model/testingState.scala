@@ -40,11 +40,18 @@ object testingState {
       selection                     <- servicingQueueTesterIds get testerId
       lastStudentStart  = testingMusicians.map(_.startingTime).reduce {(a, b) => if (a > b) a else b}
       callNow           = callNowTesterIds.contains(testerId)
-    } yield TesterAvailableTime(testerId, selection,
+    } yield
+      TesterAvailableTime(testerId, selection,
         if (callNow)
           None
         else
-          callAfterMinsByTesterId(testerId) map(callMins => lastStudentStart + new Duration(callMins * 60000)))
+          callAfterMinsByTesterId(testerId) map(callMins => lastStudentStart + new Duration(callMins * 60000)) match {
+            case Some(callTime) if callTime >= now =>
+              Some(callTime)
+            case _ =>
+              None
+          }
+      )
     val nowTimes = (servicingQueueTesterIds -- testingMusiciansFromQueueByTesterId.keySet).
       map {case (testerId, selection) => TesterAvailableTime(testerId, selection, None)}
     (timesFromQueueServicingSessions ++ nowTimes).toSeq.sortBy(~_.time.map(_.millis))

@@ -121,7 +121,7 @@ class Testing extends SelectedMusician with Photos {
     "#optionsJs" #> Script(jsSetDesktopNotify)
   }
 
-  private def jsSetDesktopNotify: JsCmd = JsRaw(s"var desktopNotify = ${testingState.desktopNotify}")
+  private def jsSetDesktopNotify = JsRaw(s"TestingPage.desktopNotify = ${testingState.desktopNotify}").cmd
 
   def changeTestingInstrument(sel: Selection): JsCmd = {
     Authenticator.opLoggedInUser.foreach(user => tm ! SetServicingQueue(user, sel))
@@ -160,31 +160,28 @@ class Testing extends SelectedMusician with Photos {
       Noop
     })
 
-  def period = model.Periods.periodWithin match {
+  def period =
+    model.Periods.periodWithin match {
 
-    case period: Periods.Period if Authenticator.opLoggedInUser.nonEmpty =>
-      def fh(h: Int) = (if (h > 12) h - 12 else h).toString
-      def fm(m: Int) = f"$m%02d"
+      case period: model.Periods.Period if Authenticator.opLoggedInUser.nonEmpty =>
+        def fh(h: Int) = (if (h > 12) h - 12 else h).toString
+        def fm(m: Int) = f"$m%02d"
 
-      val sh = fh(period.start.hour)
-      val sm = fm(period.start.minute)
-      val eh = fh(period.end.hour)
-      val em = fm(period.end.minute)
+        val sh = fh(period.start.hour)
+        val sm = fm(period.start.minute)
+        val eh = fh(period.end.hour)
+        val em = fm(period.end.minute)
 
-      val secsLeft = period.totalSecs - period.timePassedSecs
-      val minsLeftCeil = math.ceil(secsLeft / 60.0).toInt
-      val progressSpan =
-        <span id="progressMins">
-          {minsLeftCeil}
-          <progress value={secsLeft.toString} max={period.totalSecs.toString}></progress>
-        </span>
+        val secsLeft = period.totalSecs - period.timePassedSecs
+        val minsLeftCeil = math.ceil(secsLeft / 60.0).toInt
 
-      "#periodNumber" #> s"${period.num}, $sh:$sm–$eh:$em" &
-      "progress"      #> progressSpan
+        "#periodNumber *"   #> s"${period.num}, $sh:$sm–$eh:$em" &
+        "progress [value]"  #> secsLeft.toString &
+        "progress [max]"    #> period.totalSecs.toString
 
-    case _ =>
-      "#period" #> NodeSeq.Empty
-  }
+      case _ =>
+        "#period" #> NodeSeq.Empty
+    }
 }
 
 object Testing extends SelectedMusician with Photos {
@@ -263,7 +260,7 @@ object Testing extends SelectedMusician with Photos {
             JField("time", it.time.map(_.millis) | 0)
           ))
         ))
-      Some(JsRaw("studentCalls = " + pretty(render(json))): JsCmd)
+      Some(JsRaw("TestingPage.studentCalls = " + pretty(render(json))).cmd)
     } else None
   }
 

@@ -17,6 +17,7 @@
     <script src="bootstrap3/js/collapse.js" type="text/javascript"></script>
     <script src="bootstrap3/js/tooltip.js" type="text/javascript"></script>
     <script id="json" src="/classpath/json.js" type="text/javascript"></script>
+    <script src="js/periods.js"></script>
     <style type="text/css">
             /* <![CDATA[ */
 body {
@@ -59,12 +60,12 @@ body {
 }
 
 #progressMins {
-    font-size: 40%;
-    vertical-align: top;
+    font-size: 50%;
+    margin-left: 1em;
 }
 
-#progressMins progress {
-    vertical-align: top;
+#timeRemaining {
+    vertical-align: bottom;
 }
 
 tr.studentRow td {
@@ -109,7 +110,10 @@ td {
 <body>
 <div class="container">
     <h3><span data-lift='Title'>Music Gradebook</span><span id='periodSpan' data-lift="Testing.period"><span id="period">—Period
-        <span id="periodNumber"></span> <progress></progress></span></span>
+        <span id="periodNumber"></span>
+        <span id="progressMins"></span>
+        <progress id="timeRemaining"></progress>
+        </span> </span>
         <span id="ajax-loader" style='display: none;'>&#x1D110;</span>
     </h3>
 
@@ -140,6 +144,10 @@ td {
     <div data-lift="Msgs"></div>
     <div data-lift="comet?type=GeneralSettingsCometActor"></div>
     <div style="margin-top: 1em;" id="content"></div>
+    <span data-lift="Periods.js"></span>
+    <script>
+        Periods.start();
+    </script>
 </div>
 </body>
 </html>

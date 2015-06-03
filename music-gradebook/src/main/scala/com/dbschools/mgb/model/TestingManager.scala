@@ -34,7 +34,7 @@ class TestingManager extends Actor {
       StudentCometDispatcher ! Next(called)
 
       val periodNow = Periods.periodWithin
-      if (periodNow != lastPeriodValue || (periodNow.isInstanceOf[Periods.Period] && tickCount % 10 == 0)) {
+      if (periodNow != lastPeriodValue) {
         lastPeriodValue = periodNow
         GeneralSettingsCometDispatcher ! ChangePeriodElements
       }

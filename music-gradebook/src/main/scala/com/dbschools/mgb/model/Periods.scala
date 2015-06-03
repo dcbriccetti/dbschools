@@ -16,6 +16,8 @@ object Periods {
     def timeRemainingMs = end.toDateTime.millis - DateTime.now.millis
     def totalSecs = (end.toDateTime.millis - start.toDateTime.millis) / 1000
     def timePassedSecs = (DateTime.now.millis - start.toDateTime.millis) / 1000
+    def startMs = start.toDateTime.millis
+    def endMs = end.toDateTime.millis
   }
   object Period {
     def apply(num: Int, sh: Int, sm: Int, eh: Int, em: Int): Period = Period(num, SimpleTime(sh, sm), SimpleTime(eh, em))
@@ -30,7 +32,9 @@ object Periods {
     Period(5, 11, 44, 12, 29),
     Period(6, 13, 20, 14, 5),
     Period(7, 14, 8, 14, 55),
-    Period(8, 14, 58, 15, 43)
+    Period(8, 14, 58, 15, 43),
+    Period(9, 22, 31, 22,35),
+    Period(10, 22, 36, 22,40)
   )
 
   private val periodsWeds = Vector(

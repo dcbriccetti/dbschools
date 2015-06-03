@@ -36,7 +36,7 @@ class TestingCometActor extends CometActor with CometListener {
         clearOldSessionsTableRows(testingMusician.tester) &
         updateStats(testingMusician.tester) &
         JsShowId(sessionRowId(id)) &
-        JsRaw("activateTips();").cmd
+        JsRaw("TestingPage.activateTips();").cmd
       )
 
     case UpdateAssessmentCount(tm) =>

@@ -19,20 +19,20 @@ class GeneralSettingsCometActor extends CometActor with CometListener {
   override def lowPriority = {
 
     case ChangeServicingQueueSelection =>
-      replaceDefaultPageSection("queueService")
+      partialUpdate(replaceDefaultPageSection("queueService"))
 
     case ChangePeriodElements =>
-      replaceDefaultPageSection("periodSpan")
+      partialUpdate(snippet.Periods.js & replaceDefaultPageSection("periodSpan"))
 
     case ChangeSpecialSchedule =>
-      replaceDefaultPageSection("specialScheduleOuter")
+      partialUpdate(replaceDefaultPageSection("specialScheduleOuter"))
 
     case Start =>
   }
 
-  private def replaceDefaultPageSection(elemId: String) {
+  private def replaceDefaultPageSection(elemId: String) = {
     val elem = elemFromTemplate("templates-hidden/default", s"#$elemId")
-    partialUpdate(Replace(elemId, elem))
+    Replace(elemId, elem)
   }
 
   def render = PassThru

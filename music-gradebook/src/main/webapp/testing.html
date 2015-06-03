@@ -3,6 +3,8 @@
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
 
+    <script src="js/testingpage.js"></script>
+    <script src="js/notification.js"></script>
     <div data-lift="comet?type=TestingCometActor"></div>
     <div id="testingContents" data-lift="Testing">
         <div class="row">
@@ -94,42 +96,9 @@
         <span id="queueUpdateJs"></span>
         <span id="optionsJs"></span>
     </div>
-    <script language="JavaScript">
-        function activateTips() {
-            $(".queueRow img").tooltip({'placement': 'right', 'html': true});
-            $(".sessionRow img").tooltip({'placement': 'right', 'html': true});
-        }
-        $(document).ready(activateTips);
-
-        var notifications = {};
-
-        function update() {
-            $('tr.queueRow').removeClass('selected');
-            $('.qrtime progress').addClass('hidden');
-
-            var now = new Date().getTime();
-
-            for (var n = 0; n < studentCalls.length; ++n) {
-                var sc = studentCalls[n];
-                if (sc.time > now) {
-                    var progSel = '#' + sc.rowId + ' .qrtime progress';
-                    $(progSel).removeClass('hidden');
-                    $(progSel).val((sc.time - now) / 1000);
-                }
-                if (now >= sc.time) {
-                    if (desktopNotify && ! notifications.hasOwnProperty(sc.name)) {
-                        var ntf = sendNotification(sc.name + ", it’s time to test");
-                        notifications[sc.name] = now;
-                    }
-                    $('#' + sc.rowId).addClass('selected');
-                }
-            }
-            setTimeout(update, 1000);
-        }
-        setTimeout(update, 1000);
-
+    <script>
+        TestingPage.start();
     </script>
-    <script src="js/notification.js"/>
 </div>
 </body>
 </html>
