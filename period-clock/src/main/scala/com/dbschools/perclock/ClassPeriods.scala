@@ -53,15 +53,15 @@ object ClassPeriods extends js.JSApp {
 
     canvas.width = canvas.parentElement.clientWidth
     canvas.height = 350
-    ctx.fillStyle = "#f8f8f8"
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     val firstStartMs = Periods.week.map(_.map(_.startMs).min).min
     val lastEndMs    = Periods.week.map(_.map(_.endMs  ).max).max
     val totalMs = lastEndMs - firstStartMs
-    def scale(ms: Double) = ((ms - firstStartMs) / totalMs) * canvas.height
+    val TopMargin = 12
+    def yFromMs(ms: Double) = TopMargin + ((ms - firstStartMs) / totalMs) * (canvas.height - TopMargin)
     val fills = Seq("red",   "orange", "yellow", "green", "blue",  "indigo", "violet")
     val texts = Seq("white", "black",  "black",  "white", "white", "white",  "black")
+    val days = Seq("Mon", "Tue", "Wed", "Thu", "Fri")
     val colMargin = 6
     val colWidth = (canvas.width - colMargin * (5 - 1)) / 5
     var labeledStartTime = Set[Double]()
@@ -69,11 +69,14 @@ object ClassPeriods extends js.JSApp {
 
     Periods.week.zipWithIndex.foreach {
       case (periods, i) =>
+        val x = i * colWidth + i * colMargin
+        ctx.fillStyle = "black"
+        ctx.fillText(days(i), x, TopMargin - 3)
+
         periods.foreach(p => {
           ctx.fillStyle = fills(p.num - 1)
-          val x = i * colWidth + i * colMargin
-          val yStart = scale(p.startMs)
-          val yEnd = scale(p.endMs)
+          val yStart = yFromMs(p.startMs)
+          val yEnd = yFromMs(p.endMs)
           val w = colWidth
           val h = yEnd - yStart
           ctx.fillRect(x, yStart, w, h)
