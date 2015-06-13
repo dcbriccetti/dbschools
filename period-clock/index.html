@@ -3,6 +3,10 @@
 <head>
     <title>Class Periods</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 
@@ -19,13 +23,15 @@
 <div class="container">
     <h2>Period Clock—Stanley Middle School</h2>
 
-    <span id="period">
+    <div id="period">
         <h3>Period <span id="periodNumber"></span>, <span id="periodRange"></span></h3>
         <h5>
             <span id="progressMins"></span>
             <progress id="timeRemaining"></progress> <span id="periodLength"></span> Mins
         </h5>
-    </span>
+    </div>
+
+    <canvas id="canvas"></canvas>
 </div>
 
 <script type="text/javascript" src="./target/scala-2.11/periodclock-fastopt.js"></script>

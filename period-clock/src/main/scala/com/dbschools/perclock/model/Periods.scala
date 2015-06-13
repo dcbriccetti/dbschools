@@ -1,7 +1,6 @@
 package com.dbschools.perclock.model
 
 import scala.scalajs.js
-import js.annotation.JSExport
 import js.Date
 
 sealed trait TimeClass
@@ -18,7 +17,7 @@ case class SimpleTime(hour: Int, minute: Int) {
   }
 }
 
-@JSExport case class Period(num: Int, start: SimpleTime, end: SimpleTime) extends TimeClass {
+case class Period(num: Int, start: SimpleTime, end: SimpleTime) extends TimeClass {
   def within(t: Double) = start.toMillis <= t && t < end.toMillis
   def timeRemainingMs = end.toMillis - nowMillis
   def totalSecs = (end.toMillis - start.toMillis) / 1000
@@ -58,7 +57,7 @@ case class SimpleTime(hour: Int, minute: Int) {
 /** “Block period” */
 case class Bp(sh: Int, sm: Int, eh: Int, em: Int)
 
-@JSExport object Period {
+object Period {
   def apply(num: Int, sh: Int, sm: Int, eh: Int, em: Int): Period = Period(num, SimpleTime(sh, sm), SimpleTime(eh, em))
   def apply(num: Int, bp: Bp): Period =
     Period(num, SimpleTime(bp.sh, bp.sm), SimpleTime(bp.eh, bp.em))
@@ -69,7 +68,6 @@ object Periods {
   val WarnBellMins = 3
 
   private val monFri = Vector(
-    Period(0, 1, 30, 3, 0),  // temp
     Period(1, 8, 15, 9, 2),
     Period(2, 9, 6, 9, 51),
     Period(3, 9, 55, 10, 40),
@@ -108,12 +106,12 @@ object Periods {
     Period(7, bp5)
   )
   
-  private val week = Vector(monFri, tue, wed, thu, monFri)
+  val week = Vector(monFri, tue, wed, thu, monFri)
 
   def periodWithin: TimeClass =
     periodsToday.find(_.within(new Date().getTime)) getOrElse NotInPeriod
 
-  private def periodsToday = new Date().getDay match {
+  def periodsToday = new Date().getDay match {
     case d if d >= 2 && d <= 6 => week(d - 2)
     case _                     => week.head // Use Monday for out of range
   }
