@@ -13,6 +13,7 @@ case class SimpleTime(hour: Int, minute: Int) {
     c.setHours(hour)
     c.setMinutes(minute)
     c.setSeconds(0)
+    c.setMilliseconds(0)
     c.getTime()
   }
 }
@@ -25,14 +26,19 @@ case class Period(num: Int, start: SimpleTime, end: SimpleTime) extends TimeClas
   def startMs = start.toMillis
   def endMs = end.toMillis
 
-  def formattedRange = {
+  def formattedStart = {
     val sh = fh(start.hour)
     val sm = twoDigits(start.minute)
+    s"$sh:$sm"
+  }
+
+  def formattedEnd = {
     val eh = fh(end.hour)
     val em = twoDigits(end.minute)
-
-    s"$sh:$sm–$eh:$em"
+    s"$eh:$em"
   }
+
+  def formattedRange = s"$formattedStart–$formattedEnd"
 
   def formattedTimeRemaining = {
     var s = timeRemainingMs / 1000

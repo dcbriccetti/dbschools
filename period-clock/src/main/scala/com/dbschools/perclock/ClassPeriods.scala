@@ -46,38 +46,48 @@ object ClassPeriods extends js.JSApp {
 
     update()
 
-    setInterval(1000) {
-      update()
-    }
+    setInterval(1000)(update())
 
     val canvas = dom.document.getElementById("canvas").cast[HTMLCanvasElement]
     val ctx = canvas.getContext("2d").cast[dom.CanvasRenderingContext2D]
 
-    canvas.width = 500
-    canvas.height = 500
+    canvas.width = canvas.parentElement.clientWidth
+    canvas.height = 350
     ctx.fillStyle = "#f8f8f8"
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     val firstStartMs = Periods.week.map(_.map(_.startMs).min).min
-    val lastEndMs = Periods.week.map(_.map(_.endMs).max).max
+    val lastEndMs    = Periods.week.map(_.map(_.endMs  ).max).max
     val totalMs = lastEndMs - firstStartMs
     def scale(ms: Double) = ((ms - firstStartMs) / totalMs) * canvas.height
-    val fills = Seq("red", "orange", "yellow", "green", "blue", "indigo", "violet", "white")
-    val colWidth = canvas.width / 5
-    val colMargin = 4
+    val fills = Seq("red",   "orange", "yellow", "green", "blue",  "indigo", "violet")
+    val texts = Seq("white", "black",  "black",  "white", "white", "white",  "black")
+    val colMargin = 6
+    val colWidth = (canvas.width - colMargin * (5 - 1)) / 5
+    var labeledStartTime = Set[Double]()
+    var labeledEndTime   = Set[Double]()
 
     Periods.week.zipWithIndex.foreach {
       case (periods, i) =>
-        println(i)
         periods.foreach(p => {
           ctx.fillStyle = fills(p.num - 1)
-          val x = i * colWidth
+          val x = i * colWidth + i * colMargin
           val yStart = scale(p.startMs)
           val yEnd = scale(p.endMs)
-          val w = colWidth - colMargin
+          val w = colWidth
           val h = yEnd - yStart
           ctx.fillRect(x, yStart, w, h)
-          println(s"$x $yStart $w $h")
+          val labelX = x + 2
+          if (! labeledStartTime.contains(p.startMs)) {
+            ctx.fillStyle = texts(p.num - 1)
+            ctx.fillText(p.formattedStart, labelX, yStart + 10)
+            labeledStartTime += p.startMs
+          }
+          if (! labeledEndTime.contains(p.endMs)) {
+            ctx.fillStyle = texts(p.num - 1)
+            ctx.fillText(p.formattedEnd, labelX, yEnd - 3)
+            labeledEndTime += p.endMs
+          }
         })
     }
   }
