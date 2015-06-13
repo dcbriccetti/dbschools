@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Class Periods</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+</head>
+<body>
+
+<div class="container">
+    <h2>Period Clock—Stanley Middle School</h2>
+
+    <span id="period">
+        <h3>Period <span id="periodNumber"></span>, <span id="periodRange"></span></h3>
+        <h5>
+            <span id="progressMins"></span>
+            <progress id="timeRemaining"></progress> <span id="periodLength"></span> Mins
+        </h5>
+    </span>
+</div>
+
+<script type="text/javascript" src="./target/scala-2.11/periodclock-fastopt.js"></script>
+<script type="text/javascript" src="./target/scala-2.11/periodclock-launcher.js"></script>
+
+</body>
+</html>

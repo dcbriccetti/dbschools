@@ -17,6 +17,18 @@ object Periods {
     def timePassedSecs = (DateTime.now.millis - start.toDateTime.millis) / 1000
     def startMs = start.toDateTime.millis
     def endMs = end.toDateTime.millis
+
+    def formatted = {
+      def fh(h: Int) = (if (h > 12) h - 12 else h).toString
+      def fm(m: Int) = f"$m%02d"
+
+      val sh = fh(start.hour)
+      val sm = fm(start.minute)
+      val eh = fh(end.hour)
+      val em = fm(end.minute)
+
+      s"$sh:$sm–$eh:$em"
+    }
   }
 
   /** “Block period” */

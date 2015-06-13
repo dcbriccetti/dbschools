@@ -164,18 +164,11 @@ class Testing extends SelectedMusician with Photos {
     model.Periods.periodWithin match {
 
       case period: model.Periods.Period if Authenticator.opLoggedInUser.nonEmpty =>
-        def fh(h: Int) = (if (h > 12) h - 12 else h).toString
-        def fm(m: Int) = f"$m%02d"
-
-        val sh = fh(period.start.hour)
-        val sm = fm(period.start.minute)
-        val eh = fh(period.end.hour)
-        val em = fm(period.end.minute)
 
         val secsLeft = period.totalSecs - period.timePassedSecs
         val minsLeftCeil = math.ceil(secsLeft / 60.0).toInt
 
-        "#periodNumber *"   #> s"${period.num}, $sh:$sm–$eh:$em" &
+        "#periodNumber *"   #> s"${period.num}, ${period.formatted}" &
         "progress [value]"  #> secsLeft.toString &
         "progress [max]"    #> period.totalSecs.toString
 
