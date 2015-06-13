@@ -1,7 +1,7 @@
-# Barebone application written in Scala.js
+# Period Clock
 
-This is a barebone example of an application written in
-[Scala.js](https://www.scala-js.org/).
+Period Clock is written in
+[Scala.js](https://www.scala-js.org/). Most of this file is copied from a Scala.js example. 
 
 ## Get started
 
@@ -13,15 +13,6 @@ During development, it is useful to use `~fastOptJS` in sbt, so that each
 time you save a source file, a compilation of the project is triggered.
 Hence only a refresh of your Web page is needed to see the effects of your
 changes.
-
-## Run the tests
-
-To run the test suite, execute the task `test`. If you have installed
-[Node.js](http://nodejs.org/), you can use that runtime to run the tests,
-which is faster:
-
-    > set scalaJSStage in Global := FastOptStage
-    > test
 
 ## The fully optimized version
 
