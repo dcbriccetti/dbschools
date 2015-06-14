@@ -24,7 +24,7 @@ object ClassPeriods extends js.JSApp {
       Periods.periodWithin match {
         case p: Period =>
           period.setAttribute("class", "")
-          val secs = Math.floor((p.endMs - new Date().getTime) / 1000)
+          val secs = Math.floor((p.endMs - Periods.nowMs) / 1000)
           timeRemaining.setAttribute("max", p.totalSecs.toString)
           timeRemaining.setAttribute("value", secs.toString)
           periodNumber.innerHTML = p.num.toString
@@ -46,7 +46,7 @@ object ClassPeriods extends js.JSApp {
 
     update()
 
-    setInterval(1000)(update())
+    dom.setInterval(update _, 1000)
 
     val canvas = dom.document.getElementById("canvas").cast[HTMLCanvasElement]
     val ctx = canvas.getContext("2d").cast[dom.CanvasRenderingContext2D]
@@ -81,13 +81,12 @@ object ClassPeriods extends js.JSApp {
           val h = yEnd - yStart
           ctx.fillRect(x, yStart, w, h)
           val labelX = x + 2
+          ctx.fillStyle = texts(p.num - 1)
           if (! labeledStartTime.contains(p.startMs)) {
-            ctx.fillStyle = texts(p.num - 1)
             ctx.fillText(p.formattedStart, labelX, yStart + 10)
             labeledStartTime += p.startMs
           }
           if (! labeledEndTime.contains(p.endMs)) {
-            ctx.fillStyle = texts(p.num - 1)
             ctx.fillText(p.formattedEnd, labelX, yEnd - 3)
             labeledEndTime += p.endMs
           }

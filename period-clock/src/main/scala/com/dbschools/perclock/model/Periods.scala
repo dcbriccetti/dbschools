@@ -55,7 +55,7 @@ case class Period(num: Int, start: SimpleTime, end: SimpleTime) extends TimeClas
     s"$wb$mm:$ss"
   }
 
-  private def nowMillis = new Date().getTime()
+  private def nowMillis = Periods.nowMs
   private def fh(h: Int) = (if (h > 12) h - 12 else h).toString
   private def twoDigits(i: Int) = f"$i%02d"
 }
@@ -115,10 +115,12 @@ object Periods {
   val week = Vector(monFri, tue, wed, thu, monFri)
 
   def periodWithin: TimeClass =
-    periodsToday.find(_.within(new Date().getTime)) getOrElse NotInPeriod
+    periodsToday.find(_.within(nowMs)) getOrElse NotInPeriod
 
   def periodsToday = new Date().getDay match {
     case d if d >= 2 && d <= 6 => week(d - 2)
     case _                     => week.head // Use Monday for out of range
   }
+
+  def nowMs = new Date().getTime() // adjust as needed for testing  - 1000 * 60 * 60 * 12
 }
