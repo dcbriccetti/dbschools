@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    {% load bootstrap3 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    {% bootstrap_messages %}
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+
+<div class="container">
+<h1>Courses</h1>
+{% if courses %}
+    {% for course in courses %}
+        <div>{{ course.name }}</div>
+        <div>{{ course.description|safe }}</div>
+        {% for section in course.sections %}
+            <div>{{ section }}</div>
+        {% endfor %}
+    {% endfor %}
+{% else %}
+    <p>No courses are available.</p>
+{% endif %}
+
+</div>
+</body>
+</html>
