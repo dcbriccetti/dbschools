@@ -4,8 +4,16 @@
 
 {% block content %}
 <h1>Status</h1>
-<h2>{{ parent_status.parent.name }}</h2>
-<h2>Class Times Enrolled In</h2>
-<h2>Class Times Interested In</h2>
-<h2>Pending Class Times</h2>
+{% for parent in parents %}
+    <h2>{{ parent.name }}</h2>
+    {% for student in parent.student_set.all %}
+        <h3>{{ student.name }}</h3>
+        <h4>Class Times Interested In</h4>
+        {% for section in student.proposed_sections %}
+            {{ section }}
+        {% endfor %}
+        <h4>Class Times Enrolled In</h4>
+        <h4>Pending Class Times</h4>
+    {% endfor %}
+{% endfor %}
 {% endblock %}
