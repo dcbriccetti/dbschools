@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title></title>
+    <title>{% block title %}Class Scheduler{% endblock %}</title>
     {% load bootstrap3 %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
@@ -15,19 +15,11 @@
 <body>
 
 <div class="container">
-<h1>Courses</h1>
-{% if courses %}
-    {% for course in courses %}
-        <div>{{ course.name }}</div>
-        <div>{{ course.description|safe }}</div>
-        {% for section in course.sections %}
-            <div>{{ section }}</div>
-        {% endfor %}
-    {% endfor %}
-{% else %}
-    <p>No courses are available.</p>
-{% endif %}
+    {% block content %}
 
+    This is default content!
+
+    {% endblock %}
 </div>
 </body>
 </html>

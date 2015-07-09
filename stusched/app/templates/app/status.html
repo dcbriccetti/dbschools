@@ -1,0 +1,11 @@
+{% extends "app/base.html" %}
+
+{% block title %}{{ block.super }} - Status{% endblock %}
+
+{% block content %}
+<h1>Status</h1>
+<h2>{{ parent_status.parent.name }}</h2>
+<h2>Class Times Enrolled In</h2>
+<h2>Class Times Interested In</h2>
+<h2>Pending Class Times</h2>
+{% endblock %}

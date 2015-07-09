@@ -7,17 +7,16 @@ class Course(models.Model):
     def __str__(self):
         return self.name.__str__()
 
-    def description_with_br(self):
-        return self.description.replace('\n', '<br/>')
-
 class Section(models.Model):
     start_time = models.DateTimeField()
-    duration = models.DurationField()
+    duration_per_day = models.DurationField()
     num_days = models.DecimalField(max_digits=3, decimal_places=0, default=1)
     course = models.ForeignKey(Course)
     price = models.DecimalField(max_digits=6, decimal_places=2)
     min_students = models.DecimalField(max_digits=3, decimal_places=0, default=3)
     max_students = models.DecimalField(max_digits=3, decimal_places=0, default=6)
+
+    def end_time(self): return self.start_time + self.duration_per_day
 
     def __str__(self):
         return "At %s" % (self.start_time.__str__())
@@ -31,7 +30,7 @@ class Parent(models.Model):
 
 class Student(models.Model):
     name = models.CharField(max_length=100)
-    parents = models.ManyToManyField(Parent)
+    parent = models.ForeignKey(Parent)
     sections = models.ManyToManyField(Section, blank=True)
 
     def __str__(self):
