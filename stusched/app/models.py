@@ -46,7 +46,13 @@ class Student(models.Model):
     sections = models.ManyToManyField(Section, blank=True)
 
     def proposed_sections(self):
-        return None  # todo
+        return self.sections.filter(scheduled_status=PROPOSED)
+
+    def accepting_sections(self):
+        return self.sections.filter(scheduled_status=ACCEPTING)
+
+    def scheduled_sections(self):
+        return self.sections.filter(scheduled_status=SCHEDULED)
 
     def __str__(self):
         return self.name.__str__()

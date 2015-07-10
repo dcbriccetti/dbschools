@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Course, Section, Parent, Student
+from .models import Course, Section, Parent
 
 class ScheduledCourse(object):
     def __init__(self, name, description, sections):

@@ -8,9 +8,9 @@
     <h2>{{ parent.name }}</h2>
     {% for student in parent.student_set.all %}
         <h3>{{ student.name }}</h3>
-        <h4>Class Times Interested In</h4>
+        <h4>Proposed Times Interested In</h4>
         {% for section in student.proposed_sections %}
-            {{ section }}
+            {{ section.course.name }}: {{ section.start_time }}–{{ section.end_time|date:"g a" }} ${{ section.price }} {{ section.min_students }}–{{ section.max_students }} students
         {% endfor %}
         <h4>Class Times Enrolled In</h4>
         <h4>Pending Class Times</h4>
