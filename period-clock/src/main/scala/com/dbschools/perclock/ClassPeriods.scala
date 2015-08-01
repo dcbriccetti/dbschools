@@ -1,24 +1,20 @@
 package com.dbschools.perclock
 
-import org.scalajs.dom.raw.HTMLCanvasElement
-
 import scala.scalajs.js
-import scala.scalajs.js.Date
-import scala.scalajs.js.timers._
-import org.scalajs.dom.ext._
 import org.scalajs.dom
+import dom.document
 import model.{Period, Periods}
 
 object ClassPeriods extends js.JSApp {
 
   def main(): Unit = {
-    def gbid(id: String) = dom.document.getElementById(id)
+    def gbid(id: String) = document.getElementById(id)
     val timeRemaining = gbid("timeRemaining")
-    val period = gbid("period")
-    val periodNumber = gbid("periodNumber")
-    val periodRange = gbid("periodRange")
-    val periodLength = gbid("periodLength")
-    val progressMins = gbid("progressMins")
+    val period        = gbid("period")
+    val periodNumber  = gbid("periodNumber")
+    val periodRange   = gbid("periodRange")
+    val periodLength  = gbid("periodLength")
+    val progressMins  = gbid("progressMins")
 
     def update(): Unit = {
       Periods.periodWithin match {
@@ -48,46 +44,54 @@ object ClassPeriods extends js.JSApp {
 
     dom.setInterval(update _, 1000)
 
-    val canvas = dom.document.getElementById("canvas").cast[HTMLCanvasElement]
-    val ctx = canvas.getContext("2d").cast[dom.CanvasRenderingContext2D]
-
-    canvas.width = canvas.parentElement.clientWidth
-    canvas.height = 350
+    val drawing = document.getElementById("drawing")
+    val XPad = 15 // todo Find how to get main’s padding
+    val Height = 350
+    val TopMargin = 12
+    val ColMargin = 6
 
     val firstStartMs = Periods.week.map(_.map(_.startMs).min).min
     val lastEndMs    = Periods.week.map(_.map(_.endMs  ).max).max
     val totalMs = lastEndMs - firstStartMs
-    val TopMargin = 12
-    def yFromMs(ms: Double) = TopMargin + ((ms - firstStartMs) / totalMs) * (canvas.height - TopMargin)
+    def yFromMs(ms: Double) = (TopMargin + ((ms - firstStartMs) / totalMs) * (Height - TopMargin)).toInt
     val fills = Seq("red",   "orange", "yellow", "green", "blue",  "indigo", "violet")
     val texts = Seq("white", "black",  "black",  "white", "white", "white",  "black")
     val days = Seq("Mon", "Tue", "Wed", "Thu", "Fri")
-    val colMargin = 6
-    val colWidth = (canvas.width - colMargin * (5 - 1)) / 5
+    val colWidth = (drawing.clientWidth - ColMargin * (5 - 1)) / 5
     var labeledStartTime = Set[Double]()
     var labeledEndTime   = Set[Double]()
 
     Periods.week.zipWithIndex.foreach {
       case (periods, i) =>
-        val x = i * colWidth + i * colMargin
-        ctx.fillStyle = "black"
-        ctx.fillText(days(i), x, TopMargin - 3)
+        val x = i * colWidth + i * ColMargin
+        val dowY = TopMargin - 3
+
+        def createTextDiv(text: String, x: Int, y: Int, color: String = "black") = {
+          val td = document.createElement("div")
+          td.setAttribute("class", "period")
+          td.setAttribute("style", s"top: ${y}px; left: ${x}px; font-size: .5em; border: none; color: $color")
+          td.appendChild(document.createTextNode(text))
+          td
+        }
+
+        drawing.appendChild(createTextDiv(days(i), x + XPad, dowY - 8))
 
         periods.foreach(p => {
-          ctx.fillStyle = fills(p.num - 1)
           val yStart = yFromMs(p.startMs)
           val yEnd = yFromMs(p.endMs)
-          val w = colWidth
-          val h = yEnd - yStart
-          ctx.fillRect(x, yStart, w, h)
-          val labelX = x + 2
-          ctx.fillStyle = texts(p.num - 1)
+          val periodDiv = document.createElement("div")
+          periodDiv.setAttribute("class", "period")
+          periodDiv.setAttribute("style", s"top: ${yStart}px; height: ${yEnd - yStart}px; left: ${x + XPad}px; width: ${colWidth}px; background-color: ${fills(p.num - 1)}")
+          drawing.appendChild(periodDiv)
+
+          val labelX = x + XPad + 2
+          val textColor = texts(p.num - 1)
           if (! labeledStartTime.contains(p.startMs)) {
-            ctx.fillText(p.formattedStart, labelX, yStart + 10)
+            drawing.appendChild(createTextDiv(p.formattedStart, labelX, yStart, color = textColor))
             labeledStartTime += p.startMs
           }
           if (! labeledEndTime.contains(p.endMs)) {
-            ctx.fillText(p.formattedEnd, labelX, yEnd - 3)
+            drawing.appendChild(createTextDiv(p.formattedEnd, labelX, yEnd - 13, color = textColor))
             labeledEndTime += p.endMs
           }
         })
