@@ -72,33 +72,34 @@ object Periods {
     Period(7, 14, 8, 14, 53)
   )
 
-  private val bp1 = Bp(8, 15, 9, 22)
-  private val bp2 = Bp(9, 26, 10, 31)
-  private val bp3 = Bp(10, 45, 11, 50)
-  private val bp4 = Bp(12, 39, 13, 44)
-  private val bp5 = Bp(13, 48, 14, 53)
+  // Times used more than once
+  private val bpA = Bp(8, 15, 9, 22)
+  private val bpB = Bp(9, 26, 10, 31)
+  private val bpC = Bp(10, 45, 11, 50)
+  private val bpD = Bp(12, 39, 13, 44)
+  private val bpE = Bp(13, 48, 14, 53)
 
   private val tue = Vector(
-    Period(1, bp1),
-    Period(3, bp2),
-    Period(5, bp3),
-    Period(6, bp4),
-    Period(7, bp5)
+    Period(1, bpA),
+    Period(3, bpB),
+    Period(5, bpC),
+    Period(6, bpD),
+    Period(7, bpE)
   )
 
   private val wed = Vector(
     Period(2, 9, 24, 10, 31),
-    Period(4, bp3),
-    Period(5, bp4),
-    Period(6, bp5)
+    Period(4, bpC),
+    Period(5, bpD),
+    Period(6, bpE)
   )
 
   private val thu = Vector(
-    Period(1, bp1),
-    Period(2, bp2),
-    Period(3, bp3),
-    Period(4, bp4),
-    Period(7, bp5)
+    Period(1, bpA),
+    Period(2, bpB),
+    Period(3, bpC),
+    Period(4, bpD),
+    Period(7, bpE)
   )
   
   val week = Vector(monFri, tue, wed, thu, monFri)
