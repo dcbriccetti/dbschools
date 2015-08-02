@@ -8,13 +8,13 @@ import model.{Period, Periods}
 object ClassPeriods extends js.JSApp {
 
   def main(): Unit = {
-    def gbid(id: String) = document.getElementById(id)
-    val timeRemaining = gbid("timeRemaining")
-    val period        = gbid("period")
-    val periodNumber  = gbid("periodNumber")
-    val periodRange   = gbid("periodRange")
-    val periodLength  = gbid("periodLength")
-    val progressMins  = gbid("progressMins")
+    def byId(id: String) = document.getElementById(id)
+    val timeRemaining = byId("timeRemaining")
+    val period        = byId("period")
+    val periodNumber  = byId("periodNumber")
+    val periodRange   = byId("periodRange")
+    val periodLength  = byId("periodLength")
+    val progressMins  = byId("progressMins")
 
     def update(): Unit = {
       Periods.periodWithin match {
@@ -44,7 +44,7 @@ object ClassPeriods extends js.JSApp {
 
     dom.setInterval(update _, 1000)
 
-    val drawing = document.getElementById("drawing")
+    val drawing = byId("drawing")
     val XPad = 15 // todo Find how to get main’s padding
     val Height = 350
     val TopMargin = 12
@@ -54,17 +54,17 @@ object ClassPeriods extends js.JSApp {
     val lastEndMs    = Periods.week.map(_.map(_.endMs  ).max).max
     val totalMs = lastEndMs - firstStartMs
     def yFromMs(ms: Double) = (TopMargin + ((ms - firstStartMs) / totalMs) * (Height - TopMargin)).toInt
-    val fills = Seq("red",   "orange", "yellow", "green", "blue",  "indigo", "violet")
-    val texts = Seq("white", "black",  "black",  "white", "white", "white",  "black")
-    val days = Seq("Mon", "Tue", "Wed", "Thu", "Fri")
+    def mkSeq(line: String) = line.split(" +").toSeq
+    val fills = mkSeq("red   orange yellow green blue  indigo violet")
+    val texts = mkSeq("white black  black  white white white  black")
+    val days  = mkSeq("Mon Tue Wed Thu Fri")
     val colWidth = (drawing.clientWidth - ColMargin * (5 - 1)) / 5
-    var labeledStartTime = Set[Double]()
-    var labeledEndTime   = Set[Double]()
+    var labeledStartTimes = Set[Double]()
+    var labeledEndTimes   = Set[Double]()
 
     Periods.week.zipWithIndex.foreach {
       case (periods, i) =>
-        val x = i * colWidth + i * ColMargin
-        val dowY = TopMargin - 3
+        val colX = i * (colWidth + ColMargin)
 
         def createTextDiv(text: String, x: Int, y: Int, color: String = "black") = {
           val td = document.createElement("div")
@@ -74,25 +74,27 @@ object ClassPeriods extends js.JSApp {
           td
         }
 
-        drawing.appendChild(createTextDiv(days(i), x + XPad, dowY - 8))
+        drawing.appendChild(createTextDiv(days(i), colX + XPad, TopMargin - 11))
 
         periods.foreach(p => {
           val yStart = yFromMs(p.startMs)
-          val yEnd = yFromMs(p.endMs)
+          val yEnd   = yFromMs(p.endMs)
           val periodDiv = document.createElement("div")
           periodDiv.setAttribute("class", "period")
-          periodDiv.setAttribute("style", s"top: ${yStart}px; height: ${yEnd - yStart}px; left: ${x + XPad}px; width: ${colWidth}px; background-color: ${fills(p.num - 1)}")
+          periodDiv.setAttribute("style",
+            s"top: ${yStart}px; height: ${yEnd - yStart}px; left: ${colX + XPad}px; width: ${colWidth}px; " +
+            s"background-color: ${fills(p.num - 1)}")
           drawing.appendChild(periodDiv)
 
-          val labelX = x + XPad + 2
+          val labelX = colX + XPad + 2
           val textColor = texts(p.num - 1)
-          if (! labeledStartTime.contains(p.startMs)) {
+          if (! labeledStartTimes.contains(p.startMs)) {
             drawing.appendChild(createTextDiv(p.formattedStart, labelX, yStart, color = textColor))
-            labeledStartTime += p.startMs
+            labeledStartTimes += p.startMs
           }
-          if (! labeledEndTime.contains(p.endMs)) {
+          if (! labeledEndTimes.contains(p.endMs)) {
             drawing.appendChild(createTextDiv(p.formattedEnd, labelX, yEnd - 13, color = textColor))
-            labeledEndTime += p.endMs
+            labeledEndTimes += p.endMs
           }
         })
     }

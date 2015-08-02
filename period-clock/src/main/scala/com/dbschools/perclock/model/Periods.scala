@@ -2,6 +2,7 @@ package com.dbschools.perclock.model
 
 import scala.scalajs.js
 import js.Date
+import Periods.WarnBellMins
 
 sealed trait TimeClass
 object InSpecialSchedule extends TimeClass
@@ -25,39 +26,27 @@ case class Period(num: Int, start: SimpleTime, end: SimpleTime) extends TimeClas
   def timePassedSecs = (nowMillis - start.toMillis) / 1000
   def startMs = start.toMillis
   def endMs = end.toMillis
-
-  def formattedStart = {
-    val sh = fh(start.hour)
-    val sm = twoDigits(start.minute)
-    s"$sh:$sm"
-  }
-
-  def formattedEnd = {
-    val eh = fh(end.hour)
-    val em = twoDigits(end.minute)
-    s"$eh:$em"
-  }
-
+  def formattedStart = s"${fh(start.hour)}:${fms(start.minute)}"
+  def formattedEnd   = s"${fh(end.hour)}:${fms(end.minute)}"
   def formattedRange = s"$formattedStart–$formattedEnd"
 
   def formattedTimeRemaining = {
-    var s = timeRemainingMs / 1000
-    var m = Math.floor(s / 60)
-    s -= m * 60
-    var wb = ""
-    var wbm = Periods.WarnBellMins
-    if (wbm > 0 && m >= wbm) {
-        m -= wbm
-        wb = wbm + " + "
-    }
-    val mm = twoDigits(m.toInt)
-    val ss = twoDigits(s.toInt)
-    s"$wb$mm:$ss"
+    var secondsRemaining = timeRemainingMs / 1000
+    var minutesRemaining = Math.floor(secondsRemaining / 60)
+    secondsRemaining -= minutesRemaining * 60
+    val warningBellPrefix =
+      if (WarnBellMins > 0 && minutesRemaining >= WarnBellMins) {
+        minutesRemaining -= WarnBellMins
+        s"$WarnBellMins + "
+      } else ""
+    s"$warningBellPrefix${fms(minutesRemaining.toInt)}:${fms(secondsRemaining.toInt)}"
   }
 
   private def nowMillis = Periods.nowMs
+  /** Format hour */
   private def fh(h: Int) = (if (h > 12) h - 12 else h).toString
-  private def twoDigits(i: Int) = f"$i%02d"
+  /** Format minutes or seconds */
+  private def fms(i: Int) = f"$i%02d"
 }
 
 /** “Block period” */
@@ -114,8 +103,7 @@ object Periods {
   
   val week = Vector(monFri, tue, wed, thu, monFri)
 
-  def periodWithin: TimeClass =
-    periodsToday.find(_.within(nowMs)) getOrElse NotInPeriod
+  def periodWithin: TimeClass = periodsToday.find(_.within(nowMs)) getOrElse NotInPeriod
 
   def periodsToday = new Date().getDay match {
     case d if d >= 2 && d <= 6 => week(d - 2)
