@@ -107,7 +107,7 @@ object Periods {
   def periodWithin: TimeClass = periodsToday.find(_.within(nowMs)) getOrElse NotInPeriod
 
   def periodsToday = new Date().getDay match {
-    case d if d >= 2 && d <= 6 => week(d - 2)
+    case d if d >= 1 && d <= 5 => week(d - 1)
     case _                     => week.head // Use Monday for out of range
   }
 
