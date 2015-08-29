@@ -12,10 +12,11 @@ persistLauncher in Compile := true
 persistLauncher in Test := false
 
 libraryDependencies ++= Seq(
-  "com.github.nscala-time" %% "nscala-time" % "2.0.0",
-  "org.scala-js" %%% "scalajs-dom" % "0.8.0",
-  "eu.unicredit" %%% "paths-scala-js" % "0.3.2",
-  "org.scalatest" %%% "scalatest" % "3.0.0-M1"
+  "com.github.nscala-time" %%  "nscala-time" % "2.0.0",
+  "org.scala-js"           %%% "scalajs-dom"    % "0.8.0",
+  "be.doeraene"            %%% "scalajs-jquery" % "0.8.0",
+  "eu.unicredit"           %%% "paths-scala-js" % "0.3.2",
+  "org.scalatest"          %%% "scalatest"      % "3.0.0-M1"
 )
 
 jsDependencies ++= Seq(

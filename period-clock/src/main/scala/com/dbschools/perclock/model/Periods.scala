@@ -106,10 +106,13 @@ object Periods {
 
   def periodWithin: TimeClass = periodsToday.find(_.within(nowMs)) getOrElse NotInPeriod
 
-  def periodsToday = new Date().getDay match {
-    case d if d >= 1 && d <= 5 => week(d - 1)
-    case _                     => week.head // Use Monday for out of range
+  def periodsToday = dowToday match {
+    case d if d < 5 => week(d)
+    case _          => week.head // Use Monday for out of range
   }
+
+  /** Monday-based day of week */
+  def dowToday = (new Date().getDay - 1) % 7
 
   def nowMs = new Date().getTime() // adjust as needed for testing  - 1000 * 60 * 60 * 12
 }

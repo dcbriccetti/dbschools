@@ -2,8 +2,9 @@ package com.dbschools.perclock
 
 import scala.scalajs.js
 import org.scalajs.dom
+import org.scalajs.jquery.jQuery
 import dom.document
-import model.{Period, Periods}
+import model.{TimeClass, NotInPeriod, Period, Periods}
 
 object ClassPeriods extends js.JSApp {
 
@@ -16,15 +17,34 @@ object ClassPeriods extends js.JSApp {
     val periodLength  = byId("periodLength")
     val progressMins  = byId("progressMins")
 
+    var lastPeriodWithin: TimeClass = NotInPeriod
+    var lastDowToday = -1
+
     def update(): Unit = {
-      Periods.periodWithin match {
+      val dowToday = Periods.dowToday
+      val periodWithin = Periods.periodWithin
+      if (dowToday != lastDowToday || periodWithin != lastPeriodWithin) {
+        println(s"clearing currentCell. $dowToday $periodWithin")
+        jQuery(".currentCell").removeClass("currentCell")
+        periodWithin match {
+          case p: Period =>
+            val id = s"#cell-$dowToday-${p.num}"
+            println(s"Current cell: $id, ${jQuery(id)}")
+            jQuery(id).addClass("currentCell")
+          case _ =>
+        }
+        lastDowToday = dowToday
+        lastPeriodWithin = periodWithin
+      }
+
+      periodWithin match {
         case p: Period =>
           period.setAttribute("class", "")
           val secs = Math.floor((p.endMs - Periods.nowMs) / 1000)
           timeRemaining.setAttribute("max", p.totalSecs.toString)
           timeRemaining.setAttribute("value", secs.toString)
           periodNumber.innerHTML = p.num.toString
-          periodRange.innerHTML = p.formattedRange
+          periodRange .innerHTML = p.formattedRange
           periodLength.innerHTML = (p.totalSecs.toInt / 60).toString
           val remaining = p.formattedTimeRemaining
           progressMins.innerHTML = remaining
@@ -33,16 +53,12 @@ object ClassPeriods extends js.JSApp {
           period.setAttribute("class", "hide")
           timeRemaining.setAttribute("value", "0")
           periodNumber.innerHTML = ""
-          periodRange.innerHTML = ""
+          periodRange .innerHTML = ""
           periodLength.innerHTML = ""
           progressMins.innerHTML = ""
           dom.document.title = "Between Periods"
       }
     }
-
-    update()
-
-    dom.setInterval(update _, 1000)
 
     val drawing = byId("drawing")
     val XPad = 15 // todo Find how to get main’s padding
@@ -62,24 +78,25 @@ object ClassPeriods extends js.JSApp {
     var labeledStartTimes = Set[Double]()
     var labeledEndTimes   = Set[Double]()
 
+    def createTextDiv(text: String, x: Int, y: Int, color: String = "black") = {
+      val td = document.createElement("div")
+      td.setAttribute("class", "period")
+      td.setAttribute("style", s"top: ${y}px; left: ${x}px; font-size: .5em; border: none; color: $color")
+      td.appendChild(document.createTextNode(text))
+      td
+    }
+
     Periods.week.zipWithIndex.foreach {
-      case (periods, i) =>
-        val colX = i * (colWidth + ColMargin)
+      case (periods, iDay) =>
+        val colX = iDay * (colWidth + ColMargin)
 
-        def createTextDiv(text: String, x: Int, y: Int, color: String = "black") = {
-          val td = document.createElement("div")
-          td.setAttribute("class", "period")
-          td.setAttribute("style", s"top: ${y}px; left: ${x}px; font-size: .5em; border: none; color: $color")
-          td.appendChild(document.createTextNode(text))
-          td
-        }
-
-        drawing.appendChild(createTextDiv(days(i), colX + XPad, TopMargin - 11))
+        drawing.appendChild(createTextDiv(days(iDay), colX + XPad, TopMargin - 13))
 
         periods.foreach(p => {
           val yStart = yFromMs(p.startMs)
           val yEnd   = yFromMs(p.endMs)
           val periodDiv = document.createElement("div")
+          periodDiv.setAttribute("id", s"cell-$iDay-${p.num}")
           periodDiv.setAttribute("class", "period")
           periodDiv.setAttribute("style",
             s"top: ${yStart}px; height: ${yEnd - yStart}px; left: ${colX + XPad}px; width: ${colWidth}px; " +
@@ -98,5 +115,7 @@ object ClassPeriods extends js.JSApp {
           }
         })
     }
+    update()
+    dom.setInterval(update _, 1000)
   }
 }
