@@ -111,8 +111,11 @@ object Periods {
     case _          => week.head // Use Monday for out of range
   }
 
-  /** Monday-based day of week */
-  def dowToday = (new Date().getDay - 1) % 7
+  /** Returns the day of the week, where 0 = Monday */
+  def dowToday = {
+    val sundayBasedDow = new Date().getDay()
+    (sundayBasedDow + 6) % 7
+  }
 
   def nowMs = new Date().getTime() // adjust as needed for testing  - 1000 * 60 * 60 * 12
 }
