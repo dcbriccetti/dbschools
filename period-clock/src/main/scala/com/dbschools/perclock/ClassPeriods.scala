@@ -1,17 +1,21 @@
 package com.dbschools.perclock
 
 import scala.scalajs.js
+import scala.scalajs.js.annotation.JSExport
 import org.scalajs.dom
 import org.scalajs.jquery.jQuery
 import dom.document
 import model.{TimeClass, NotInPeriod, Period, Periods}
 
-
 object ClassPeriods extends js.JSApp {
 
   def byId(id: String) = document.getElementById(id)
 
-  def main(): Unit = {
+  def main(): Unit = {}
+
+  @JSExport
+  def run(periodNamesString: String): Unit = {
+    val periodNames = periodNamesString.split('|')
     val timeRemaining = byId("timeRemaining")
     val period        = byId("period")
     val periodNumber  = byId("periodNumber")
@@ -104,7 +108,7 @@ object ClassPeriods extends js.JSApp {
           val divHtml =
             s"""
                |<div id="cell-$iDay-${p.num}" class="period" style="$style">
-               |    <p>${p.num}</p>
+               |    <p>${periodNames(p.num - 1)}</p>
                |</div>
              """.stripMargin
           jQuery("#drawing").append(divHtml)
