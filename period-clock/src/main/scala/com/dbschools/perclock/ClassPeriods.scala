@@ -14,7 +14,7 @@ object ClassPeriods extends js.JSApp {
   def main(): Unit = {}
 
   @JSExport
-  def run(periodNamesString: String): Unit = {
+  def run(periodNamesString: String, fillColors: String, textColors: String): Unit = {
     val periodNames = periodNamesString.split('|')
     val timeRemaining = byId("timeRemaining")
     val period        = byId("period")
@@ -77,8 +77,8 @@ object ClassPeriods extends js.JSApp {
     val totalMs = lastEndMs - firstStartMs
     def yFromMs(ms: Double) = (TopMargin + ((ms - firstStartMs) / totalMs) * (Height - TopMargin)).toInt
     def mkSeq(line: String) = line.split(" +").toSeq
-    val fills = mkSeq("red   orange yellow green blue  indigo violet")
-    val texts = mkSeq("white black  black  white white white  black")
+    val fills = mkSeq(fillColors)
+    val texts = mkSeq(textColors)
     val days  = mkSeq("Monday Tuesday Wednesday Thursday Friday")
     val colWidth = (drawing.clientWidth - ColMargin * (5 - 1)) / 5
     var labeledStartTimes = Set[Double]()
