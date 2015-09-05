@@ -5,6 +5,7 @@ import scala.scalajs.js.URIUtils
 import org.scalajs.dom
 import org.scalajs.jquery.jQuery
 import dom.document
+import scalatags.JsDom.all._
 import model.{TimeClass, NotInPeriod, Period, Periods, TeacherSettings}
 
 object ClassPeriods extends js.JSApp {
@@ -25,7 +26,7 @@ object ClassPeriods extends js.JSApp {
           } yield settings) getOrElse DefaultSettings
       }
     
-    if (periodNamesString == DefaultPeriodNames && false /* todo wait until URL decoding is working with + */) {
+    if (periodNamesString == DefaultPeriodNames) {
       jQuery("#namesFormDiv").show()
     }
 
@@ -115,30 +116,27 @@ object ClassPeriods extends js.JSApp {
 
         drawing.appendChild(createTextDiv(days(iDay), colX + XPad, 0, "dayTitle"))
 
-        periods.foreach(p => {
-          val yStart = yFromMs(p.startMs)
-          val yEnd   = yFromMs(p.endMs)
+        periods.foreach(per => {
+          val yStart = yFromMs(per.startMs)
+          val yEnd   = yFromMs(per.endMs)
           val divHeight = yEnd - yStart
-          val textColor = texts(p.num - 1)
-          val style = s"top: ${yStart}px; height: ${divHeight}px; left: ${colX + XPad}px; width: ${colWidth}px; " +
-            s"color: $textColor; background-color: ${fills(p.num - 1)};"
-          val divHtml =
-            s"""
-               |<div id="cell-$iDay-${p.num}" class="period" style="$style">
-               |    <p>${periodNames(p.num - 1)}</p>
-               |</div>
-             """.stripMargin
+          val textColor = texts(per.num - 1)
+          val divStyle = s"top: ${yStart}px; height: ${divHeight}px; left: ${colX + XPad}px; width: ${colWidth}px; " +
+            s"color: $textColor; background-color: ${fills(per.num - 1)};"
+          val divHtml = div(id := s"cell-$iDay-${per.num}", cls := "period", style := divStyle)(
+            p(periodNames(per.num - 1))
+          ).render
           jQuery("#drawing").append(divHtml)
 
           val labelX = colX + XPad + 2
 
-          if (! labeledStartTimes.contains(p.startMs)) {
-            drawing.appendChild(createTextDiv(p.formattedStart, labelX, yStart, "perTime", color = textColor))
-            labeledStartTimes += p.startMs
+          if (! labeledStartTimes.contains(per.startMs)) {
+            drawing.appendChild(createTextDiv(per.formattedStart, labelX, yStart, "perTime", color = textColor))
+            labeledStartTimes += per.startMs
           }
-          if (! labeledEndTimes.contains(p.endMs)) {
-            drawing.appendChild(createTextDiv(p.formattedEnd, labelX, yEnd - 13, "perTime", color = textColor))
-            labeledEndTimes += p.endMs
+          if (! labeledEndTimes.contains(per.endMs)) {
+            drawing.appendChild(createTextDiv(per.formattedEnd, labelX, yEnd - 13, "perTime", color = textColor))
+            labeledEndTimes += per.endMs
           }
         })
     }
@@ -147,9 +145,10 @@ object ClassPeriods extends js.JSApp {
   }
 
   def parseParams = {
-    val s = dom.window.location.search
-    if (s.length > 1 && s(0) == '?') {
-      val pairs = s.substring(1).split('&')
+    val search = dom.window.location.search.replace("+", "%20")
+    println(search)
+    if (search.length > 1 && search(0) == '?') {
+      val pairs = search.substring(1).split('&')
       (for {
         param <- pairs
         keyVal = param.split('=') if keyVal.length == 2
