@@ -1,3 +1,7 @@
+#drawing {
+    height: 350px;
+    margin-bottom: 1em;
+}
 .period {
     position: absolute;
     border: none;
@@ -22,4 +26,7 @@
 }
 .currentCell {
     border: thin solid black;
+}
+#namesFormDiv {
+    display: None;
 }

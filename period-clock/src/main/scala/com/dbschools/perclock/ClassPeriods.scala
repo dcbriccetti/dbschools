@@ -1,21 +1,38 @@
 package com.dbschools.perclock
 
 import scala.scalajs.js
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.URIUtils
 import org.scalajs.dom
 import org.scalajs.jquery.jQuery
 import dom.document
-import model.{TimeClass, NotInPeriod, Period, Periods}
+import model.{TimeClass, NotInPeriod, Period, Periods, TeacherSettings}
 
 object ClassPeriods extends js.JSApp {
 
   def byId(id: String) = document.getElementById(id)
 
-  def main(): Unit = {}
+  def main(): Unit = {
+    import TeacherSettings._
+    val params = parseParams
 
-  @JSExport
-  def run(periodNamesString: String, fillColors: String, textColors: String): Unit = {
-    val periodNames = periodNamesString.split('|')
+    val (periodNamesString, fillColors, textColors) =
+      params.get("periodNames") match {
+        case Some(names) => (names, DefaultFillColors, DefaultTextColors)
+        case None =>
+          (for {
+            teacher  <- params.get("teacher")
+            settings <- PredefinedSettings.get(teacher)
+          } yield settings) getOrElse DefaultSettings
+      }
+    
+    if (periodNamesString == DefaultPeriodNames && false /* todo wait until URL decoding is working with + */) {
+      jQuery("#namesFormDiv").show()
+    }
+
+    val NumPeriods = 7
+    val periodNames = periodNamesString.split(" *\\| *").map(URIUtils.decodeURIComponent).toSeq.
+      padTo(NumPeriods, "").take(NumPeriods)
+
     val timeRemaining = byId("timeRemaining")
     val period        = byId("period")
     val periodNumber  = byId("periodNumber")
@@ -126,6 +143,17 @@ object ClassPeriods extends js.JSApp {
         })
     }
     update()
-    dom.setInterval(update _, 1000)
+    dom.setInterval(update _, 1000) // todo try to return close to the 0 ms after the next second (wait < 1000 ms)
+  }
+
+  def parseParams = {
+    val s = dom.window.location.search
+    if (s.length > 1 && s(0) == '?') {
+      val pairs = s.substring(1).split('&')
+      (for {
+        param <- pairs
+        keyVal = param.split('=') if keyVal.length == 2
+      } yield keyVal(0) -> URIUtils.decodeURIComponent(keyVal(1))).toMap
+    } else Map[String, String]()
   }
 }

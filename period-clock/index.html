@@ -11,9 +11,8 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 
+    <link rel="stylesheet" href="main.css"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link href="main.css" media="screen" rel="stylesheet"/>
 </head>
 <body>
 
@@ -31,15 +30,21 @@
     <div class="row">
         <div id="drawing" class="col-xs-11 col-sm-6"></div>
     </div>
+
+    <div id='namesFormDiv' class="row">
+        <p>You can customize the display by entering your period names. Then, after pushing
+        submit, you can bookmark the resulting page.</p>
+        <form action="#" method="get">
+            <label for="periodNames">Period Names, separated by “|”</label>
+            <input id="periodNames" name="periodNames" type="text"/>
+            <input type="submit"/>
+        </form>
+    </div>
+
 </div>
 
 <script type="text/javascript" src="./target/scala-2.11/periodclock-opt.js"></script>
-<script>
-    var periodNames = "1|2|3|4|5|6|7";
-    var fillColors = "red   orange yellow green blue  indigo violet";
-    var textColors = "white black  black  white white white  black";
-    com.dbschools.perclock.ClassPeriods().run(periodNames, fillColors, textColors);
-</script>
+<script type="text/javascript" src="./target/scala-2.11/periodclock-launcher.js"></script>
 
 </body>
 </html>
