@@ -135,7 +135,7 @@ object ClassPeriods extends js.JSApp {
             labeledStartTimes += per.startMs
           }
           if (! labeledEndTimes.contains(per.endMs)) {
-            drawing.appendChild(createTextDiv(per.formattedEnd, labelX, yEnd - 13, "perTime", color = textColor))
+            drawing.appendChild(createTextDiv(per.formattedEnd, labelX, yEnd - 11, "perTime", color = textColor))
             labeledEndTimes += per.endMs
           }
         })
