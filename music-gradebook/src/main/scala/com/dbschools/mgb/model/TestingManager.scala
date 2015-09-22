@@ -79,7 +79,7 @@ class TestingManager extends Actor {
     case TestMusician(testingMusician) =>
       if (testingState.enqueuedMusicians -= testingMusician.musician.id) {
         testingState.testingMusicians += testingMusician
-        TestingCometDispatcher ! MoveMusician(testingMusician, testingState.testerAvailableTimes)
+        TestingCometDispatcher ! MoveMusician(testingMusician)
         StudentCometDispatcher ! Next(called)
       }
       updateStudentsPage()
@@ -89,7 +89,7 @@ class TestingManager extends Actor {
         // This student wasn’t selected from the queue, so make a TestingMusician record now
         val newTm = TestingMusician(musician, tester, DateTime.now, None)
         testingState.testingMusicians += newTm
-        TestingCometDispatcher ! MoveMusician(newTm, testingState.testerAvailableTimes)
+        TestingCometDispatcher ! MoveMusician(newTm)
         newTm
       }
       tm.numTests += 1
@@ -161,7 +161,7 @@ class TestingManager extends Actor {
 object TestingManager {
   val defaultNextCallMins = Props.getInt("defaultNextCallMins") getOrElse 5
 
-  def called = Testing.idAndTimes.filter(_.time.isEmpty).map(_.musician)
+  def called = Testing.rowIdMusicianAndTimes.filter(_.time.isEmpty).map(_.musician)
 }
 
 case class EnqueuedMusician(musician: Musician, instrumentId: Int, nextPieceName: String)

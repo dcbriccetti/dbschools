@@ -14,7 +14,7 @@ import net.liftweb.json.JsonAST.JObject
 import net.liftweb._
 import util._
 import Helpers._
-import net.liftweb.http.SHtml
+import net.liftweb.http.{SessionVar, SHtml}
 import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.http.js.JsCmds.{Noop, JsShowId, JsHideId}
 import net.liftweb.http.js.JsCmd
@@ -219,9 +219,9 @@ object Testing extends SelectedMusician with Photos {
     messageRow(chatMessage)(elemFromTemplate("testing", ".messageRow")).toString().encJs) &
     JsShowId("clearMessages")
 
-  case class IdAndTime(rowId: String, musician: Musician, time: Option[DateTime])
+  case class RowIdMusicianAndTime(rowId: String, musician: Musician, time: Option[DateTime])
 
-  def idAndTimes = {
+  def rowIdMusicianAndTimes = {
     case class MusicianWithTime(m: EnqueuedMusician, time: TesterAvailableTime)
 
     for {
@@ -236,15 +236,15 @@ object Testing extends SelectedMusician with Photos {
       md          <- musiciansWithDurs
       id          =  queueRowId(md.m.musician.id)
       if md.time.matchesInstrument(md.m.instrumentId)
-    } yield IdAndTime(id, md.m.musician, md.time.time)
+    } yield RowIdMusicianAndTime(id, md.m.musician, md.time.time)
   }
 
-  private var lastIdAndTimes: Iterable[IdAndTime] = Seq[IdAndTime]()
+  private object svLastRowIdMusicianAndTimes extends SessionVar[Iterable[RowIdMusicianAndTime]](Seq[RowIdMusicianAndTime]())
 
   def makeQueueUpdateJs(alwaysGet: Boolean = false): Option[JsCmd] = {
-    val newIdAndTimes = idAndTimes
-    if (newIdAndTimes != lastIdAndTimes || alwaysGet) {
-      lastIdAndTimes = newIdAndTimes
+    val newIdAndTimes = rowIdMusicianAndTimes
+    if (newIdAndTimes != svLastRowIdMusicianAndTimes.get || alwaysGet) {
+      svLastRowIdMusicianAndTimes(newIdAndTimes)
       val json = JArray(
         newIdAndTimes.toList.map(it =>
           JObject(List(

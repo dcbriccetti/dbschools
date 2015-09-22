@@ -11,7 +11,7 @@ import Helpers._
 import snippet.Testing
 import snippet.LiftExtensions._
 import Testing.{queueRowId, sessionRowId, sessionRow}
-import model.{SessionStats, TesterAvailableTime, ChatMessage, TestingMusician}
+import model.{SessionStats, ChatMessage, TestingMusician}
 import schema.User
 
 class TestingCometActor extends CometActor with CometListener {
@@ -25,7 +25,7 @@ class TestingCometActor extends CometActor with CometListener {
     case RebuildPage =>
       replacePageSection("testingContents")
 
-    case MoveMusician(testingMusician, timesUntilCall) =>
+    case MoveMusician(testingMusician) =>
       val id = testingMusician.musician.id
       val queueRowSel = "#" + queueRowId(id)
 
@@ -94,7 +94,7 @@ object TestingCometDispatcher extends CommonCometDispatcher
 object TestingCometActorMessages {
   case object RebuildPage
   /** Removes a musician from the queue (if it exists), and adds it to a testing session */
-  case class MoveMusician(testingMusician: TestingMusician, testerAvailableTimes: Iterable[TesterAvailableTime])
+  case class MoveMusician(testingMusician: TestingMusician)
   case class UpdateAssessmentCount(testingMusician: TestingMusician)
   object UpdateQueueDisplay
   case class Chat(chatMessage: ChatMessage)
