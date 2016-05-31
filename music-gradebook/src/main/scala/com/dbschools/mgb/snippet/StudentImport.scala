@@ -10,9 +10,14 @@ import net.liftweb.http.SHtml
 import schema.{Musician, MusicianGroup, AppSchema}
 import model.{Cache, Terms}
 
+/**
+ * Imports tab-separated data in this form:
+ * Student Name→Permanent Student ID→Grade
+ * Jones, Sarah→600001234→6
+ */
 class StudentImport {
   private val log = Logger.getLogger(getClass)
-  private val importTerm = Terms.currentTerm
+  private val importTerm = Terms.nextTerm
 
   def render = {
     var data = ""
@@ -26,17 +31,16 @@ class StudentImport {
       val musicianGroupsByMusicianIdCurrentTerm = m(Terms.currentTerm)
       val insts = AppSchema.instruments.map(i => i.id -> i).toMap
       val UnassignedInstrumentId = insts.values.find(_.name.get == "Unassigned").get // OK to fail
-      val InsertToGroup = 15
+      val InsertToGroup = 3
 
-      val allLines = data.split("\n").map(_.trim.split("\t")) // Pairs of stu -> perm, then student data
-      val (idPairs, students) = allLines.partition(_.length == 2)
-      val stuToPerm = idPairs.map(ids => ids(0).toInt -> ids(1).toInt).toMap
+      val students = data.split("\n").map(_.trim.split("\t"))
 
       students.foreach(cols => {
-        val first = cols(0)
-        val last = cols(1)
+        val nameParts = cols(0).trim.split(", ")
+        val last = nameParts(0)
+        val first = nameParts(1)
+        val id = cols(1).toInt
         val grade = cols(2).toInt
-        val id = cols(3).toInt
 
         val (musician, isNew) = musiciansByPermId.get(id).map((_, false)) | {
           val newM = Musician.createRecord.permStudentId(id).last_name(last).first_name(first).
