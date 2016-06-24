@@ -8,12 +8,24 @@
     <h2>{{ parent.name }}</h2>
     {% for student in parent.student_set.all %}
         <h3>{{ student.name }}</h3>
-        <h4>Proposed Times Interested In</h4>
-        {% for section in student.proposed_sections %}
-            {{ section.course.name }}: {{ section.start_time }}–{{ section.end_time|date:"g a" }} ${{ section.price }} {{ section.min_students }}–{{ section.max_students }} students
-        {% endfor %}
-        <h4>Class Times Enrolled In</h4>
-        <h4>Pending Class Times</h4>
+        {% if student.enrolled_sections %}
+            <h4>Enrolled In</h4>
+            {% for section in student.enrolled_sections %}
+                {{ section.course.name }}: {{ section.start_time }}–{{ section.end_time|date:"g a" }} ${{ section.price }} {{ section.min_students }}–{{ section.max_students }} students
+            {% endfor %}
+        {% endif %}
+        {% if student.proposed_sections %}
+            <h4>Interested In</h4>
+            {% for section in student.proposed_sections %}
+                {{ section.course.name }}: {{ section.start_time }}–{{ section.end_time|date:"g a" }} ${{ section.price }} {{ section.min_students }}–{{ section.max_students }} students
+            {% endfor %}
+        {% endif %}
+        {% if student.accepting_sections %}
+            <h4>Needing Confirmation</h4>
+            {% for section in student.accepting_sections %}
+                {{ section.course.name }}: {{ section.start_time }}–{{ section.end_time|date:"g a" }} ${{ section.price }} {{ section.min_students }}–{{ section.max_students }} students
+            {% endfor %}
+        {% endif %}
     {% endfor %}
 {% endfor %}
 {% endblock %}

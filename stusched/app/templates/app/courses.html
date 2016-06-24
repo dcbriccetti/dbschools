@@ -11,6 +11,7 @@
         {% for section in course.sections %}
             <h4>{{ section.start_time }}–{{ section.end_time|date:"g a" }} ${{ section.price }} {{ section.min_students }}–{{ section.max_students }} students</h4>
         {% endfor %}
+        <iframe src="{{ course.url }}" width="100%" height="400px"></iframe>
     {% endfor %}
 {% else %}
     <p>No courses are available.</p>

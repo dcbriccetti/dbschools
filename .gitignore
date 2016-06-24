@@ -12,3 +12,9 @@ music-gradebook/project/project/
 music-gradebook/project/target/
 music-gradebook/target/
 music-gradebook/.idea
+music-gradebook/src/main/webapp/assets/images/student-photos
+picker/.idea
+stusched/.idea
+website/period-clock/target
+*.pyc
+website/.idea

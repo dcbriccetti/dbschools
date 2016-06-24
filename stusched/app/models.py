@@ -1,8 +1,9 @@
 from django.db import models
 
+
 class Course(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField()
+    url = models.URLField()
 
     def __str__(self):
         return self.name.__str__()
@@ -33,17 +34,21 @@ class Section(models.Model):
     def __str__(self):
         return "At %s" % (self.start_time.__str__())
 
+
 class Parent(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
+    notes = models.TextField(blank=True)
 
     def __str__(self):
         return self.name.__str__()
+
 
 class Student(models.Model):
     name = models.CharField(max_length=100)
     parent = models.ForeignKey(Parent)
     sections = models.ManyToManyField(Section, blank=True)
+    notes = models.TextField(blank=True)
 
     def proposed_sections(self):
         return self.sections.filter(scheduled_status=PROPOSED)
@@ -51,7 +56,7 @@ class Student(models.Model):
     def accepting_sections(self):
         return self.sections.filter(scheduled_status=ACCEPTING)
 
-    def scheduled_sections(self):
+    def enrolled_sections(self):
         return self.sections.filter(scheduled_status=SCHEDULED)
 
     def __str__(self):
