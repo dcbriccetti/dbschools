@@ -7,7 +7,6 @@
 {% if courses %}
     {% for course in courses %}
         <h2>{{ course.name }}</h2>
-        <div>{{ course.description|linebreaks }}</div>
         {% for section in course.sections %}
             <h4>{{ section.start_time }}–{{ section.end_time|date:"g a" }} ${{ section.price }} {{ section.min_students }}–{{ section.max_students }} students</h4>
         {% endfor %}

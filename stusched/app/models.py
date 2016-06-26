@@ -3,7 +3,8 @@ from django.db import models
 
 class Course(models.Model):
     name = models.CharField(max_length=100)
-    url = models.URLField()
+    url = models.URLField(blank=True)
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name.__str__()
@@ -28,11 +29,15 @@ class Section(models.Model):
     min_students = models.IntegerField(default=3)
     max_students = models.IntegerField(default=6)
     scheduled_status = models.IntegerField()
+    notes = models.TextField(blank=True)
 
     def end_time(self): return self.start_time + self.duration_per_day
 
     def __str__(self):
-        return "At %s" % (self.start_time.__str__())
+        return '%s %s' % (self.start_time, self.course.name)
+
+    def enrolled(self):
+        return len(self.student_set.all())
 
 
 class Parent(models.Model):
@@ -46,6 +51,7 @@ class Parent(models.Model):
 
 class Student(models.Model):
     name = models.CharField(max_length=100)
+    active = models.BooleanField(default=True)
     parent = models.ForeignKey(Parent)
     sections = models.ManyToManyField(Section, blank=True)
     notes = models.TextField(blank=True)
@@ -58,6 +64,9 @@ class Student(models.Model):
 
     def enrolled_sections(self):
         return self.sections.filter(scheduled_status=SCHEDULED)
+
+    def list_sections(self):
+        return ', '.join([section.course.name for section in self.sections.all()])
 
     def __str__(self):
         return self.name.__str__()
