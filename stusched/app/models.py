@@ -1,3 +1,4 @@
+from datetime import date
 from django.db import models
 
 
@@ -42,7 +43,7 @@ class Section(models.Model):
 
 class Parent(models.Model):
     name = models.CharField(max_length=100)
-    email = models.EmailField()
+    email = models.EmailField(null=True, blank=True)
     notes = models.TextField(blank=True)
 
     def __str__(self):
@@ -50,11 +51,16 @@ class Parent(models.Model):
 
 
 class Student(models.Model):
-    name = models.CharField(max_length=100)
-    active = models.BooleanField(default=True)
-    parent = models.ForeignKey(Parent)
-    sections = models.ManyToManyField(Section, blank=True)
-    notes = models.TextField(blank=True)
+    name            = models.CharField(max_length=100)
+    active          = models.BooleanField(default=True)
+    birthdate       = models.DateField(null=True, blank=True)
+    parent          = models.ForeignKey(Parent)
+    email           = models.EmailField(null=True, blank=True)
+    aptitude        = models.IntegerField(null=True, blank=True)
+    sections        = models.ManyToManyField(Section, blank=True)
+    wants_courses   = models.ManyToManyField(Course, blank=True)
+    when_available  = models.TextField(blank=True)
+    notes           = models.TextField(blank=True)
 
     def proposed_sections(self):
         return self.sections.filter(scheduled_status=PROPOSED)
@@ -65,8 +71,34 @@ class Student(models.Model):
     def enrolled_sections(self):
         return self.sections.filter(scheduled_status=SCHEDULED)
 
-    def list_sections(self):
+    def age(self):
+        if not self.birthdate: return ''
+        today = date.today()
+        return "%.2f" % ((today - self.birthdate).days / 365.25)
+
+    def sections_taken(self):
         return ', '.join([section.course.name for section in self.sections.all()])
+
+    def courses_wanted(self):
+        return ', '.join([course.name for course in self.wants_courses.all()])
 
     def __str__(self):
         return self.name.__str__()
+
+
+class KnowledgeItem(models.Model):
+    name        = models.CharField(max_length=100)
+    students    = models.ManyToManyField(Student, through='Knows')
+
+    def __str__(self):
+        return self.name.__str__()
+
+
+class Knows(models.Model):
+    student     = models.ForeignKey(Student, on_delete=models.CASCADE)
+    item        = models.ForeignKey(KnowledgeItem, on_delete=models.CASCADE)
+    quantity    = models.IntegerField()
+
+    def __str__(self):
+        return '%s %s %d' % (self.student.name, self.item.name, self.quantity)
+
