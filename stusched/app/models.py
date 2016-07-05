@@ -74,7 +74,7 @@ class Student(models.Model):
     def age(self):
         if not self.birthdate: return ''
         today = date.today()
-        return "%.2f" % ((today - self.birthdate).days / 365.25)
+        return "%.2f" % ((today - self.birthdate).days / 365.24)
 
     def sections_taken(self):
         return ', '.join([section.course.name for section in self.sections.all()])
