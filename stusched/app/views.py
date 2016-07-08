@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import Course, Section, Parent
@@ -26,3 +27,9 @@ def index(request):
 def status(request):
     parents = Parent.objects.order_by('name')
     return render(request, 'app/status.html', {'parents': parents})
+
+
+@login_required
+def proposals(request):
+    sections = Section.objects.filter(start_time__gt = datetime.now()).order_by('start_time')
+    return render(request, 'app/proposals.html', {'sections': sections})
