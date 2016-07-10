@@ -15,12 +15,16 @@ class ScheduledCourse(object):
 
 
 def index(request):
+    return render(request, 'app/index.html')
+
+
+def courses(request):
     sections = Section.objects.order_by('start_time')
     scheduled_courses = set((s.course for s in sections))
-    courses = (ScheduledCourse(c.name, c.url,
+    scheduled_courses = (ScheduledCourse(c.name, c.url,
         [s for s in sections if s.course == c]) for c in Course.objects.order_by('name') if c in scheduled_courses)
 
-    return render(request, 'app/courses.html', {'courses': courses})
+    return render(request, 'app/courses.html', {'courses': scheduled_courses})
 
 
 @login_required
@@ -31,5 +35,6 @@ def status(request):
 
 @login_required
 def proposals(request):
-    sections = Section.objects.filter(start_time__gt = datetime.now(), scheduled_status__in=(1,2,3)).order_by('start_time')
+    sections = Section.objects.filter(start_time__gt=datetime.now(),
+        scheduled_status__in=(1, 2, 3)).order_by('start_time')
     return render(request, 'app/proposals.html', {'sections': sections})

@@ -1,0 +1,36 @@
+{% load hours %}
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Course</th>
+        <th>Start Time</th>
+        <th>Hours / Day</th>
+        <th>Days</th>
+        <th>Min Students</th>
+        <th>Interested</th>
+        <th>Max Students</th>
+        <th>Notes</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for section in sections %}
+        <tr>
+            <td>
+                {% if section.course.url %}
+                    <a href={{ section.course.url }}>{{ section.course.name }}</a>
+                {% else %}
+                    {{ section.course.name }}
+                {% endif %}
+            </td>
+            <td>{{ section.start_time }}</td>
+            <td>{{ section.duration_per_day | hours }}</td>
+            <td>{{ section.num_days }}</td>
+            <td>{{ section.min_students }}</td>
+            <td>{{ section.student_set.all.count }}</td>
+            <td>{{ section.max_students }}</td>
+            <td>{{ section.notes }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

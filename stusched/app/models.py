@@ -10,15 +10,7 @@ class Course(models.Model):
     def __str__(self):
         return self.name.__str__()
 
-PROPOSED = 1
-ACCEPTING = 2
-SCHEDULED = 3
-
-statuses = {
-    PROPOSED:   'proposed',
-    ACCEPTING:  'accepting',
-    SCHEDULED:  'scheduled'
-}
+STATUSES = ((1, 'Proposed'), (2, 'Accepting'), (3, 'Scheduled'))
 
 
 class Section(models.Model):
@@ -29,7 +21,7 @@ class Section(models.Model):
     price = models.DecimalField(max_digits=6, decimal_places=2)
     min_students = models.IntegerField(default=3)
     max_students = models.IntegerField(default=6)
-    scheduled_status = models.IntegerField()
+    scheduled_status = models.IntegerField(choices=STATUSES)
     notes = models.TextField(blank=True)
 
     def end_time(self): return self.start_time + self.duration_per_day
@@ -62,15 +54,6 @@ class Student(models.Model):
     when_available  = models.TextField(blank=True)
     notes           = models.TextField(blank=True)
 
-    def proposed_sections(self):
-        return self.sections.filter(scheduled_status=PROPOSED)
-
-    def accepting_sections(self):
-        return self.sections.filter(scheduled_status=ACCEPTING)
-
-    def enrolled_sections(self):
-        return self.sections.filter(scheduled_status=SCHEDULED)
-
     def age(self):
         if not self.birthdate: return ''
         today = date.today()
@@ -81,6 +64,10 @@ class Student(models.Model):
 
     def courses_wanted(self):
         return ', '.join([course.name for course in self.wants_courses.all()])
+
+    @property
+    def sections_by_time(self):
+        return self.sections.all().order_by('start_time')
 
     def __str__(self):
         return self.name.__str__()
