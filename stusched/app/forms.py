@@ -20,12 +20,10 @@ class AuthenticationForm(forms.Form):
         'inactive': _("This account is inactive."),
     }
 
-    def __init__(self, request=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         """
-        The 'request' parameter is set for custom auth use by subclasses.
         The form data comes in via the standard 'data' kwarg.
         """
-        self.request = request
         self.user_cache = None
         super(AuthenticationForm, self).__init__(*args, **kwargs)
 
@@ -78,4 +76,10 @@ class AuthenticationForm(forms.Form):
     def get_user(self):
         return self.user_cache
 
+
+class NewUserForm(forms.Form):
+    name        = forms.CharField(max_length=100)
+    username    = forms.CharField(min_length=1, max_length=254)
+    password    = forms.CharField(label=_("Password"), strip=False, widget=forms.PasswordInput)
+    email       = forms.EmailField(label='Email address')
 

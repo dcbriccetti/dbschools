@@ -2,9 +2,10 @@ from datetime import datetime
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.views.generic import View
 from .models import Course, Section, Parent
-from .forms import AuthenticationForm
+from .forms import AuthenticationForm, NewUserForm
 
 
 class ScheduledCourse(object):
@@ -47,12 +48,24 @@ def proposals(request):
 class Login(View):
     def get(self, request):
         form = AuthenticationForm()
-        return render(request, 'app/login.html', {'form': form})
+        new_user_form = NewUserForm()
+        return render(request, 'app/login.html', {'form': form, 'new_user_form': new_user_form})
 
     def post(self, request):
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            login(request, form.user_cache)
-            return redirect('/app/')
+        if 'name' in request.POST:
+            form = NewUserForm(data=request.POST)
+            if form.is_valid():
+                cd = form.cleaned_data
+                User.objects.create_user(cd['username'], cd['email'], cd['password'])
+                user = authenticate(username=cd['username'], password=cd['password'])
+                login(request, user)
+                return redirect('/app/')
+            else:
+                return render(request, 'app/login.html', {'form': form})
         else:
-            return render(request, 'app/login.html', {'form': form})
+            form = AuthenticationForm(data=request.POST)
+            if form.is_valid():
+                login(request, form.get_user())
+                return redirect('/app/')
+            else:
+                return render(request, 'app/login.html', {'form': form})

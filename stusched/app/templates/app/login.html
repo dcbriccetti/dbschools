@@ -1,13 +1,30 @@
 {% extends "app/base.html" %}
+{% load bootstrap3 %}
 
 {% block title %}{{ block.super }}{% endblock %}
 
 {% block content %}
 
+    <h1>Log In</h1>
     <form action="/app/login" method="post">
         {% csrf_token %}
-        {{ form }}
-        <input type="submit" value="Submit" />
+        {% bootstrap_form form %}
+        {% buttons %}
+            <button type="submit" class="btn btn-primary">
+                {% bootstrap_icon "star" %} Submit
+            </button>
+        {% endbuttons %}
+    </form>
+
+    <h1>Create New Account</h1>
+    <form action="/app/login?create=y" method="post">
+        {% csrf_token %}
+        {% bootstrap_form new_user_form %}
+        {% buttons %}
+            <button type="submit" class="btn btn-primary">
+                {% bootstrap_icon "star" %} Submit
+            </button>
+        {% endbuttons %}
     </form>
 
 {% endblock %}
