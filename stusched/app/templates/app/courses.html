@@ -6,7 +6,13 @@
 <h1>Courses</h1>
 {% if courses %}
     {% for course in courses %}
-        <h2><a href={{ course.url }}>{{ course.name }}</a></h2>
+        <h2>
+        {% if course.url %}
+        <a href={{ course.url }}>{{ course.name }}</a>
+        {% else %}
+        {{ course.name }}
+        {% endif %}
+        </h2>
         {% for section in course.sections %}
             <h4>{{ section.start_time }}–{{ section.end_time|date:"g a" }} ${{ section.price }} {{ section.min_students }}–{{ section.max_students }} students</h4>
         {% endfor %}

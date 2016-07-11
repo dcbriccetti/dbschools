@@ -1,6 +1,7 @@
 from datetime import datetime
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.views.generic import View
 from .models import Course, Section, Parent
 
 
@@ -14,8 +15,9 @@ class ScheduledCourse(object):
         return self.name + ' ' + self.description
 
 
-def index(request):
-    return render(request, 'app/index.html')
+class Index(View):
+    def get(request):
+        return render(request, 'app/index.html')
 
 
 def courses(request):
@@ -28,9 +30,9 @@ def courses(request):
 
 
 @login_required
-def status(request):
+def students(request):
     parents = Parent.objects.order_by('name')
-    return render(request, 'app/status.html', {'parents': parents})
+    return render(request, 'app/students.html', {'parents': parents})
 
 
 @login_required
