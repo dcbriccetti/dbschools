@@ -1,8 +1,10 @@
 from datetime import datetime
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.views.generic import View
 from .models import Course, Section, Parent
+from .forms import AuthenticationForm
 
 
 class ScheduledCourse(object):
@@ -16,7 +18,7 @@ class ScheduledCourse(object):
 
 
 class Index(View):
-    def get(request):
+    def get(self, request):
         return render(request, 'app/index.html')
 
 
@@ -40,3 +42,17 @@ def proposals(request):
     sections = Section.objects.filter(start_time__gt=datetime.now(),
         scheduled_status__in=(1, 2, 3)).order_by('start_time')
     return render(request, 'app/proposals.html', {'sections': sections})
+
+
+class Login(View):
+    def get(self, request):
+        form = AuthenticationForm()
+        return render(request, 'app/login.html', {'form': form})
+
+    def post(self, request):
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            login(request, form.user_cache)
+            return redirect('/app/')
+        else:
+            return render(request, 'app/login.html', {'form': form})

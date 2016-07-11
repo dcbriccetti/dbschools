@@ -1,0 +1,13 @@
+{% extends "app/base.html" %}
+
+{% block title %}{{ block.super }}{% endblock %}
+
+{% block content %}
+
+    <form action="/app/login" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Submit" />
+    </form>
+
+{% endblock %}

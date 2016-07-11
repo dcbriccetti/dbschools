@@ -15,19 +15,18 @@
 </head>
 <body>
 
-<h1>Dave B’s Young Programmers</h1>
-
-<ul class="nav nav-tabs">
-    <li role="presentation" class={% active_nav request 'index'     %}><a href="{% url 'index'     %}">Home</a></li>
-    {% if request.user.is_staff %}
-    <li role="presentation" class={% active_nav request 'students'  %}><a href="{% url 'students'  %}">Students</a></li>
-    {% endif %}
-    <li role="presentation" class={% active_nav request 'courses'   %}><a href="{% url 'courses'   %}">Courses</a></li>
-    <li role="presentation" class={% active_nav request 'proposals' %}><a href="{% url 'proposals' %}">Proposals</a></li>
-</ul>
-
-</div>
 <div class="container">
+    <h1>Dave B’s Young Programmers</h1>
+
+    <ul class="nav nav-tabs">
+        <li role="presentation" class={% active_nav request 'index'     %}><a href="{% url 'index'     %}">Home</a></li>
+        {% if request.user.is_staff %}
+        <li role="presentation" class={% active_nav request 'students'  %}><a href="{% url 'students'  %}">Students</a></li>
+        {% endif %}
+        <li role="presentation" class={% active_nav request 'courses'   %}><a href="{% url 'courses'   %}">Courses</a></li>
+        <li role="presentation" class={% active_nav request 'proposals' %}><a href="{% url 'proposals' %}">Proposals</a></li>
+    </ul>
+
     {% block content %}
     {% endblock %}
 </div>
