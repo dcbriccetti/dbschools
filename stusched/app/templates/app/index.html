@@ -6,4 +6,7 @@
 <p><a class="btn btn-primary btn-lg" href="/parents">Associate Parents</a></p>
 <p><a class="btn btn-primary btn-lg" href="/students">Set Up Students</a></p>
 <p><a class="btn btn-primary btn-lg" href="/app/proposals">See Proposed Course Sections</a></p>
+{% if user.is_authenticated %}
+<p><a class="btn btn-primary btn-lg" href="/app/logout">Log Out</a></p>
+{% endif %}
 {% endblock %}

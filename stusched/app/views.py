@@ -1,11 +1,12 @@
 from datetime import datetime
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.views.generic import View
 from .models import Course, Section, Parent
-from .forms import AuthenticationForm, NewUserForm
+from .models import Student as StudentModel
+from .forms import AuthenticationForm, NewUserForm, StudentForm
 
 
 class ScheduledCourse(object):
@@ -34,7 +35,15 @@ def courses(request):
 
 @login_required
 def students(request):
-    parents = Parent.objects.order_by('name')
+    user = request.user
+    if user:
+        if user.is_staff:
+            parents = Parent.objects.order_by('name')
+        else:
+            parents = Parent.objects.filter(users=user)
+    else:
+        parents = None
+
     return render(request, 'app/students.html', {'parents': parents})
 
 
@@ -59,13 +68,38 @@ class Login(View):
                 User.objects.create_user(cd['username'], cd['email'], cd['password'])
                 user = authenticate(username=cd['username'], password=cd['password'])
                 login(request, user)
+                code = cd.get('parent_code')
+                parent = Parent.objects.get(code=code) if code else Parent(name=cd['name'], email=cd['email'])
+                parent.users.add(user)
                 return redirect('/app/')
             else:
-                return render(request, 'app/login.html', {'form': form})
+                return render(request, 'app/login.html', {'form': AuthenticationForm(), 'new_user_form': form})
         else:
             form = AuthenticationForm(data=request.POST)
             if form.is_valid():
                 login(request, form.get_user())
                 return redirect('/app/')
             else:
-                return render(request, 'app/login.html', {'form': form})
+                return render(request, 'app/login.html', {'form': form, 'new_user_form': NewUserForm()})
+
+
+class Student(View):
+    def get(self, request, id_str):
+        student = StudentModel.objects.filter(id=(int(id_str))).first()
+        if student and (request.user.is_staff or request.user in student.parent.users.all()):
+            return render(request, 'app/student.html', {'form': StudentForm(instance=student)})
+        else:
+            return redirect('/app/')
+
+    def post(self, request):
+        form = StudentForm(data=request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            return redirect('/app/')
+        else:
+            return render(request, 'app/student.html', {'form': form})
+
+
+def logOut(request):
+    logout(request)
+    return redirect('/')

@@ -1,5 +1,6 @@
 from datetime import date
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Course(models.Model):
@@ -23,6 +24,7 @@ class Section(models.Model):
     max_students = models.IntegerField(default=6)
     scheduled_status = models.IntegerField(choices=STATUSES)
     notes = models.TextField(blank=True)
+    private_notes = models.TextField(blank=True)
 
     def end_time(self): return self.start_time + self.duration_per_day
 
@@ -37,6 +39,9 @@ class Parent(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(null=True, blank=True)
     notes = models.TextField(blank=True)
+    code  = models.CharField(max_length=100, null=True, blank=True)
+    # Set via: update app_parent set code = md5(random()::text) where code is null;
+    users = models.ManyToManyField(User, blank=True)
 
     def __str__(self):
         return self.name.__str__()
@@ -53,6 +58,7 @@ class Student(models.Model):
     wants_courses   = models.ManyToManyField(Course, blank=True)
     when_available  = models.TextField(blank=True)
     notes           = models.TextField(blank=True)
+    private_notes   = models.TextField(blank=True)
 
     def age(self):
         if not self.birthdate: return ''

@@ -1,9 +1,11 @@
 from django import forms
 from django.contrib.auth import (
-    authenticate, get_user_model, password_validation,
+    authenticate, get_user_model,
 )
+from django.forms import ModelForm
 from django.utils.text import capfirst
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
+from .models import Student, Parent
 
 
 class AuthenticationForm(forms.Form):
@@ -78,8 +80,26 @@ class AuthenticationForm(forms.Form):
 
 
 class NewUserForm(forms.Form):
-    name        = forms.CharField(max_length=100)
+    name        = forms.CharField(max_length=100, help_text='The full name of a parent or parents')
     username    = forms.CharField(min_length=1, max_length=254)
     password    = forms.CharField(label=_("Password"), strip=False, widget=forms.PasswordInput)
     email       = forms.EmailField(label='Email address')
+    parent_code = forms.CharField(required=False, max_length=100,
+        help_text='A code, if one was provided to you, to tie this new account to an existing parent record.')
 
+    error_messages = {
+        'invalid_code': _(""),
+    }
+
+    def clean_parent_code(self):
+        code = self.cleaned_data.get('parent_code')
+        if code and not Parent.objects.filter(code=code).first():
+            raise forms.ValidationError(
+                'Unrecognized code. Please enter the code you were given, or leave the field blank.')
+        return code
+
+
+class StudentForm(ModelForm):
+    class Meta:
+        model = Student
+        fields = ('name', 'birthdate', 'email', 'wants_courses', 'when_available', 'notes')
