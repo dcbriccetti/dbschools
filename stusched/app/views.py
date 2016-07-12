@@ -47,7 +47,6 @@ def students(request):
     return render(request, 'app/students.html', {'parents': parents})
 
 
-@login_required
 def proposals(request):
     sections = Section.objects.filter(start_time__gt=datetime.now(),
         scheduled_status__in=(1, 2, 3)).order_by('start_time')
