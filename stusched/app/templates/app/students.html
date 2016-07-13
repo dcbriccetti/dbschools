@@ -5,11 +5,11 @@
 {% block content %}
 <h1>Students</h1>
 {% for parent in parents %}
+    <hr style="border: thick black solid">
     <h2>{{ parent.name }}</h2>
     {% for student in parent.student_set.all %}
         <h3><a href='/app/student/{{ student.id }}'>{{ student.name }}</a></h3>
         {% if student.sections.count %}
-        <h4>Enrolled In</h4>
         {% include "app/section_table.html" with sections=student.sections_by_time %}
         {% endif %}
     {% endfor %}
