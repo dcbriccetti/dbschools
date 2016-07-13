@@ -84,20 +84,28 @@ class Login(View):
 
 class Student(View):
     def get(self, request, id_str):
-        student = StudentModel.objects.filter(id=(int(id_str))).first()
-        if student and (request.user.is_staff or request.user in student.parent.users.all()):
-            return render(request, 'app/student.html', {'form': StudentForm(instance=student)})
+        student_id = int(id_str)
+        student = StudentModel.objects.filter(id=student_id).first()
+        if self._student_ok(student, request):
+            return render(request, 'app/student.html', {'form': StudentForm(instance=student), 'student_id': student_id})
         else:
             return redirect('/app/')
 
-    def post(self, request):
-        form = StudentForm(data=request.POST)
-        if form.is_valid():
-            cd = form.cleaned_data
-            return redirect('/app/')
-        else:
-            return render(request, 'app/student.html', {'form': form})
+    def post(self, request, id_str):
+        student_id = int(id_str)
+        student = StudentModel.objects.filter(id=student_id).first()
+        if self._student_ok(student, request):
+            form = StudentForm(data=request.POST, instance=student)
+            if form.is_valid():
+                form.save()
+            else:
+                return render(request, 'app/student.html', {'form': form, 'student_id': student_id})
 
+        return redirect('/app/students')
+
+    @staticmethod
+    def _student_ok(student, request):
+        return student and (request.user.is_staff or request.user in student.parent.users.all())
 
 def logOut(request):
     logout(request)

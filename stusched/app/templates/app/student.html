@@ -6,7 +6,7 @@
 {% block content %}
 
     <h1>Edit Student</h1>
-    <form action="/app/student" method="post">
+    <form action="/app/student/{{ student_id }}" method="post">
         {% csrf_token %}
         {% bootstrap_form form %}
         {% buttons %}
