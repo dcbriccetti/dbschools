@@ -29,12 +29,16 @@ class Section(models.Model):
     def __str__(self):
         return '%s %s' % (self.start_time, self.course.name)
 
-    def enrolled(self):
-        return len(self.student_set.all())
+    def num_students(self):
+        return self.student_set.count()
+
+    def students(self):
+        return ', '.join((s.name for s in self.student_set.all().order_by('name')))
 
 
 class Parent(models.Model):
     name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=100, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
     notes = models.TextField(blank=True)
     code  = models.CharField(max_length=100, null=True, blank=True)

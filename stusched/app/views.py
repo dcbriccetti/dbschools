@@ -48,9 +48,14 @@ def students(request):
 
 
 def proposals(request):
-    sections = Section.objects.filter(start_time__gt=datetime.now(),
-        scheduled_status__in=(1, 2, 3)).order_by('start_time')
+    sections = Section.objects.order_by('start_time')
     return render(request, 'app/proposals.html', {'sections': sections})
+
+
+def section(request, section_id):
+    section = Section.objects.get(id=int(section_id))
+    students = section.student_set.all().order_by('name')
+    return render(request, 'app/section.html', {'section': section, 'students': students})
 
 
 class Login(View):

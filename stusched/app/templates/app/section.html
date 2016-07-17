@@ -1,0 +1,29 @@
+{% extends "app/base.html" %}
+
+{% block title %}{{ block.super }} - Section{% endblock %}
+
+{% block content %}
+    <h1>{{ section.course.name }}</h1>
+    <table class="table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Birthdate</th>
+        <th>Age</th>
+        <th>Parent</th>
+        <th>Parent Phone</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for s in students %}
+        <tr>
+        <td>{{ s.name }}</td>
+        <td>{{ s.birthdate }}</td>
+        <td>{{ s.age }}</td>
+        <td>{{ s.parent.name }}</td>
+        <td>{{ s.parent.phone }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+{% endblock %}

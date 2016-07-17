@@ -1,17 +1,20 @@
 <table class="table">
     <thead>
     <tr>
+        <th>ID</th>
         <th>Course</th>
         <th>Start Time</th>
         <th>Hours / Day</th>
         <th>Days</th>
-        <th>Interested</th>
+        <th>Num</th>
+        <th>Names</th>
         <th>Notes</th>
     </tr>
     </thead>
     <tbody>
     {% for section in sections %}
         <tr>
+            <td><a href='/app/section/{{ section.id }}'>{{ section.id }}</a></td>
             <td>
                 {% if section.course.url %}
                     <a href={{ section.course.url }}>{{ section.course.name }}</a>
@@ -22,7 +25,8 @@
             <td>{{ section.start_time }}</td>
             <td>{{ section.hours_per_day }}</td>
             <td>{{ section.num_days }}</td>
-            <td>{{ section.student_set.all.count }}</td>
+            <td>{{ section.num_students }}</td>
+            <td>{{ section.students }}</td>
             <td>{{ section.notes }}</td>
         </tr>
     {% endfor %}

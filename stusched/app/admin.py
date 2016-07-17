@@ -13,7 +13,7 @@ class StudentsInSectionInline(admin.TabularInline):
 
 class ParentAdmin(admin.ModelAdmin):
     ordering = ('name',)
-    list_display = ('name', 'email', 'notes')
+    list_display = ('name', 'phone', 'email', 'notes')
     search_fields = ('name',)
     inlines = [StudentInline]
 
@@ -26,7 +26,7 @@ class StudentAdmin(admin.ModelAdmin):
 
 
 class SectionAdmin(admin.ModelAdmin):
-    list_display = ('course', 'start_time', 'enrolled', 'hours_per_day',
+    list_display = ('course', 'start_time', 'num_students', 'students', 'hours_per_day',
                     'num_days', 'price', 'notes', 'private_notes')
     ordering = ('start_time',)
     search_fields = ('course__name',)
