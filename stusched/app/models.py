@@ -1,6 +1,8 @@
-from datetime import date
+from datetime import date, datetime
 from django.db import models
 from django.contrib.auth.models import User
+
+DAYS_PER_YEAR = 365.24
 
 
 class Course(models.Model):
@@ -53,6 +55,7 @@ class Student(models.Model):
     name            = models.CharField(max_length=100)
     active          = models.BooleanField(default=True)
     birthdate       = models.DateField(null=True, blank=True)
+    grade_from_age  = models.IntegerField(null=True, blank=True)
     parent          = models.ForeignKey(Parent)
     email           = models.EmailField(null=True, blank=True)
     aptitude        = models.IntegerField(null=True, blank=True)
@@ -63,9 +66,23 @@ class Student(models.Model):
     private_notes   = models.TextField(blank=True)
 
     def age(self):
+        years = self.age_years()
+        return "%.3f" % years if years else ''
+
+    def age_years(self):
+        today = date.today()
+        return (today - self.birthdate).days / DAYS_PER_YEAR if self.birthdate else None
+
+    def grade(self):
         if not self.birthdate: return ''
         today = date.today()
-        return "%.2f" % ((today - self.birthdate).days / 365.24)
+        current_school_year_starting_year = today.year if today.month >= 7 else today.year - 1
+        sep1str = '%d-%d-%d' % (current_school_year_starting_year, 9, 1)
+        sep1 = datetime.strptime(sep1str, "%Y-%m-%d").date()
+        age_years_sep1 = int((sep1 - self.birthdate).days / DAYS_PER_YEAR)
+        gfa = self.grade_from_age
+        grade = str(age_years_sep1 - gfa) if gfa else '%d?' % (age_years_sep1 - 5)
+        return grade
 
     def sections_taken(self):
         return ', '.join([section.course.name for section in self.sections.all()])

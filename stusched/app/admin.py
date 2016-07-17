@@ -19,7 +19,7 @@ class ParentAdmin(admin.ModelAdmin):
 
 
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'active', 'parent', 'birthdate', 'age', 'notes', 'private_notes',
+    list_display = ('name', 'active', 'parent', 'birthdate', 'age', 'grade', 'notes', 'private_notes',
                     'sections_taken', 'courses_wanted', 'when_available')
     ordering = ('name',)
     search_fields = ('name',)
