@@ -16,17 +16,15 @@ STATUSES = ((1, 'Proposed'), (2, 'Accepting'), (3, 'Scheduled'))
 
 class Section(models.Model):
     start_time = models.DateTimeField()
-    duration_per_day = models.DurationField()
-    num_days = models.DecimalField(max_digits=3, decimal_places=0, default=1)
+    hours_per_day = models.DecimalField(max_digits=4, decimal_places=2)
+    num_days = models.IntegerField(default=1)
     course = models.ForeignKey(Course)
-    price = models.DecimalField(max_digits=6, decimal_places=2)
+    price = models.IntegerField(null=True, blank=True)
     min_students = models.IntegerField(default=3)
     max_students = models.IntegerField(default=6)
     scheduled_status = models.IntegerField(choices=STATUSES)
     notes = models.TextField(blank=True)
     private_notes = models.TextField(blank=True)
-
-    def end_time(self): return self.start_time + self.duration_per_day
 
     def __str__(self):
         return '%s %s' % (self.start_time, self.course.name)

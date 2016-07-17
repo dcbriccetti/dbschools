@@ -1,5 +1,3 @@
-{% load hours %}
-
 <table class="table">
     <thead>
     <tr>
@@ -22,7 +20,7 @@
                 {% endif %}
             </td>
             <td>{{ section.start_time }}</td>
-            <td>{{ section.duration_per_day | hours }}</td>
+            <td>{{ section.hours_per_day }}</td>
             <td>{{ section.num_days }}</td>
             <td>{{ section.student_set.all.count }}</td>
             <td>{{ section.notes }}</td>

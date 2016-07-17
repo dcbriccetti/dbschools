@@ -26,7 +26,7 @@ class StudentAdmin(admin.ModelAdmin):
 
 
 class SectionAdmin(admin.ModelAdmin):
-    list_display = ('course', 'start_time', 'enrolled', 'duration_per_day',
+    list_display = ('course', 'start_time', 'enrolled', 'hours_per_day',
                     'num_days', 'price', 'notes', 'private_notes')
     ordering = ('start_time',)
     search_fields = ('course__name',)
