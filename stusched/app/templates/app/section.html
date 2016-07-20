@@ -3,7 +3,8 @@
 {% block title %}{{ block.super }} - Section{% endblock %}
 
 {% block content %}
-    <h1>{{ section.course.name }}</h1>
+    <h2>{{ section.course.name }}</h2>
+    <h3>{{ section.start_time }}</h3>
     <table class="table">
     <thead>
     <tr>
@@ -28,4 +29,26 @@
     {% endfor %}
     </tbody>
     </table>
+
+    {% if overlaps %}
+    <h3>Other Sections Together</h3>
+    <table class="table">
+    <thead>
+    <tr>
+        <th>Time</th>
+        <th>Section</th>
+        <th>Students</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for s in overlaps %}
+        <tr>
+        <td>{{ s.section.start_time }}</td>
+        <td>{{ s.section.course.name }}</td>
+        <td>{{ s.student_names }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+    {% endif %}
 {% endblock %}

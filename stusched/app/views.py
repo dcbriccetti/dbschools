@@ -55,7 +55,25 @@ def proposals(request):
 def section(request, section_id):
     section = Section.objects.get(id=int(section_id))
     students = section.student_set.all().order_by('name')
-    return render(request, 'app/section.html', {'section': section, 'students': students})
+
+    students_by_section = {}
+    for student in students:
+        for stusec in student.sections.exclude(id=section.id):
+            student_names = students_by_section.get(stusec, [])
+            student_names.append(student.name)
+            students_by_section[stusec] = student_names
+
+    class SectionStudents:
+        def __init__(self, section, student_names):
+            self.section = section
+            self.student_names = ', '.join(sorted(student_names))
+
+    section_studentses = [SectionStudents(section, student_names)
+        for section, student_names in students_by_section.items() if len(student_names) > 1]
+    section_studentses.sort(key=lambda ss: ss.section.start_time)
+
+    return render(request, 'app/section.html',
+        {'section': section, 'students': students, 'overlaps': section_studentses})
 
 
 class Login(View):
