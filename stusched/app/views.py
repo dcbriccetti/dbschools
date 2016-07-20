@@ -52,28 +52,37 @@ def proposals(request):
     return render(request, 'app/proposals.html', {'sections': sections})
 
 
+def _these_students_in_other_sections(section_id, students):
+    these_students_in_other_sections = {}  # section -> list of student names
+
+    for student in students:
+        other_sections_with_student = student.sections.exclude(id=section_id)
+
+        for section_with_student in other_sections_with_student:
+            student_names = these_students_in_other_sections.get(section_with_student, [])
+            student_names.append(student.name)
+            these_students_in_other_sections[section_with_student] = student_names
+
+    return these_students_in_other_sections
+
+
 def section(request, section_id):
     section = Section.objects.get(id=int(section_id))
-    students = section.student_set.all().order_by('name')
+    students_in_this_section = section.student_set.all().order_by('name')
 
-    students_by_section = {}
-    for student in students:
-        for stusec in student.sections.exclude(id=section.id):
-            student_names = students_by_section.get(stusec, [])
-            student_names.append(student.name)
-            students_by_section[stusec] = student_names
+    these_students_in_other_sections = _these_students_in_other_sections(section.id, students_in_this_section)
 
-    class SectionStudents:
+    class StudentsInSection:
         def __init__(self, section, student_names):
             self.section = section
             self.student_names = ', '.join(sorted(student_names))
 
-    section_studentses = [SectionStudents(section, student_names)
-        for section, student_names in students_by_section.items() if len(student_names) > 1]
-    section_studentses.sort(key=lambda ss: ss.section.start_time)
+    students_in_sections = [StudentsInSection(section, student_names)
+        for section, student_names in these_students_in_other_sections.items() if len(student_names) > 1]
+    students_in_sections.sort(key=lambda ss: ss.section.start_time)
 
     return render(request, 'app/section.html',
-        {'section': section, 'students': students, 'overlaps': section_studentses})
+        {'section': section, 'students': students_in_this_section, 'overlaps': students_in_sections})
 
 
 class Login(View):
