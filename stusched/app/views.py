@@ -1,4 +1,3 @@
-from datetime import datetime
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -14,9 +13,6 @@ class ScheduledCourse(object):
         self.name = name
         self.url = url
         self.sections = sections
-
-    def __str__(self, *args, **kwargs):
-        return self.name + ' ' + self.description
 
 
 class Index(View):
