@@ -18,11 +18,17 @@ class ParentAdmin(admin.ModelAdmin):
     inlines = [StudentInline]
 
 
+class KnowsInline(admin.TabularInline):
+    model = Knows
+    extra = 0
+
+
 class StudentAdmin(admin.ModelAdmin):
     list_display = ('name', 'active', 'parent', 'birthdate', 'age', 'grade', 'notes', 'private_notes',
                     'sections_taken', 'courses_wanted', 'when_available')
     ordering = ('name',)
     search_fields = ('name',)
+    inlines = [KnowsInline]
 
 
 class SectionAdmin(admin.ModelAdmin):
