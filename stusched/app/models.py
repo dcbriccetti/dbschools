@@ -50,6 +50,14 @@ class Parent(models.Model):
     def __str__(self):
         return self.name.__str__()
 
+    def user(self):
+        return ', '.join((user.username for user in self.users.all()))
+
+    def active(self):
+        return self.student_set.filter(active=True).count() > 0
+
+    active.boolean = True
+
 
 class Student(models.Model):
     name            = models.CharField(max_length=100)
