@@ -1,5 +1,5 @@
 #drawing {
-    height: 350px;
+    height: 425px;
     margin-bottom: 1em;
 }
 .period {
@@ -8,7 +8,8 @@
     padding: .1em;
 }
 .period p {
-    font-size: 80%;
+    font-size: 150%;
+    font-weight: 400;
     margin: 0;
     position: absolute;
     top: 50%;
@@ -18,11 +19,11 @@
 }
 .dayTitle {
     position: absolute;
-    font-size: 80%;
+    font-size: 125%;
 }
 .perTime {
     position: absolute;
-    font-size: 60%;
+    font-size: 80%;
 }
 .currentCell {
     border: thin solid black;

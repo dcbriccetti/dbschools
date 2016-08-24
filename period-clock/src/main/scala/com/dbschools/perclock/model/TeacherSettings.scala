@@ -7,9 +7,9 @@ object TeacherSettings {
 
   val DefaultSettings = (DefaultPeriodNames, DefaultFillColors, DefaultTextColors)
   val MusicSettings = (
-    "Bronze |Silver|Gold |Cadet 4|Cadet 5|Chorus/Str.|Orchestra",
-    "#CD7F32 silver gold  indigo  blue    yellow      green",
-    "black  black   black white   white   black       white"
+    "Bronze |Silver|Symph.|Cadet 4|Cadet 5|Chrs./Str.|Orch.",
+    "#CD7F32 silver gold   indigo  blue    yellow     green",
+    "black  black   black  white   white   black      white"
     )
   val PredefinedSettings = Map(
     "bathayde" -> MusicSettings,

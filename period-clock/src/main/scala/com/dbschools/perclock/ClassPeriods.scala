@@ -86,8 +86,8 @@ object ClassPeriods extends js.JSApp {
 
     val drawing = byId("drawing")
     val XPad = 15 // todo Find how to get main’s padding
-    val Height = 350
-    val TopMargin = 20
+    val Height = 425
+    val TopMargin = 26
     val ColMargin = 8
 
     val firstStartMs = Periods.week.map(_.map(_.startMs).min).min
@@ -135,7 +135,7 @@ object ClassPeriods extends js.JSApp {
             labeledStartTimes += per.startMs
           }
           if (! labeledEndTimes.contains(per.endMs)) {
-            drawing.appendChild(createTextDiv(per.formattedEnd, labelX, yEnd - 11, "perTime", color = textColor))
+            drawing.appendChild(createTextDiv(per.formattedEnd, labelX, yEnd - 15, "perTime", color = textColor))
             labeledEndTimes += per.endMs
           }
         })
