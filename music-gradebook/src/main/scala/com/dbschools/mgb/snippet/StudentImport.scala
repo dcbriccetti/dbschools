@@ -17,7 +17,7 @@ import model.{Cache, Terms}
  */
 class StudentImport {
   private val log = Logger.getLogger(getClass)
-  private val importTerm = Terms.nextTerm
+  private val importTerm = Terms.currentTerm
 
   def render = {
     var data = ""
@@ -31,7 +31,7 @@ class StudentImport {
       val musicianGroupsByMusicianIdCurrentTerm = m(Terms.currentTerm)
       val insts = AppSchema.instruments.map(i => i.id -> i).toMap
       val UnassignedInstrumentId = insts.values.find(_.name.get == "Unassigned").get // OK to fail
-      val InsertToGroup = 3
+      val InsertToGroup = 15
 
       val students = data.split("\n").map(_.trim.split("\t"))
 
@@ -49,9 +49,11 @@ class StudentImport {
           (newM, true)
         }
 
+        val musicianId = musician.musician_id.get
+
         val instrumentId = (
           for {
-            musicianGroups <- musicianGroupsByMusicianIdCurrentTerm.get(musician.musician_id.get)
+            musicianGroups <- musicianGroupsByMusicianIdCurrentTerm.get(musicianId)
             distinctInstrumentIds = musicianGroups.map(_.instrument_id).toSeq.distinct
             if distinctInstrumentIds.size == 1
           } yield insts(distinctInstrumentIds.head)
@@ -59,14 +61,14 @@ class StudentImport {
 
         val newGroupId = (
           for {
-            musicianGroups <- musicianGroupsByMusicianIdCurrentTerm.get(musician.musician_id.get)
+            musicianGroups <- musicianGroupsByMusicianIdCurrentTerm.get(musicianId)
             groupIds = musicianGroups.map(_.group_id).toSeq.distinct
             if groupIds.size == 1
           } yield groupIds.head
           ) | InsertToGroup
 
-        val alreadyAssigned = musicianGroupsByMusicianIdImportTerm.get(musician.musician_id.get).
-          map(_.exists(_.group_id == newGroupId)) | false
+        val groups = musicianGroupsByMusicianIdImportTerm.get(musicianId).toSeq.flatten
+        val alreadyAssigned = groups.exists(_.group_id == newGroupId)
         if (!alreadyAssigned) {
           AppSchema.musicianGroups.insert(MusicianGroup(0, musician.id, newGroupId, instrumentId.id, importTerm))
         }
