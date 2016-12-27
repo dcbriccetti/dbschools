@@ -63,7 +63,7 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       ".grade"              #> Terms.graduationYearAsGrade(m.graduation_year.get) &
       ".stuId"              #> m.permStudentId.toString() &
       "#lastPiece *"        #> StudentDetails.lastPiece(lastPassFinder, m.id) &
-      "#numberPassed *"     #> ~Cache.numPassesThisTermByMusician.get(m.id) &
+      "#numberPassed *"     #> ~Cache.selectedTestingStatsByMusician(m.id).map(_.totalPassed) &
       "#callNextAfter"      #> minutesSelector &
       "#callNow"            #> callNowButton &
       "#inQueue"            #> (if (testingState.enqueuedMusicians.exists(m.id)) PassThru else ClearNodes)

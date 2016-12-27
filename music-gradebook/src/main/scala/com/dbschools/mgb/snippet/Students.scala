@@ -205,13 +205,13 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
       val now = DateTime.now
       groupAssignments.map(row => {
         val lastAsmtTime = lastAssTimeByMusician.get(row.musician.id)
-        val opStats = Cache.testingStatsByMusician(row.musician.id,
-          if (svStatsDisplay.is == StatsDisplay.Term) Some(Cache.currentMester) else none[DateTime])
-        val passed  = ~opStats.map(_.totalPassed)
-        val failed  = ~opStats.map(_.totalFailed)
-        val passedX = ~opStats.map(_.outsideClassPassed)
-        val failedX = ~opStats.map(_.outsideClassFailed)
-        val inClassDaysTested = ~opStats.map(_.inClassDaysTested)
+        val opStats = Cache.selectedTestingStatsByMusician(row.musician.id)
+        def stat(fn: TestingStats => Int) = ~opStats.map(fn)
+        val passed  = stat(_.totalPassed)
+        val failed  = stat(_.totalFailed)
+        val passedX = stat(_.outsideClassPassed)
+        val failedX = stat(_.outsideClassFailed)
+        val inClassDaysTested = stat(_.inClassDaysTested)
         def bz /* blank if zero */[A](value: A) = if (value == 0) "" else value.toString
         val passingImprovement =
           for {
@@ -228,7 +228,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         ".instr    *" #> row.instrument.name.get &
         ".passed *"           #> bz(passed) &
         ".failed *"           #> bz(failed) &
-        ".passedPct *"        #> s"${~opStats.map(_.percentPassed)}%" &
+        ".passedPct *"        #> s"${stat(_.percentPassed)}%" &
         ".passedX *"          #> bz(passedX) &
         ".failedX *"          #> bz(failedX) &
         ".inClassDaysTested *" #> bz(inClassDaysTested) &
@@ -237,7 +237,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         ".passGraph [width]"  #> PassChart.PassGraphWidth &
         ".passGraph [height]" #> PassChart.PassGraphHeight &
         ".lastAss  *"   #> ~lastAsmtTime.map(fmt.print) &
-        ".passStreak *" #> ~opStats.map(_.longestPassingStreakTimes.size) &
+        ".passStreak *" #> stat(_.longestPassingStreakTimes.size) &
         ".passingImprovement *" #> passingImprovement &
         ".daysSince *"  #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
         ".lastPass *"   #> formatLastPasses(row)
@@ -325,13 +325,3 @@ trait Photos {
   def img(permId: Long) = pictureFilename(permId).map(fnr =>
     <img src={fnr} title={s"<img style='width: 172px;' src='$fnr'/>"}/>) getOrElse NodeSeq.Empty
 }
-
-object svSortingStudentsBy extends SessionVar[SortStudentsBy.Value](SortStudentsBy.Name)
-
-object svPicturesDisplay extends SessionVar[PicturesDisplay.Value](PicturesDisplay.Small)
-
-object svSelectors extends SessionVar[Selectors](new Selectors())
-
-object svGroupAssignments extends SessionVar[Seq[GroupAssignment]](Nil)
-
-object svStatsDisplay extends SessionVar[StatsDisplay.Value](StatsDisplay.Term)

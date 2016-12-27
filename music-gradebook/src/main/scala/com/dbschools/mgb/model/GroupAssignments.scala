@@ -3,6 +3,7 @@ package model
 
 import org.apache.log4j.Logger
 import org.squeryl.PrimitiveTypeMode._
+import org.squeryl.Query
 import scalaz._
 import Scalaz._
 import schema.{AppSchema, Instrument}
@@ -10,7 +11,7 @@ import schema.Group
 import schema.Musician
 import schema.MusicianGroup
 import org.joda.time.DateTime
-import snippet.{svSortingStudentsBy, svSelectors}
+import snippet.{svSelectors, svSortingStudentsBy}
 import Cache.lastAssTimeByMusician
 
 case class GroupAssignment(musician: Musician, group: Group, musicianGroup: MusicianGroup, instrument: Instrument)
@@ -24,7 +25,7 @@ object GroupAssignments extends UserLoggable {
     opSelectedGroupId:      Option[Int] = None,
     opSelectedInstrumentId: Option[Int] = None,
     opTesting:              Option[Boolean] = None
-  ) = {
+  ): Query[GroupAssignment] = {
     import AppSchema._
     val rows = join(musicians, musicianGroups, groups, instruments)((m, mg, g, i) =>
       where(
@@ -45,14 +46,14 @@ object GroupAssignments extends UserLoggable {
     rows
   }
 
-  def assignments = {
+  def assignments: Seq[GroupAssignment] = {
     val group = svSelectors.selectedGroupId
     val opTesting = if (group.isAll) Some(true) else None
     GroupAssignments(None, svSelectors.selectedTerm.rto, group.rto,
       svSelectors.selectedInstId.rto, opTesting).toSeq.sortBy(_.musicianGroup.school_year)
   }
 
-  def sorted(lastPassesByMusician: Map[Int, Iterable[LastPass]]) = {
+  def sorted(lastPassesByMusician: Map[Int, Iterable[LastPass]]): Seq[GroupAssignment] = {
     val longAgo = new DateTime("1000-01-01").toDate
     val selected = assignments
 
@@ -70,15 +71,11 @@ object GroupAssignments extends UserLoggable {
           } yield highestLastPass.testOrder)
         selected.sortBy(ga => -pos(ga.musician.id))
       case SortStudentsBy.NumPassed =>
-        val np = Cache.numPassesThisTermByMusician
-        def pos(id: Int) = ~np.get(id)
-        selected.sortBy(ga => -pos(ga.musician.id))
+        selected.sortBy(ga => -(~Cache.selectedTestingStatsByMusician(ga.musician.id).map(_.totalPassed)))
       case SortStudentsBy.PctPassed =>
-        def pos(id: Int) = ~Cache.testingStatsByMusician(id).map(_.percentPassed)
-        selected.sortBy(ga => -pos(ga.musician.id))
+        selected.sortBy(ga => -(~Cache.selectedTestingStatsByMusician(ga.musician.id).map(_.percentPassed)))
       case SortStudentsBy.Streak =>
-        def pos(id: Int) = ~Cache.testingStatsByMusician(id).map(_.longestPassingStreakTimes.size)
-        selected.sortBy(ga => -pos(ga.musician.id))
+        selected.sortBy(ga => -(~Cache.selectedTestingStatsByMusician(ga.musician.id).map(_.longestPassingStreakTimes.size)))
     }
   }
   

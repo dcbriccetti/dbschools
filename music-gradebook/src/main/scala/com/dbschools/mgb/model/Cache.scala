@@ -11,6 +11,7 @@ import Scalaz._
 import Terms.{currentTerm, termStart, toTs}
 import schema._
 import Cache.TrendInfo
+import com.dbschools.mgb.snippet.svStatsDisplay
 import net.liftweb.util.Props
 import org.joda.time.format.ISODateTimeFormat
 
@@ -51,6 +52,9 @@ object Cache {
   def testingStatsByMusician(musicianId: Int, opDateTime: Option[DateTime] = None): Option[TestingStats] =
     testingStatsByMusician.get(musicianId).flatMap(_.get(opDateTime))
 
+  def selectedTestingStatsByMusician(musicianId: Int) = testingStatsByMusician(musicianId,
+    if (svStatsDisplay.is == StatsDisplay.Term) Some(Cache.currentMester) else none[DateTime])
+
   private var _lastAssTimeByMusician = inT(for {
     gm <- from(AppSchema.assessments)(a => groupBy(a.musician_id) compute max(a.assessment_time))
     m <- gm.measures
@@ -60,20 +64,6 @@ object Cache {
   def updateLastAssTime(musicianId: Int, time: DateTime): Unit = {
     _lastAssTimeByMusician += musicianId -> time
     updateNumDaysTestedThisYearByMusician(musicianId)
-  }
-
-  private var _numPassesThisTermByMusician = inT(for {
-    gm <- from(AppSchema.assessments)(a =>
-      where(a.pass === true and a.assessment_time > toTs(termStart(currentTerm)))
-      groupBy a.musician_id
-      compute count(a.assessment_time)
-    )
-    m = gm.measures
-  } yield gm.key -> m.toInt).toMap
-
-  def numPassesThisTermByMusician: Map[Int, Int] = _numPassesThisTermByMusician
-  def incrementNumPassesThisTermByMusician(musicianId: Int): Unit = {
-    _numPassesThisTermByMusician += musicianId -> (_numPassesThisTermByMusician.getOrElse(musicianId, 0) + 1)
   }
 
   private def numDaysTestedThisYear(musicianId: Option[Int]) = inT {

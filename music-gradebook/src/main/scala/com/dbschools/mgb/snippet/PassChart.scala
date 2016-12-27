@@ -40,7 +40,7 @@ object PassChart extends ChartFeatures {
 
       JsRaw(ga.map {
         case (mid, tests) =>
-          val streakTimes = (Cache.testingStatsByMusician(mid).map(_.longestPassingStreakTimes) getOrElse Seq()).toSet
+          val streakTimes = (Cache.selectedTestingStatsByMusician(mid).map(_.longestPassingStreakTimes) getOrElse Seq()).toSet
           val stests = tests.filter(_.pass).toSeq.sortBy(_.assessment_time.getTime)
           var np = 0
           val points = stests.map(test => {
