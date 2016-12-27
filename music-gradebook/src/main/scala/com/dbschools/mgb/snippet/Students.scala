@@ -4,7 +4,7 @@ package snippet
 import java.io.File
 import java.text.NumberFormat
 
-import xml.{NodeSeq, Text}
+import xml.{Node, NodeSeq, Text}
 import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
@@ -14,15 +14,15 @@ import net.liftweb._
 import common.{Full, Loggable}
 import util._
 import Helpers._
-import http.{LiftRules, SessionVar, SHtml}
+import http.{LiftRules, SHtml, SessionVar}
 import http.provider.servlet.HTTPServletContext
-import SHtml.{ElemAttr, text, number, onSubmitUnit, ajaxRadio, ajaxButton, ajaxCheckbox, link}
+import SHtml.{ElemAttr, ajaxButton, ajaxCheckbox, ajaxRadio, link, number, onSubmitUnit, text}
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JsCmds.Replace
 import net.liftweb.http.js.JE.JsRaw
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
-import schema.{Musician, AppSchema}
+import schema.{AppSchema, Musician}
 import model._
 import model.TestingManagerMessages._
 import Cache.lastAssTimeByMusician
@@ -60,6 +60,14 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
     val choices = Seq(PicturesDisplay.None, PicturesDisplay.Small, PicturesDisplay.Large)
     ajaxRadio[PicturesDisplay.Value](choices, Full(svPicturesDisplay.is), (s) => {
       svPicturesDisplay(s)
+      replaceContents
+    }).flatMap(item => <label style="margin-right: .5em;">{item.xhtml} {item.key.toString} </label>)
+  }
+
+  def statsDisplay: Seq[Node] = {
+    val choices = Seq(StatsDisplay.Term, StatsDisplay.Year)
+    ajaxRadio[StatsDisplay.Value](choices, Full(svStatsDisplay.is), (s) => {
+      svStatsDisplay(s)
       replaceContents
     }).flatMap(item => <label style="margin-right: .5em;">{item.xhtml} {item.key.toString} </label>)
   }
@@ -152,7 +160,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
       selector("moveToGroupSelector", groupsWithoutAll, moveToGroup, s => moveToGroup = s, None, disables: _*)
     }
 
-    def makeDrawCharts = PassChart.create(groupAssignments)
+    def makeDrawCharts = PassChart.create(groupAssignments, svStatsDisplay.is == StatsDisplay.Term)
 
     (if (selectors.selectedTerm   .value.isRight) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.selectedGroupId.value.isRight) ".group"   #> none[String] else PassThru) andThen (
@@ -197,9 +205,14 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
       val now = DateTime.now
       groupAssignments.map(row => {
         val lastAsmtTime = lastAssTimeByMusician.get(row.musician.id)
-        val passedThisTerm = ~Cache.numPassesThisTermByMusician.get(row.musician.id)
-        val numDays = ~Cache.numDaysTestedThisYearByMusician.get(row.musician.id)
-        val opStats = Cache.testingStatsByMusician.get(row.musician.id)
+        val opStats = Cache.testingStatsByMusician(row.musician.id,
+          if (svStatsDisplay.is == StatsDisplay.Term) Some(Cache.currentMester) else none[DateTime])
+        val passed  = ~opStats.map(_.totalPassed)
+        val failed  = ~opStats.map(_.totalFailed)
+        val passedX = ~opStats.map(_.outsideClassPassed)
+        val failedX = ~opStats.map(_.outsideClassFailed)
+        val inClassDaysTested = ~opStats.map(_.inClassDaysTested)
+        def bz /* blank if zero */[A](value: A) = if (value == 0) "" else value.toString
         val passingImprovement =
           for {
             stats <- opStats
@@ -213,10 +226,13 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.get) &
         ".group    *" #> row.group.name &
         ".instr    *" #> row.instrument.name.get &
-        ".passedThisTerm *"           #> passedThisTerm &
-        ".daysTestedThisTerm *"       #> numDays &
-        ".avgPassedPerDayThisTerm *"  #> (if (numDays == 0) "" else nfmt.format(passedThisTerm.toFloat / numDays)) &
-        ".passedPct *"  #> s"${~opStats.map(_.percentPassed)}%" &
+        ".passed *"           #> bz(passed) &
+        ".failed *"           #> bz(failed) &
+        ".passedPct *"        #> s"${~opStats.map(_.percentPassed)}%" &
+        ".passedX *"          #> bz(passedX) &
+        ".failedX *"          #> bz(failedX) &
+        ".inClassDaysTested *" #> bz(inClassDaysTested) &
+        ".avgPassedPerDay *"  #> (if (inClassDaysTested == 0) "" else nfmt.format(passed.toFloat / inClassDaysTested)) &
         ".passGraph [id]"     #> s"pg${row.musician.id}" &
         ".passGraph [width]"  #> PassChart.PassGraphWidth &
         ".passGraph [height]" #> PassChart.PassGraphHeight &
@@ -317,3 +333,5 @@ object svPicturesDisplay extends SessionVar[PicturesDisplay.Value](PicturesDispl
 object svSelectors extends SessionVar[Selectors](new Selectors())
 
 object svGroupAssignments extends SessionVar[Seq[GroupAssignment]](Nil)
+
+object svStatsDisplay extends SessionVar[StatsDisplay.Value](StatsDisplay.Term)

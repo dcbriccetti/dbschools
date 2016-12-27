@@ -38,7 +38,8 @@ libraryDependencies ++= {
     "org.scala-tools.time" % "time_2.9.1"       % "0.5",
     "com.jolbox"        %  "bonecp"             % "0.7.1.RELEASE", // connection pooling
     "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.2",
-    "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.2"
+    "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.2",
+    "org.scalatest"     %% "scalatest"          % "3.0.0"
   )
 }
 

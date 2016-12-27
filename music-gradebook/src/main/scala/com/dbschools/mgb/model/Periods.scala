@@ -4,21 +4,22 @@ import org.scala_tools.time.Imports._
 
 object Periods {
   case class SimpleTime(hour: Int, minute: Int) {
-    def toDateTime = DateTime.now.withTimeAtStartOfDay.withHourOfDay(hour).withMinuteOfHour(minute)
+    def toDateTime(dateTime: DateTime = DateTime.now): DateTime =
+      dateTime.withTimeAtStartOfDay.withHourOfDay(hour).withMinuteOfHour(minute)
   }
   sealed trait TimeClass
   object InSpecialSchedule extends TimeClass
   object NotInPeriod extends TimeClass
 
   case class Period(num: Int, start: SimpleTime, end: SimpleTime) extends TimeClass {
-    def within(t: DateTime) = start.toDateTime.millis <= t.millis && t.millis < end.toDateTime.millis
-    def timeRemainingMs = end.toDateTime.millis - DateTime.now.millis
-    def totalSecs = (end.toDateTime.millis - start.toDateTime.millis) / 1000
-    def timePassedSecs = (DateTime.now.millis - start.toDateTime.millis) / 1000
-    def startMs = start.toDateTime.millis
-    def endMs = end.toDateTime.millis
+    def within(t: DateTime): Boolean = start.toDateTime(t).millis <= t.millis && t.millis < end.toDateTime(t).millis
+    def timeRemainingMs: Long = end.toDateTime().millis - DateTime.now.millis
+    def totalSecs: Long = (end.toDateTime().millis - start.toDateTime().millis) / 1000
+    def timePassedSecs: Long = (DateTime.now.millis - start.toDateTime().millis) / 1000
+    def startMs: Long = start.toDateTime().millis
+    def endMs: Long = end.toDateTime().millis
 
-    def formatted = {
+    def formatted: String = {
       def fh(h: Int) = (if (h > 12) h - 12 else h).toString
       def fm(m: Int) = f"$m%02d"
 
@@ -81,11 +82,11 @@ object Periods {
   
   private val week = Vector(monFri, tue, wed, thu, monFri)
 
-  def periodWithin: TimeClass = if (testingState.specialSchedule) InSpecialSchedule else
-    periodsToday.find(_.within(DateTime.now)) getOrElse NotInPeriod
-
-  private def periodsToday = DateTime.now.getDayOfWeek match {
-    case d if d >= 1 && d <= 5 => week(d - 1)
-    case _                     => week.head // Use Monday for out of range
+  def periodWithin(dateTime: DateTime = DateTime.now): TimeClass = {
+    val dayOfWeek = dateTime.getDayOfWeek
+    if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+      val periods = week(dayOfWeek - 1)
+      periods.find(_.within(dateTime)) getOrElse NotInPeriod
+    } else NotInPeriod
   }
 }

@@ -5,10 +5,12 @@ import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
-import schema.{Musician, AssessmentTag, AppSchema}
+import schema.{AppSchema, AssessmentTag, Musician}
 
 case class AssessmentRow(assId: Int, date: DateTime, musician: Musician, tester: String, piece: String,
-  instrument: String, subinstrument: Option[String], pass: Boolean, notes: Option[String])
+  instrument: String, subinstrument: Option[String], pass: Boolean, notes: Option[String]) {
+  val outsideClass: Boolean = ! Periods.periodWithin(date).isInstanceOf[Periods.Period]
+}
 
 object AssessmentRows {
   import AppSchema.{musicians, assessments, pieces, instruments, subinstruments, users}
@@ -19,7 +21,8 @@ object AssessmentRows {
         where(a.musician_id === opMusicianId.?)
         select AssessmentRow(a.id,
           new DateTime(a.assessment_time.getTime), m, u.last_name, p.name.get, i.name.get,
-          s.map(_.name.get), a.pass, opStr(a.notes))
+          s.map(_.name.get), a.pass,
+          opStr(a.notes))
         orderBy (a.assessment_time.desc)
         on(
           a.musician_id       === m.id,

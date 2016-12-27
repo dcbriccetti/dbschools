@@ -1,6 +1,8 @@
 package com.dbschools.mgb
 package snippet
 
+import scalaz._
+import Scalaz._
 import net.liftweb.http.js.JE.JsRaw
 import net.liftweb.http.js.JsCmd
 import net.liftweb.http.js.JsCmds._
@@ -21,11 +23,11 @@ object PassChart extends ChartFeatures {
   val PassGraphWidth = 100
   val PassGraphHeight = 50
 
-  def create(groupAssignments: Iterable[GroupAssignment]) = {
+  def create(groupAssignments: Iterable[GroupAssignment], onlyCurrentTerm: Boolean) = {
     val mids = groupAssignments.map(_.musician.id).toSet
     Script(if (mids.isEmpty) Noop
     else {
-      val curTermStart = Terms.termStart(Terms.currentTerm)
+      val curTermStart = onlyCurrentTerm ? Cache.currentMester | Terms.termStart(Terms.currentTerm)
       val q = AppSchema.assessments.where(a => a.musician_id in mids and a.assessment_time > toTs(curTermStart))
       val ga = q.groupBy(_.musician_id)
       val now = DateTime.now
@@ -38,7 +40,7 @@ object PassChart extends ChartFeatures {
 
       JsRaw(ga.map {
         case (mid, tests) =>
-          val streakTimes = (Cache.testingStatsByMusician.get(mid).map(_.longestPassingStreakTimes) getOrElse Seq()).toSet
+          val streakTimes = (Cache.testingStatsByMusician(mid).map(_.longestPassingStreakTimes) getOrElse Seq()).toSet
           val stests = tests.filter(_.pass).toSeq.sortBy(_.assessment_time.getTime)
           var np = 0
           val points = stests.map(test => {

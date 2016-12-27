@@ -41,7 +41,7 @@ class Testing extends SelectedMusician with Photos {
       val m = sm.musician
       val opInstrumentName = Cache.instruments.find(_.id == sm.instrumentId).map(_.name.get)
       val formattedTime = ~timeUntilCall.map(t => Testing.formatter.print(t.toPeriod))
-      val opStats = Cache.testingStatsByMusician.get(m.id)
+      val opStats = Cache.testingStatsByMusician(m.id)
       val streaks = for {
         stats <- opStats
         streak = stats.longestPassingStreakTimes.size
@@ -161,7 +161,7 @@ class Testing extends SelectedMusician with Photos {
     })
 
   def period =
-    model.Periods.periodWithin match {
+    model.Periods.periodWithin() match {
 
       case period: model.Periods.Period if Authenticator.opLoggedInUser.nonEmpty =>
 

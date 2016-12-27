@@ -33,7 +33,7 @@ class TestingManager extends Actor {
       TestingCometDispatcher ! UpdateQueueDisplay
       StudentCometDispatcher ! Next(called)
 
-      val periodNow = Periods.periodWithin
+      val periodNow = Periods.periodWithin()
       if (periodNow != lastPeriodValue) {
         lastPeriodValue = periodNow
         GeneralSettingsCometDispatcher ! ChangePeriodElements
@@ -150,7 +150,7 @@ class TestingManager extends Actor {
 
   private def inQueueServiceTime = {
     val Minutes = 1000 * 60
-    Periods.periodWithin match {
+    Periods.periodWithin() match {
       case period: Periods.Period => period.timeRemainingMs > Minutes * 3
       case NotInPeriod            => false
       case InSpecialSchedule      => true

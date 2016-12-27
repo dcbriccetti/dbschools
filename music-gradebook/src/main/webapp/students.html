@@ -12,6 +12,7 @@
     <div style="margin-top: .8em;">
         Sort by: <span data-lift="Students.sortBy"></span>
         <label style="margin-left: 3em;">Pictures: <span data-lift="Students.picturesDisplay"></span></label>
+        <label style="margin-left: 3em;">Stats: <span data-lift="Students.statsDisplay"></span></label>
     </div>
 
     <script language="JavaScript">
@@ -83,10 +84,13 @@
                 <th title="Grade">Gr</th>
                 <th class="group">Group</th>
                 <th class="instr">Instrument</th>
-                <th title="In this term, the number passed">Pass</th>
+                <th title="The total number of tests passed">Pass</th>
+                <th title="The total number of tests failed">Fail</th>
                 <th title="Percentage of tests passed">%</th>
-                <th title="In this term, the number of days tested">Days</th>
-                <th title="In this term, the average passes per day tested">Avg</th>
+                <th title="The number of outside-class tests passed">OP</th>
+                <th title="The number of outside-class tests failed">OF</th>
+                <th title="The number of in-class days tested (those days during which the student was tested during class time)">Days</th>
+                <th title="The number of passes divided by the number of in-class days tested">P/D</th>
                 <th title="Most consecutive passes (streak)">Str</th>
                 <th>Passes over Time</th>
                 <th title="Slope of regression line for recent passes per day" style="text-align: center;" >⇧</th>
@@ -104,10 +108,13 @@
                 <td style="text-align: right" class="grade"/>
                 <td class="group"/>
                 <td class="instr"/>
-                <td style="text-align: right;" class="passedThisTerm"/>
+                <td style="text-align: right;" class="passed"/>
+                <td style="text-align: right;" class="failed"/>
                 <td style="text-align: right;" class="passedPct"/>
-                <td style="text-align: right;" class="daysTestedThisTerm"/>
-                <td style="text-align: right;" class="avgPassedPerDayThisTerm"/>
+                <td style="text-align: right;" class="passedX"/>
+                <td style="text-align: right;" class="failedX"/>
+                <td style="text-align: right;" class="inClassDaysTested"/>
+                <td style="text-align: right;" class="avgPassedPerDay"/>
                 <td style="text-align: right;" class="passStreak"/>
                 <td><canvas class="passGraph"></canvas></td>
                 <td style="text-align: right;" class="passingImprovement"/>

@@ -74,10 +74,10 @@ object GroupAssignments extends UserLoggable {
         def pos(id: Int) = ~np.get(id)
         selected.sortBy(ga => -pos(ga.musician.id))
       case SortStudentsBy.PctPassed =>
-        def pos(id: Int) = ~Cache.testingStatsByMusician.get(id).map(_.percentPassed)
+        def pos(id: Int) = ~Cache.testingStatsByMusician(id).map(_.percentPassed)
         selected.sortBy(ga => -pos(ga.musician.id))
       case SortStudentsBy.Streak =>
-        def pos(id: Int) = ~Cache.testingStatsByMusician.get(id).map(_.longestPassingStreakTimes.size)
+        def pos(id: Int) = ~Cache.testingStatsByMusician(id).map(_.longestPassingStreakTimes.size)
         selected.sortBy(ga => -pos(ga.musician.id))
     }
   }

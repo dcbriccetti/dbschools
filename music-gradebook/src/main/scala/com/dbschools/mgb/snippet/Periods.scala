@@ -13,7 +13,7 @@ class Periods {
 
 object Periods {
   def js =
-    model.Periods.periodWithin match {
+    model.Periods.periodWithin() match {
       case p: Period =>
         val warnBellMins = Props.getInt("warnBellMins") getOrElse 0
         JsRaw(s"Periods.warnBellMins = $warnBellMins") &

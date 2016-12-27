@@ -71,6 +71,7 @@ object Assessments {
       rows.map(ar =>
         ".sel         *"  #> selectionCheckbox(ar) &
         ".date        *"  #> AbbrevDate(ar.date) &
+        ".extra       *"  #> (if (ar.outsideClass) "✔︎" else "") &
         ".tester      *"  #> ar.tester &
         ".student     *"  #> ar.musician.nameNickLast &
         ".piece [class]"  #> (if (ar.pass) "pass" else "fail") &
