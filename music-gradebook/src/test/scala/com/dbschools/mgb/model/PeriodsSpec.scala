@@ -12,7 +12,6 @@ class PeriodsSpec extends FunSpec with Matchers with TableDrivenPropertyChecks {
         ("DateTime", "Period"),
         ("2016-12-01T00:00:00", None: Option[Int]),
         ("2016-12-05T08:15:00", Some(1))
-        ("2016-12-05T08:15:00", Some(1))
       )
       forAll (table) { (dateTimeString: String, opPeriod: Option[Int]) =>
         val dateTime = ISODateTimeFormat.dateTimeParser.parseDateTime(dateTimeString)
