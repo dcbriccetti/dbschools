@@ -10,9 +10,12 @@
         <span><span data-lift="Students.createNew"/><span id="create"></span></span>
     </div>
     <div style="margin-top: .8em;">
-        Sort by: <span data-lift="Students.sortBy"></span>
-        <label style="margin-left: 3em;">Pictures: <span data-lift="Students.picturesDisplay"></span></label>
-        <label style="margin-left: 3em;">Stats: <span data-lift="Students.statsDisplay"></span></label>
+        <span style="white-space:nowrap; margin-right: 1em;"><label>Sort by:</label>
+            <span data-lift="Students.sortBy"></span></span>
+        <span style="white-space:nowrap;margin-right: 1em;"><label>Pictures:</label>
+            <span data-lift="Students.picturesDisplay"></span></span>
+        <span style="white-space:nowrap;margin-right: 1em;"><label>Stats:</label>
+            <span data-lift="Students.statsDisplay"></span></span>
     </div>
 
     <script language="JavaScript">
@@ -73,6 +76,7 @@
                 <span id="moveToGroupSelector"></span>
             </span>
             <a title="Learn student names and faces" class="btn btn-default" href="learnStudents" role="button">Learn</a>
+            <span id="export" class="btn btn-default" title="Export student data to a spreadsheet"></span>
         </div>
         <table id='studentsTable' class="table table-condensed autoWidth">
             <thead>

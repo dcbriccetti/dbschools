@@ -4,7 +4,7 @@ package snippet
 import java.io.File
 import java.text.NumberFormat
 
-import xml.{Node, NodeSeq, Text}
+import xml.{Elem, Node, NodeSeq, Text}
 import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
@@ -14,7 +14,7 @@ import net.liftweb._
 import common.{Full, Loggable}
 import util._
 import Helpers._
-import http.{LiftRules, SHtml, SessionVar}
+import http.{LiftRules, S, SHtml}
 import http.provider.servlet.HTTPServletContext
 import SHtml.{ElemAttr, ajaxButton, ajaxCheckbox, ajaxRadio, link, number, onSubmitUnit, text}
 import net.liftweb.http.js.JsCmds._
@@ -37,12 +37,11 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
   }
 
   selectors.opCallback = Some(() => replaceContents)
-  def yearSelector = selectors.yearSelector
-  def groupSelector = selectors.groupSelector
-  def instrumentSelector = selectors.instrumentSelector
+  def yearSelector:       Elem = selectors.yearSelector
+  def groupSelector:      Elem = selectors.groupSelector
+  def instrumentSelector: Elem = selectors.instrumentSelector
 
-  private val lastPassFinder = new LastPassFinder()
-  private val lastPassesByMusician = lastPassFinder.lastPassed().groupBy(_.musicianId)
+  private val lastPassesByMusician = new LastPassFinder().lastPassed().groupBy(_.musicianId)
 
   def createNew = "#create" #> SHtml.link(ApplicationPaths.editStudent.href,
     () => svSelectedMusician(None), Text("New Student"))
@@ -92,7 +91,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
     "#save"      #> onSubmitUnit(() => saveStudent)
   }
 
-  def render = {
+  def render: (NodeSeq) => NodeSeq = {
     val fmt = DateTimeFormat.forStyle("S-")
 
     val groupAssignments = GroupAssignments.sorted(lastPassesByMusician)
@@ -160,6 +159,8 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
       selector("moveToGroupSelector", groupsWithoutAll, moveToGroup, s => moveToGroup = s, None, disables: _*)
     }
 
+    def exportButton = ajaxButton("Export", () => { S.redirectTo("export/students.xlsx") })
+
     def makeDrawCharts = PassChart.create(groupAssignments, svStatsDisplay.is == StatsDisplay.Term)
 
     (if (selectors.selectedTerm   .value.isRight) ".schYear" #> none[String] else PassThru) andThen (
@@ -175,6 +176,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
     "#clearSchedule"          #> clearScheduleButton &
     "#moveToGroup"            #> moveToGroupButton &
     "#moveToGroupSelector"    #> moveToGroupSelector &
+    "#export"                 #> exportButton &
     ".photoContainer"         #> {
       var lastId = -1
       val uniqMs = groupAssignments.map(_.musician).filter(m =>
@@ -208,11 +210,9 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         val opStats = Cache.selectedTestingStatsByMusician(row.musician.id)
         def stat(fn: TestingStats => Int) = ~opStats.map(fn)
         val passed  = stat(_.totalPassed)
-        val failed  = stat(_.totalFailed)
-        val passedX = stat(_.outsideClassPassed)
-        val failedX = stat(_.outsideClassFailed)
         val inClassDaysTested = stat(_.inClassDaysTested)
-        def bz /* blank if zero */[A](value: A) = if (value == 0) "" else value.toString
+        def bz /* blank if zero */[A](value: A) =
+          if (value == 0) "" else value.toString
         val passingImprovement =
           for {
             stats <- opStats
@@ -227,10 +227,10 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         ".group    *" #> row.group.name &
         ".instr    *" #> row.instrument.name.get &
         ".passed *"           #> bz(passed) &
-        ".failed *"           #> bz(failed) &
+        ".failed *"           #> bz(stat(_.totalFailed)) &
         ".passedPct *"        #> s"${stat(_.percentPassed)}%" &
-        ".passedX *"          #> bz(passedX) &
-        ".failedX *"          #> bz(failedX) &
+        ".passedX *"          #> bz(stat(_.outsideClassPassed)) &
+        ".failedX *"          #> bz(stat(_.outsideClassFailed)) &
         ".inClassDaysTested *" #> bz(inClassDaysTested) &
         ".avgPassedPerDay *"  #> (if (inClassDaysTested == 0) "" else nfmt.format(passed.toFloat / inClassDaysTested)) &
         ".passGraph [id]"     #> s"pg${row.musician.id}" &

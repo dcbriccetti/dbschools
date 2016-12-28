@@ -7,12 +7,12 @@ import common._
 import http._
 import sitemap._
 import Loc._
+import com.dbschools.mgb.ExportStudentsRestHelper
 import net.liftmodules.widgets.flot.Flot
 import net.liftmodules.FoBo
-
 import com.dbschools.mgb.model.Cache
 import com.dbschools.mgb.dbconn.Db
-import com.dbschools.mgb.snippet.{Photos, Authenticator}
+import com.dbschools.mgb.snippet.{Authenticator, Photos}
 
 class Boot {
   def boot(): Unit = {
@@ -90,6 +90,8 @@ class Boot {
 
     // Use HTML5 for rendering
     LiftRules.htmlProperties.default.set((r: Req) => new Html5Properties(r.userAgent))
+
+    List(ExportStudentsRestHelper).foreach(LiftRules.dispatch.append)
 
     Db.initialize()
     Cache.init()
