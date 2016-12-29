@@ -4,16 +4,15 @@ package model
 import org.apache.log4j.Logger
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.PrimitiveTypeMode.{inTransaction => inT}
-import org.joda.time.{DateTime, Days}
+import org.joda.time.DateTime
+import org.joda.time.format.ISODateTimeFormat
 
 import scalaz._
 import Scalaz._
+import net.liftweb.util.Props
 import Terms.{currentTerm, termStart, toTs}
 import schema._
-import Cache.TrendInfo
-import com.dbschools.mgb.snippet.svStatsDisplay
-import net.liftweb.util.Props
-import org.joda.time.format.ISODateTimeFormat
+import snippet.svStatsDisplay
 
 case class TestingStats(
   totalPassed:                Int,
@@ -24,7 +23,7 @@ case class TestingStats(
   outsideClassPassed:         Int,
   outsideClassFailed:         Int,
   longestPassingStreakTimes:  Seq[DateTime],
-  trendInfo:                  Option[TrendInfo]
+  opTestingImprovement:       Option[TestingImprovement]
 ) {
   def numTests: Int = totalPassed + totalFailed
   def percentPassed: Int = if (numTests == 0) 0 else math.round(totalPassed * 100.0 / numTests).toInt
@@ -93,25 +92,25 @@ object Cache {
   private def readPieces      = inT {AppSchema.pieces.toSeq.sortBy(_.testOrder.get)}
   private def readTempos      = inT {AppSchema.tempos.toSeq.sortBy(_.instrumentId)}
 
-  case class MusicianTimePass(id: Int, time: DateTime, pass: Boolean, duringClass: Boolean)
+  case class MusicianTestInfo(id: Int, time: DateTime, pass: Boolean, duringClass: Boolean)
 
   private def readTestingStats(opMusicianId: Option[Int] = None): Map[Int, Map[Option[DateTime], TestingStats]] = inT {
-    val testsByMusician: Map[Int, Iterable[MusicianTimePass]] =
+    val testsByMusician: Map[Int, Iterable[MusicianTestInfo]] =
       from(AppSchema.assessments)(a =>
       where(a.musician_id === opMusicianId.? and a.assessment_time > toTs(termStart(currentTerm)))
       select {
         val dateTime = new DateTime(a.assessment_time.getTime)
-        MusicianTimePass(a.musician_id, dateTime, a.pass,
+        MusicianTestInfo(a.musician_id, dateTime, a.pass,
           Periods.periodWithin(dateTime).isInstanceOf[Periods.Period])
       }
       orderBy(a.musician_id, a.assessment_time)).groupBy(_.id)
 
     log.info(s"terms: $terms")
-    val testsByMusicianByTerm: Map[Int, Map[Option[DateTime], Seq[MusicianTimePass]]] = testsByMusician.map {
-      case (musicianId, mtps) =>
-        val mtpsByTerm: Map[Option[DateTime], Seq[MusicianTimePass]] =
-          mtps.toSeq.groupBy { mtp => Some(terms.find(_.getMillis < mtp.time.getMillis).get) }
-        musicianId -> mtpsByTerm
+    val testsByMusicianByTerm: Map[Int, Map[Option[DateTime], Seq[MusicianTestInfo]]] = testsByMusician.map {
+      case (musicianId, mtis) =>
+        val mtisByTerm: Map[Option[DateTime], Seq[MusicianTestInfo]] =
+          mtis.toSeq.groupBy { mtp => Some(terms.find(_.getMillis < mtp.time.getMillis).get) }
+        musicianId -> mtisByTerm
     }
 
     testsByMusicianByTerm.map {
@@ -127,12 +126,12 @@ object Cache {
     }
   }
 
-  private def statsForMtps(mtps: Iterable[MusicianTimePass]) = {
+  private def statsForMtps(mtps: Iterable[MusicianTestInfo]) = {
     val passFails = mtps.map(_.pass)
     val totalPassed = passFails.count(_ == true)
     val totalFailed = passFails.size - totalPassed
 
-    def uniqueDays(mtps: Iterable[MusicianTimePass]): Int =
+    def uniqueDays(mtps: Iterable[MusicianTestInfo]): Int =
       mtps.map(a => new DateTime(a.time).withTimeAtStartOfDay.getMillis).toSet.size
 
     def daysTested(in: Boolean): Int = uniqueDays(mtps.filter(_.duringClass == in))
@@ -143,7 +142,7 @@ object Cache {
       uniqueDays(mtps), daysTested(true), daysTested(false),
       outsideClassTests.count(_.pass),
       outsideClassTests.count(!_.pass),
-      longestStreak(mtps), trend(mtps))
+      longestStreak(mtps), OptionTestingImprovement(mtps))
   }
 
   private def readCanWrite() = usersWithRole(Roles.Write.id)
@@ -154,7 +153,7 @@ object Cache {
     AppSchema.userRoles.withFilter(_.roleId == role).map(_.userId).toSet
   }
 
-  private def longestStreak(mtps: Iterable[MusicianTimePass]) = {
+  private def longestStreak(mtps: Iterable[MusicianTestInfo]) = {
     type Times = Seq[DateTime]
     case class StreakInfo(longest: Times, current: Times)
     mtps.foldLeft(StreakInfo(Seq(), Seq()))((si, mtp) => {
@@ -163,23 +162,6 @@ object Cache {
     }).longest
   }
 
-  case class TrendInfo(passingImprovement: Double, recentDailyPassCounts: Seq[Int])
-
-  private def trend(mtps: Iterable[MusicianTimePass], numDays: Int = 5, maxPerDay: Int = 3) = {
-    mtps.groupBy(_.time.withTimeAtStartOfDay) match {
-      case passesByDay if passesByDay.size >= numDays =>
-        val datesOfRecentTests = passesByDay.keys.toSeq.sortBy(_.getMillis).takeRight(numDays)
-        val testsEachDay = datesOfRecentTests map passesByDay
-        val recentDailyPassesCountsWithTime = testsEachDay.map(t =>
-          t.head.time -> math.min(maxPerDay, t.count(_.pass == true)))
-        val points = recentDailyPassesCountsWithTime.map(ct =>
-          Stats.Point(Days.daysBetween(testsEachDay.head.head.time, ct._1).getDays, ct._2))
-        val recentDailyPassCounts = testsEachDay.map(_.count(_.pass == true))
-        Some(TrendInfo(Stats.regressionSlope(points), recentDailyPassCounts))
-      case _ => none[TrendInfo]
-    }
-  }
-  
   def init(): Unit = {}
 
   def invalidateGroups(): Unit = { groups = readGroups }

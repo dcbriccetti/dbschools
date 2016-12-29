@@ -216,9 +216,9 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         val passingImprovement =
           for {
             stats <- opStats
-            ti    <- stats.trendInfo
+            ti    <- stats.opTestingImprovement
             title = "Recent passes per day: " + ti.recentDailyPassCounts.mkString(", ")
-          } yield <span title={title}>{nfmt.format(ti.passingImprovement)}</span>
+          } yield <span title={title}>{nfmt.format(ti.slope)}</span>
         ".sel      *" #> selectionCheckbox(row.musician) &
         ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
         ".stuName  *" #> studentLink(row.musician) &

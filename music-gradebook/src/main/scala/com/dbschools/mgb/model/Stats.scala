@@ -4,7 +4,7 @@ import scala.math._
 
 object Stats {
 
-  def stdev(list: Iterable[Double], average: Double) = {
+  def stdev(list: Iterable[Double], average: Double): Double = {
     def squaredDiff(v1: Double, v2: Double) = pow(v1 - v2, 2.0)
 
     if (list.isEmpty) 0.0 else {
@@ -15,7 +15,7 @@ object Stats {
 
   case class Point(x: Int, y: Double)
 
-  def regressionSlope(points: Iterable[Point]) = {
+  def regressionSlope(points: Iterable[Point]): Double = {
     val xs = points.map(_.x)
     val ys = points.map(_.y)
     val xys = points.map(c => c.x * c.y)
@@ -28,5 +28,4 @@ object Stats {
     val denom = xmean * xmean - xssqmean
     num / denom
   }
-
 }
