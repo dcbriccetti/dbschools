@@ -6,24 +6,26 @@ import Scalaz._
 import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
 import schema.{AppSchema, AssessmentTag, Musician}
+import Terms.{currentTerm, termStart, toTs}
 
 case class AssessmentRow(assId: Int, date: DateTime, musician: Musician, tester: String, piece: String,
   instrument: String, subinstrument: Option[String], pass: Boolean, notes: Option[String]) {
-  val outsideClass: Boolean = ! Periods.periodWithin(date).isInstanceOf[Periods.Period]
+  val outsideClass: Boolean = ! Periods.isDuringClassPeriod(date)
 }
 
 object AssessmentRows {
   import AppSchema.{musicians, assessments, pieces, instruments, subinstruments, users}
 
-  def apply(opMusicianId: Option[Int], limit: Int = 500): Iterable[AssessmentRow] = {
+  /** Returns assessment rows for a specific student, or for all students, from the current school year */
+  def apply(opMusicianId: Option[Int], limit: Int): Iterable[AssessmentRow] = {
     val rows =
       join(assessments, musicians, pieces, instruments, users, subinstruments.leftOuter)((a, m, p, i, u, s) =>
-        where(a.musician_id === opMusicianId.?)
+        where(a.musician_id === opMusicianId.? and a.assessment_time > toTs(termStart(currentTerm)))
         select AssessmentRow(a.id,
           new DateTime(a.assessment_time.getTime), m, u.last_name, p.name.get, i.name.get,
           s.map(_.name.get), a.pass,
           opStr(a.notes))
-        orderBy (a.assessment_time.desc)
+        orderBy a.assessment_time.desc
         on(
           a.musician_id       === m.id,
           a.pieceId           === p.id,
@@ -37,10 +39,10 @@ object AssessmentRows {
   }
 
   private def addPredefinedComments(predefCommentsMap: Map[Int, String])(row: AssessmentRow): AssessmentRow = {
-    predefCommentsMap.get(row.assId).map(predefComments => {
+    predefCommentsMap.get(row.assId).map { predefComments =>
       val newNotes = Seq(row.notes, Some(predefComments)).flatten.mkString("; ")
       row.copy(notes = Some(newNotes))
-    }) | row
+    } | row
   }
 
   private def opStr(s: String) = if (s.trim.isEmpty) None else Some(s)
@@ -49,7 +51,9 @@ object AssessmentRows {
 object Assessments {
   def delete(ids: Iterable[Int]): Unit = {
     import AppSchema.{assessments, assessmentTags}
-    assessmentTags.deleteWhere(at => at.assessmentId in ids)
-    assessments.deleteWhere(a => a.id in ids)
+    val invalidatedMusicians = assessments.where(_.id in ids).map(_.musician_id).toSeq.distinct
+    assessmentTags.deleteWhere(_.assessmentId in ids)
+    assessments.deleteWhere(_.id in ids)
+    invalidatedMusicians foreach Cache.updateTestingStats
   }
 }

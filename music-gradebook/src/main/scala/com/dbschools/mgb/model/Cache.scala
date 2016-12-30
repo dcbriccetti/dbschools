@@ -14,71 +14,49 @@ import Terms.{currentTerm, termStart, toTs}
 import schema._
 import snippet.svStatsDisplay
 
-case class TestingStats(
-  totalPassed:                Int,
-  totalFailed:                Int,
-  totalDaysTested:            Int,
-  inClassDaysTested:          Int,
-  outsideClassDaysTested:     Int,
-  outsideClassPassed:         Int,
-  outsideClassFailed:         Int,
-  longestPassingStreakTimes:  Seq[DateTime],
-  opTestingImprovement:       Option[TestingImprovement]
-) {
-  def numTests: Int = totalPassed + totalFailed
-  def percentPassed: Int = if (numTests == 0) 0 else math.round(totalPassed * 100.0 / numTests).toInt
-}
-
 object Cache {
   val log: Logger = Logger.getLogger(getClass)
-  /** Term start dates, ordered from most to least recent */
-  val terms: Seq[DateTime] = {
-    val dtp = ISODateTimeFormat.dateTimeParser()
-    Props.get("terms").get.split(',').map(dtp.parseDateTime).toSeq.sortBy(_.getMillis).reverse
-  }
-  def currentMester: DateTime = terms.find(_.getMillis < DateTime.now.getMillis).get
-  var groups: Seq[Group] = readGroups
-  var groupTerms: List[GroupTerm] = readGroupTerms
-  var instruments: Seq[Instrument] = readInstruments
-  var (subinstruments, subsByInstrument) = readSubinstruments
-  var tags: Seq[PredefinedComment] = readTags
-  var pieces: Seq[Piece] = readPieces
-  var tempos: Seq[Tempo] = readTempos
-  private var testingStatsByMusician: Map[Int, Map[Option[DateTime], TestingStats]] = readTestingStats()
-  var canWriteUsers: Set[Int] = readCanWrite()
-  var adminUsers: Set[Int] = readAdmins()
 
+  /** Term start dates, ordered from most recent to least */
+  val terms: Seq[DateTime] = {
+    val parser = ISODateTimeFormat.dateTimeParser()
+    Props.get("terms").get.split(',').map(parser.parseDateTime).toSeq.sortBy(_.getMillis).reverse
+  }
+
+  def currentMester: DateTime = terms.find(_.getMillis < DateTime.now.getMillis).get
+
+  var groups:       Seq[Group]              = readGroups
+  var groupTerms:   List[GroupTerm]         = readGroupTerms
+  var instruments:  Seq[Instrument]         = readInstruments
+  var (subinstruments, subsByInstrument)    = readSubinstruments
+  var tags:         Seq[PredefinedComment]  = readTags
+  var pieces:       Seq[Piece]              = readPieces
+  var tempos:       Seq[Tempo]              = readTempos
+  private var testingStatsByMusician: Map[Int, Map[Option[DateTime], TestingStats]] = readTestingStats()
+  var canWriteUsers: Set[Int]               = readCanWrite()
+  var adminUsers:   Set[Int]                = readAdmins()
+
+  /**
+    * Gets testing stats for the specified musician.
+    * @param musicianId the ID of the musician
+    * @param opDateTime None for the entire school year, or a DateTime for the term starting on that date
+    * @return Some(TestingStats) if found, None if not
+    */
   def testingStatsByMusician(musicianId: Int, opDateTime: Option[DateTime] = None): Option[TestingStats] =
     testingStatsByMusician.get(musicianId).flatMap(_.get(opDateTime))
 
-  def selectedTestingStatsByMusician(musicianId: Int) = testingStatsByMusician(musicianId,
-    if (svStatsDisplay.is == StatsDisplay.Term) Some(Cache.currentMester) else none[DateTime])
+  def selectedTestingStatsByMusician(musicianId: Int): Option[TestingStats] =
+    testingStatsByMusician(musicianId,
+      if (svStatsDisplay.is == StatsDisplay.Term) Some(Cache.currentMester) else none[DateTime])
 
-  private var _lastAssTimeByMusician = inT(for {
-    gm <- from(AppSchema.assessments)(a => groupBy(a.musician_id) compute max(a.assessment_time))
-    m <- gm.measures
-  } yield gm.key -> new DateTime(m.getTime)).toMap
+  private var _lastTestTimeByMusician = inT(for {
+    groupWithMeasures <- from(AppSchema.assessments)(a => groupBy(a.musician_id) compute max(a.assessment_time))
+    testTime <- groupWithMeasures.measures
+  } yield groupWithMeasures.key -> new DateTime(testTime.getTime)).toMap
 
-  def lastAssTimeByMusician: Map[Int, DateTime] = _lastAssTimeByMusician
-  def updateLastAssTime(musicianId: Int, time: DateTime): Unit = {
-    _lastAssTimeByMusician += musicianId -> time
-    updateNumDaysTestedThisYearByMusician(musicianId)
-  }
-
-  private def numDaysTestedThisYear(musicianId: Option[Int]) = inT {
-    val testTimes = from(AppSchema.assessments)(a =>
-      where(a.assessment_time > toTs(termStart(currentTerm)) and a.musician_id === musicianId.?)
-      select(a.musician_id, new DateTime(a.assessment_time).withTimeAtStartOfDay.getMillis)).groupBy(_._1)
-    testTimes.map { case (id, times) => id -> times.toSet.size }
-  }
-
-  private var _numDaysTestedThisYearByMusician = numDaysTestedThisYear(None)
-
-  def numDaysTestedThisYearByMusician: Map[Int, Int] = _numDaysTestedThisYearByMusician
-
-  private def updateNumDaysTestedThisYearByMusician(musicianId: Int): Unit = {
-    val numDays = numDaysTestedThisYear(Some(musicianId)).getOrElse(musicianId, 0)
-    inT{_numDaysTestedThisYearByMusician += musicianId -> numDays}
+  def lastTestTimeByMusician: Map[Int, DateTime] = _lastTestTimeByMusician
+  def updateLastTestTime(musicianId: Int, time: DateTime): Unit = {
+    _lastTestTimeByMusician += musicianId -> time
   }
 
   private def readGroups      = inT {AppSchema.groups.toSeq.sortBy(_.name)}
@@ -92,7 +70,7 @@ object Cache {
   private def readPieces      = inT {AppSchema.pieces.toSeq.sortBy(_.testOrder.get)}
   private def readTempos      = inT {AppSchema.tempos.toSeq.sortBy(_.instrumentId)}
 
-  case class MusicianTestInfo(id: Int, time: DateTime, pass: Boolean, duringClass: Boolean)
+  case class MusicianTestInfo(musicianId: Int, time: DateTime, pass: Boolean, duringClass: Boolean)
 
   private def readTestingStats(opMusicianId: Option[Int] = None): Map[Int, Map[Option[DateTime], TestingStats]] = inT {
     val testsByMusician: Map[Int, Iterable[MusicianTestInfo]] =
@@ -100,50 +78,21 @@ object Cache {
       where(a.musician_id === opMusicianId.? and a.assessment_time > toTs(termStart(currentTerm)))
       select {
         val dateTime = new DateTime(a.assessment_time.getTime)
-        MusicianTestInfo(a.musician_id, dateTime, a.pass,
-          Periods.periodWithin(dateTime).isInstanceOf[Periods.Period])
+        MusicianTestInfo(a.musician_id, dateTime, a.pass, Periods.isDuringClassPeriod(dateTime))
       }
-      orderBy(a.musician_id, a.assessment_time)).groupBy(_.id)
+      orderBy(a.musician_id, a.assessment_time)).groupBy(_.musicianId)
 
-    log.info(s"terms: $terms")
-    val testsByMusicianByTerm: Map[Int, Map[Option[DateTime], Seq[MusicianTestInfo]]] = testsByMusician.map {
-      case (musicianId, mtis) =>
-        val mtisByTerm: Map[Option[DateTime], Seq[MusicianTestInfo]] =
-          mtis.toSeq.groupBy { mtp => Some(terms.find(_.getMillis < mtp.time.getMillis).get) }
-        musicianId -> mtisByTerm
-    }
-
-    testsByMusicianByTerm.map {
-      case (musicianId, mtpsByTerm) =>
-        val termMtps = {
-          val allTermsStats = none[DateTime] -> statsForMtps(testsByMusician(musicianId))
-          mtpsByTerm.map {
-            case (dateTime, mtps) =>
-              dateTime -> statsForMtps(mtps)
-          } ++ Map(allTermsStats)
-        }
-        musicianId -> termMtps
+    testsByMusician.map {
+      case (musicianId, testInfos) =>
+        val testInfosByTerm: Map[Option[DateTime], Seq[MusicianTestInfo]] =
+          testInfos.toSeq.groupBy(mti => Some(containingTerm(mti.time)))
+        val statsForWholeTerm = none[DateTime] -> TestingStats(testsByMusician(musicianId))
+        val testingStatsByTerm = testInfosByTerm.mapValues(TestingStats.apply) + statsForWholeTerm
+        musicianId -> testingStatsByTerm
     }
   }
 
-  private def statsForMtps(mtps: Iterable[MusicianTestInfo]) = {
-    val passFails = mtps.map(_.pass)
-    val totalPassed = passFails.count(_ == true)
-    val totalFailed = passFails.size - totalPassed
-
-    def uniqueDays(mtps: Iterable[MusicianTestInfo]): Int =
-      mtps.map(a => new DateTime(a.time).withTimeAtStartOfDay.getMillis).toSet.size
-
-    def daysTested(in: Boolean): Int = uniqueDays(mtps.filter(_.duringClass == in))
-
-    val outsideClassTests = mtps.filterNot(_.duringClass)
-
-    TestingStats(totalPassed, totalFailed,
-      uniqueDays(mtps), daysTested(true), daysTested(false),
-      outsideClassTests.count(_.pass),
-      outsideClassTests.count(!_.pass),
-      longestStreak(mtps), OptionTestingImprovement(mtps))
-  }
+  def containingTerm(time: DateTime): DateTime = terms.find(_.getMillis < time.getMillis).get
 
   private def readCanWrite() = usersWithRole(Roles.Write.id)
 
@@ -151,15 +100,6 @@ object Cache {
 
   private def usersWithRole(role: Int) = inT {
     AppSchema.userRoles.withFilter(_.roleId == role).map(_.userId).toSet
-  }
-
-  private def longestStreak(mtps: Iterable[MusicianTestInfo]) = {
-    type Times = Seq[DateTime]
-    case class StreakInfo(longest: Times, current: Times)
-    mtps.foldLeft(StreakInfo(Seq(), Seq()))((si, mtp) => {
-      val newCurrent = if (mtp.pass) si.current :+ mtp.time else Seq()
-      StreakInfo(if (newCurrent.size > si.longest.size) newCurrent else si.longest, newCurrent)
-    }).longest
   }
 
   def init(): Unit = {}

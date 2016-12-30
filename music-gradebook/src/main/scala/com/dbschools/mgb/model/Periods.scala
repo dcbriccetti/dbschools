@@ -89,4 +89,6 @@ object Periods {
       periods.find(_.within(dateTime)) getOrElse NotInPeriod
     } else NotInPeriod
   }
+
+  def isDuringClassPeriod(dateTime: DateTime = DateTime.now): Boolean = periodWithin(dateTime).isInstanceOf[Period]
 }

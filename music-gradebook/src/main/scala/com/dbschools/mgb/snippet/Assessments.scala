@@ -17,13 +17,13 @@ import LiftExtensions._
 object rvSelectedAsmts extends RequestVar[MSet[Int]](MSet[Int]())
 
 class Assessments extends SelectedMusician with TagCounts with UserLoggable {
-  def render = renderAllOrOne(opMusician)
+  def render: (NodeSeq) => NodeSeq = renderAllOrOne(opMusician)
 
-  def renderWithStudents = renderAllOrOne(none[Musician])
+  def renderWithStudents: (NodeSeq) => NodeSeq = renderAllOrOne(none[Musician])
 
   private def renderAllOrOne(opMusician: Option[Musician]) =
     Assessments.filterStudentColumn(opMusician.isEmpty) andThen
-      Assessments.rowCssSel(AssessmentRows(opMusician.map(_.id)).toList)
+      Assessments.rowCssSel(AssessmentRows(opMusician.map(_.id), limit = 500).toList)
 
   def assessmentsSummary: NodeSeq = {
     Text(~rvMusicianDetails.is.map(md => {
@@ -36,8 +36,8 @@ class Assessments extends SelectedMusician with TagCounts with UserLoggable {
     }))
   }
 
-  def delete = "#deleteAss" #> SHtml.ajaxButton("Delete", () => {
-    val selAsses = rvSelectedAsmts.is.toIterable
+  def delete: CssBindFunc = "#deleteAss" #> SHtml.ajaxButton("Delete", () => {
+    val selAsses = rvSelectedAsmts.is
     if (selAsses.nonEmpty) {
       Confirm(
         s"Are you sure you want to remove the ${selAsses.size} selected assessments? This can not be undone.",
@@ -52,9 +52,9 @@ class Assessments extends SelectedMusician with TagCounts with UserLoggable {
 }
 
 object Assessments {
-  def removeNodes(selectors: String*) = selectors.map(_ #> none[String]).reduce(_ & _)
+  def removeNodes(selectors: String*): CssBindFunc = selectors.map(_ #> none[String]).reduce(_ & _)
 
-  def filterStudentColumn(keepStudent: Boolean) =
+  def filterStudentColumn(keepStudent: Boolean): (NodeSeq) => NodeSeq =
     if (keepStudent) PassThru else removeNodes(".student", "#studentHeading")
 
   def rowCssSel(rows: Iterable[AssessmentRow]): CssSel = {
@@ -82,7 +82,7 @@ object Assessments {
     }
   }
 
-  def createRow(assessmentRow: AssessmentRow, keepStudent: Boolean = true) = {
+  def createRow(assessmentRow: AssessmentRow, keepStudent: Boolean = true): NodeSeq = {
     val sel = filterStudentColumn(keepStudent) andThen rowCssSel(Seq(assessmentRow))
     sel(elemFromTemplate("_assessments", ".assessmentRow"))
   }

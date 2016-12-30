@@ -12,9 +12,10 @@ import com.norbitltd.spoiwo.model._
 import com.norbitltd.spoiwo.natures.xlsx.Model2XlsxConversions._
 import com.norbitltd.spoiwo.model.enums.CellFill
 import bootstrap.liftweb.ApplicationPaths.logIn
-import model.{LastPass, LastPassFinder, TestingStats, Terms}
-import model.Cache.{lastAssTimeByMusician, selectedTestingStatsByMusician}
-import snippet.{Authenticator, svGroupAssignments}
+import com.dbschools.mgb.schema.Subinstrument
+import model._
+import model.Cache.{lastTestTimeByMusician, selectedTestingStatsByMusician, containingTerm, currentMester}
+import snippet.{Authenticator, svGroupAssignments, svStatsDisplay}
 
 /** Processes requests to download a spreadsheet of students */
 object ExportStudentsRestHelper extends RestHelper {
@@ -48,11 +49,11 @@ object Exporter {
     nfmt.setMinimumFractionDigits(2)
     val lastPassesByMusician = new LastPassFinder().lastPassed().groupBy(_.musicianId)
     val headerStyle =
-      CellStyle(fillPattern = CellFill.Solid, fillForegroundColor = Color.AquaMarine, font = Font(bold = true))
+      CellStyle(fillPattern = CellFill.Solid, fillForegroundColor = Color.LightBlue, font = Font(bold = true))
     val hr = Row(style = headerStyle).withCellValues(
       "Group", "Name", "Gr", "Instrument", "Pass", "Fail", "%", "OP", "OF", "Days", "P/D", "Str", "Last Test", "Last Passed")
 
-    val rows = List(hr) ++
+    val statsRows = List(hr) ++
         svGroupAssignments.is.sortBy(ga => (ga.group.name, ga.musician.nameLastFirstNick)).map { row =>
       val opStats = selectedTestingStatsByMusician(row.musician.id)
       def stat(fn: TestingStats => Int) = ~opStats.map(fn)
@@ -73,13 +74,37 @@ object Exporter {
         inClassDaysTested,
         if (inClassDaysTested == 0) "0.0" else nfmt.format(passed.toFloat / inClassDaysTested),
         stat(_.longestPassingStreakTimes.size),
-        ~lastAssTimeByMusician.get(row.musician.id).map(fmt.print),
+        ~lastTestTimeByMusician.get(row.musician.id).map(fmt.print),
         passes.map(lp => lp.formatted(passes.size > 1 || lp.instrumentId != row.instrument.id)).mkString(", ")
       )
     }
+    
+    val dhr = Row(style = headerStyle).withCellValues(
+      "Name", "Time", "Tester", "Extra", "Pass", "Piece", "Instrument", "Notes")
+    val musicianIds = svGroupAssignments.is.map(_.musician.id)
+    val allYear = svStatsDisplay.is == StatsDisplay.Year
+    val filteredRows = AssessmentRows(None, limit = Int.MaxValue).filter { ar =>
+      (musicianIds contains ar.musician.id) && (allYear || containingTerm(ar.date) == currentMester) }
+    // todo Select only the needed rows from the database, rather than filtering after selecting
+    val sortedAssessments = filteredRows.toList.sortBy(ar =>
+      (ar.musician.nameLastFirstNick, -ar.date.getMillis))
+    val ddf = DateTimeFormat.forStyle("MM")
 
-    val sheet = Sheet(rows: _*)
-    val workbook = sheet.convertAsXlsx()
+    val detailRows = List(dhr) ++ sortedAssessments.map { ar =>
+      Row().withCellValues(
+        ar.musician.nameLastFirstNick,
+        ddf.print(ar.date),
+        ar.tester,
+        if (ar.outsideClass) "✔︎" else "",
+        if (ar.pass) "✔︎" else "",
+        ar.piece,
+        ar.instrument + ~ar.subinstrument.map(Subinstrument.suffix),
+        ~ar.notes
+    )}
+
+    val stats = Sheet(name="Stats", rows = statsRows)
+    val details = Sheet(name="Details", rows = detailRows)
+    val workbook = Workbook(stats, details).convertAsXlsx()
     workbook.write(os)
   }
 }

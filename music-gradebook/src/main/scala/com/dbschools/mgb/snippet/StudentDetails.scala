@@ -1,7 +1,7 @@
 package com.dbschools.mgb
 package snippet
 
-import scala.xml.{NodeSeq, Text}
+import scala.xml.{Node, NodeSeq, Text}
 import scalaz._
 import Scalaz._
 import net.liftweb._
@@ -19,11 +19,11 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
   private object svCollapsibleShowing extends SessionVar[Array[Boolean]](Array(false, false, false))
   private val collapsibleShowing = svCollapsibleShowing.is
 
-  def render = {
+  def render: (NodeSeq) => NodeSeq = {
 
     val user = Authenticator.opLoggedInUser.get
     var mins = testingState.callAfterMinsByTesterId(user.id)
-    Actors.testingManager ! SetCallAfterMins(user, mins, false)
+    Actors.testingManager ! SetCallAfterMins(user, mins, callNow = false)
 
     def minutesSelector = {
       val sels = 10 to 2 by -1 map(n => n.toString -> s"after $n minutes")
@@ -34,7 +34,7 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
           case n if n >= 0 => Some(n)
           case _ => None
         }
-        Actors.testingManager ! SetCallAfterMins(user, mins, false)
+        Actors.testingManager ! SetCallAfterMins(user, mins, callNow = false)
         Noop
       })
     }
@@ -70,9 +70,9 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
     }) getOrElse PassThru
   }
 
-  def js = collapseMonitorJs(collapsibleShowing)
+  def js: Node = collapseMonitorJs(collapsibleShowing)
 
-  def expand =
+  def expand: (NodeSeq) => NodeSeq =
     (for {
       indexStr <- S.attr("index")
       index    <- Helpers.asInt(indexStr)

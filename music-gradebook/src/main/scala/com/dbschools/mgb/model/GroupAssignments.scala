@@ -12,7 +12,7 @@ import schema.Musician
 import schema.MusicianGroup
 import org.joda.time.DateTime
 import snippet.{svSelectors, svSortingStudentsBy}
-import Cache.lastAssTimeByMusician
+import Cache.lastTestTimeByMusician
 
 case class GroupAssignment(musician: Musician, group: Group, musicianGroup: MusicianGroup, instrument: Instrument)
 
@@ -61,7 +61,7 @@ object GroupAssignments extends UserLoggable {
       case SortStudentsBy.Name =>
         selected.sortBy(_.musician.nameLastFirstNick)
       case SortStudentsBy.LastAssessment =>
-        selected.sortBy(ga => lastAssTimeByMusician.get(ga.musician.id).map(_.toDate) | longAgo)
+        selected.sortBy(ga => lastTestTimeByMusician.get(ga.musician.id).map(_.toDate) | longAgo)
       case SortStudentsBy.LastPassed =>
         def pos(id: Int) = ~(
           for {

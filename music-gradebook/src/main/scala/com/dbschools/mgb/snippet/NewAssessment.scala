@@ -7,17 +7,17 @@ import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
 import net.liftweb.util.Helpers._
+import net.liftweb.util.CssSel
 import net.liftweb.http
 import http.SHtml
 import http.js.JsCmd
-import http.js.JsCmds.{Noop, ReplaceOptions, SetHtml, SetValById, Script}
+import http.js.JsCmds.{Noop, ReplaceOptions, Script, SetHtml, SetValById}
 import http.js.jquery.JqJsCmds
 import http.js.JE.JsRaw
 import net.liftweb.common.{Empty, Full}
 import JqJsCmds.{FadeOut, PrependHtml}
-import schema.{Assessment, AssessmentTag, AppSchema, Musician, User}
-import model.{Actors, AssessmentState, AssessmentRow, Cache, LastPassFinder,
-  MetroSounds, SelectedMusician}
+import schema.{AppSchema, Assessment, AssessmentTag, Musician, User}
+import model.{Actors, AssessmentRow, AssessmentState, Cache, LastPassFinder, MetroSounds, SelectedMusician}
 import model.TestingManagerMessages.IncrementMusicianAssessmentCount
 import comet.ActivityCometDispatcher
 import comet.ActivityCometActorMessages._
@@ -26,7 +26,7 @@ import LiftExtensions._
 class NewAssessment extends SelectedMusician {
   val lastPassFinder = new LastPassFinder()
 
-  def render = {
+  def render: CssSel = {
     val s = new AssessmentState(lastPassFinder)
 
     def jsTempo = JsRaw(s"tempoBpm = ${s.tempoFromPiece}").cmd
@@ -133,7 +133,7 @@ class NewAssessment extends SelectedMusician {
         AppSchema.assessments.insert(asmt)
         AppSchema.assessmentTags.insert(selectedCommentIds.map(id => AssessmentTag(asmt.id, id)))
         
-        Cache.updateLastAssTime(asmt.musician_id, asmtTime)
+        Cache.updateLastTestTime(asmt.musician_id, asmtTime)
         Cache.updateTestingStats(asmt.musician_id)
 
         val row = createAssessmentRow(asmt, asmtTime, musician, user)
@@ -182,7 +182,7 @@ class NewAssessment extends SelectedMusician {
     "#failButton"     #> SHtml.ajaxSubmit("Fail", () => { recordAss(pass = false) })
   }
 
-  def audioControls = {
+  def audioControls: NodeSeq = {
     MetroSounds.values.map(s => {
       val filename = s.toString + ".wav"
       <audio id={s"audioControl${s.id}"} src={s"assets/audio/$filename"} preload="auto">
