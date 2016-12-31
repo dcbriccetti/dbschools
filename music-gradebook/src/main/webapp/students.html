@@ -3,6 +3,7 @@
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
     <script src="js/locationsGraph.js"></script>
+    <script src="js/passesChart.js"></script>
     <div>
         School Years: <span><span data-lift="Students.yearSelector"/></span>
         Groups: <span><span data-lift="Students.groupSelector"/></span>
@@ -23,40 +24,6 @@
             $(".studentRow img").tooltip({'placement': 'right', 'html': true});
         }
         $(document).ready(activateTips);
-
-        function drawChart(id, xs, ys, attribs, axisAttribs) {
-            var graph = $('#pg' + id)[0];
-            var c = graph.getContext('2d');
-
-            c.beginPath();
-            c.strokeStyle = "gray";
-            c.moveTo(0, 0);
-            c.lineTo(0, graph.height);
-            c.lineTo(graph.width, graph.height);
-            c.stroke();
-
-            var yBottom = graph.height - 2;
-            var rectWidth = 2;
-
-            for (var i = 0; i < xs.length; ++i) {
-                if (attribs[i] == '1')
-                    c.fillStyle = "brown";
-                else
-                    c.fillStyle = "black";
-                c.fillRect(xs[i], yBottom - ys[i], rectWidth, 1);
-            }
-            var axisColors = ["black", "red", "blue", "green"];
-            if (axisAttribs.length > 1) {
-                c.moveTo(xs[0], graph.height);
-                for (var j = 0; j < axisAttribs.length - 1; ++j) {
-                    c.beginPath();
-                    c.strokeStyle = axisColors[axisAttribs[j]];
-                    c.moveTo(xs[j], graph.height);
-                    c.lineTo(xs[j + 1], graph.height);
-                    c.stroke();
-                }
-            }
-        }
     </script>
 
     <div id="dynamicSection" data-lift="Students">

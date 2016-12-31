@@ -161,7 +161,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
 
     def exportButton = ajaxButton("Export", () => { S.redirectTo("export/students.xlsx") })
 
-    def makeDrawCharts = PassChart.create(groupAssignments, svStatsDisplay.is == StatsDisplay.Term)
+    def makeDrawCharts = PassChart.create(groupAssignments.map(_.musician.id).toSet, svStatsDisplay.is == StatsDisplay.Term)
 
     (if (selectors.selectedTerm   .value.isRight) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.selectedGroupId.value.isRight) ".group"   #> none[String] else PassThru) andThen (
@@ -234,8 +234,8 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         ".inClassDaysTested *" #> bz(inClassDaysTested) &
         ".avgPassedPerDay *"  #> (if (inClassDaysTested == 0) "" else nfmt.format(passed.toFloat / inClassDaysTested)) &
         ".passGraph [id]"     #> s"pg${row.musician.id}" &
-        ".passGraph [width]"  #> PassChart.PassGraphWidth &
-        ".passGraph [height]" #> PassChart.PassGraphHeight &
+        ".passGraph [width]"  #> PassChart.PassGraphWidthSmall &
+        ".passGraph [height]" #> PassChart.PassGraphHeightSmall &
         ".lastAss  *"   #> ~lastAsmtTime.map(fmt.print) &
         ".passStreak *" #> stat(_.longestPassingStreakTimes.size) &
         ".passingImprovement *" #> passingImprovement &

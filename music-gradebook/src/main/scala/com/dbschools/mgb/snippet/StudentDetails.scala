@@ -1,6 +1,8 @@
 package com.dbschools.mgb
 package snippet
 
+import java.text.NumberFormat
+
 import scala.xml.{Node, NodeSeq, Text}
 import scalaz._
 import Scalaz._
@@ -16,7 +18,7 @@ import model._
 import model.TestingManagerMessages.SetCallAfterMins
 
 class StudentDetails extends Collapsible with SelectedMusician with Photos {
-  private object svCollapsibleShowing extends SessionVar[Array[Boolean]](Array(false, false, false))
+  private object svCollapsibleShowing extends SessionVar[Array[Boolean]](Array(false, false, false, false))
   private val collapsibleShowing = svCollapsibleShowing.is
 
   def render: (NodeSeq) => NodeSeq = {
@@ -79,6 +81,37 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       if collapsibleShowing(index)
     } yield s"#collapse$index [class+]" #> "in") getOrElse PassThru
 
+  private val nfmt = NumberFormat.getInstance
+  nfmt.setMaximumFractionDigits(2)
+  nfmt.setMinimumFractionDigits(2)
+
+  def summary: (NodeSeq) => NodeSeq =
+    (for {
+      musician <- opMusician
+      stats <- Cache.selectedTestingStatsByMusician(musician.id)
+    } yield {
+      val passChartWidth = PassChart.PassGraphWidthSmall * 3
+      val passChartHeight = PassChart.PassGraphHeightSmall * 3
+      val chart = PassChart.create(Seq(musician.id), svStatsDisplay.is == StatsDisplay.Term, passChartWidth, passChartHeight)
+
+      "#passes"             #> stats.totalPassed &
+      "#failures"           #> stats.totalFailed &
+      "#passPercent"        #> stats.percentPassed &
+      "#xPasses"            #> stats.outsideClassPassed &
+      "#xFailures"          #> stats.outsideClassFailed &
+      "#totalDaysTested"    #> stats.totalDaysTested &
+      "#inClassDaysTested"  #> stats.inClassDaysTested &
+      "#pd"                 #> (if (stats.inClassDaysTested == 0) "" else nfmt.format(stats.totalPassed.toFloat / stats.inClassDaysTested)) &
+      "#streak"             #> stats.longestPassingStreakTimes.size &
+      "#improvement"        #> stats.opTestingImprovement.map { ti => nfmt.format(ti.slope) } &
+      "#numLastPasses"      #> stats.opTestingImprovement.map { _.recentDailyPassCounts.mkString(", ") } &
+      "#drawCharts"         #> chart &
+      ".passGraph [id]"     #> s"pg${musician.id}" &
+      ".passGraph [width]"  #> passChartWidth &
+      ".passGraph [height]" #> passChartHeight
+    }) getOrElse PassThru
+
+  def summaryTitle = Text((if (svStatsDisplay.is == StatsDisplay.Term) "Term" else "School Year") + " Summary")
 }
 
 object StudentDetails {

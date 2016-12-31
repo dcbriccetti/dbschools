@@ -20,23 +20,23 @@ case class TestingStats(
 }
 
 object TestingStats {
-  def apply(mtps: Iterable[MusicianTestInfo]): TestingStats = {
-    val passFails = mtps.map(_.pass)
+  def apply(mtis: Iterable[MusicianTestInfo]): TestingStats = {
+    val passFails = mtis.map(_.pass)
     val totalPassed = passFails.count(_ == true)
     val totalFailed = passFails.size - totalPassed
 
     def uniqueDays(mtps: Iterable[MusicianTestInfo]): Int =
       mtps.map(a => new DateTime(a.time).withTimeAtStartOfDay.getMillis).toSet.size
 
-    def daysTested(in: Boolean): Int = uniqueDays(mtps.filter(_.duringClass == in))
+    def daysTested(duringClass: Boolean): Int = uniqueDays(mtis.filter(_.duringClass == duringClass))
 
-    val outsideClassTests = mtps.filterNot(_.duringClass)
+    val outsideClassTests = mtis.filterNot(_.duringClass)
 
     TestingStats(totalPassed, totalFailed,
-      uniqueDays(mtps), daysTested(true), daysTested(false),
+      uniqueDays(mtis), daysTested(duringClass = true), daysTested(duringClass = false),
       outsideClassTests.count(_.pass),
       outsideClassTests.count(!_.pass),
-      longestStreak(mtps), OptionTestingImprovement(mtps))
+      longestStreak(mtis), OptionTestingImprovement(mtis))
   }
 
   private def longestStreak(mtps: Iterable[MusicianTestInfo]) = {
