@@ -2,6 +2,8 @@
 <html xmlns:lift="http://www.w3.org/1999/xhtml">
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
+    <script src="js/d3/d3.min.js"></script>
+    <script src="js/nv.d3.min.js"></script>
     <script src="js/passesChart.js"></script>
     <div data-lift="NewAssessment">
         <script language="JavaScript" src="js/metronome.js"></script>
@@ -70,11 +72,13 @@
                         <tr><td>In-class days tested:</td><td style="text-align: right"><span id="inClassDaysTested"></span></td></tr>
                         <tr><td>Passes to in-class days tested ratio:</td><td style="text-align: right"><span id="pd"></span></td></tr>
                         <tr><td>Longest streak of passes:</td><td style="text-align: right"><span id="streak"></span></td></tr>
-                        <tr><td>Recent improvement:</td><td style="text-align: right"><span id="improvement"></span></td></tr>
-                        <tr><td>Number of passes, last tests:</td><td style="text-align: right"><span id="numLastPasses"></span></td></tr>
                     </table>
-                    <canvas style="margin-top: 1em" class="passGraph"></canvas>
-                    <span id="drawCharts"></span>
+                    <div style="margin-top: 1em" id="passesPerWeek">
+                        <div>Number of passes per week</div>
+                        <svg style="height: 200px;"></svg>
+                    </div>
+                    <span data-lift="StudentDetails.chartData"></span>
+                    <script src="js/passesPerWeek.js"></script>
                 </div>
             </div>
         </div>

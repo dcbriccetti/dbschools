@@ -2,11 +2,12 @@ package com.dbschools.mgb
 package snippet
 
 import java.text.NumberFormat
-
 import scala.xml.{Node, NodeSeq, Text}
+import org.scala_tools.time.Imports._
 import scalaz._
 import Scalaz._
 import net.liftweb._
+import net.liftweb.http.js.JE.JsRaw
 import util._
 import http._
 import SHtml.{ajaxCheckbox, ajaxSelect, link}
@@ -16,6 +17,7 @@ import net.liftweb.http.js.JsCmds._
 import net.liftweb.common.Full
 import model._
 import model.TestingManagerMessages.SetCallAfterMins
+import model.Cache.{containingTerm, currentMester}
 
 class StudentDetails extends Collapsible with SelectedMusician with Photos {
   private object svCollapsibleShowing extends SessionVar[Array[Boolean]](Array(false, false, false, false))
@@ -90,10 +92,6 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       musician <- opMusician
       stats <- Cache.selectedTestingStatsByMusician(musician.id)
     } yield {
-      val passChartWidth = PassChart.PassGraphWidthSmall * 3
-      val passChartHeight = PassChart.PassGraphHeightSmall * 3
-      val chart = PassChart.create(Seq(musician.id), svStatsDisplay.is == StatsDisplay.Term, passChartWidth, passChartHeight)
-
       "#passes"             #> stats.totalPassed &
       "#failures"           #> stats.totalFailed &
       "#passPercent"        #> stats.percentPassed &
@@ -102,16 +100,33 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       "#totalDaysTested"    #> stats.totalDaysTested &
       "#inClassDaysTested"  #> stats.inClassDaysTested &
       "#pd"                 #> (if (stats.inClassDaysTested == 0) "" else nfmt.format(stats.totalPassed.toFloat / stats.inClassDaysTested)) &
-      "#streak"             #> stats.longestPassingStreakTimes.size &
-      "#improvement"        #> stats.opTestingImprovement.map { ti => nfmt.format(ti.slope) } &
-      "#numLastPasses"      #> stats.opTestingImprovement.map { _.recentDailyPassCounts.mkString(", ") } &
-      "#drawCharts"         #> chart &
-      ".passGraph [id]"     #> s"pg${musician.id}" &
-      ".passGraph [width]"  #> passChartWidth &
-      ".passGraph [height]" #> passChartHeight
+      "#streak"             #> stats.longestPassingStreakTimes.size
     }) getOrElse PassThru
 
   def summaryTitle = Text((if (svStatsDisplay.is == StatsDisplay.Term) "Term" else "School Year") + " Summary")
+
+  def chartData: Node = {
+    val allYear = svStatsDisplay.is == StatsDisplay.Year
+    val filteredRows = AssessmentRows(Some(opMusician.map(_.id).get), limit = Int.MaxValue).filter { ar =>
+      allYear || containingTerm(ar.date) == currentMester }
+    val df = DateTimeFormat.forPattern("MM/dd")
+    val groupedAndSortedRows = filteredRows.groupBy(ar => df.print(ar.date.withDayOfWeek(1))).toSeq.sortBy(_._1)
+    val dataValues = groupedAndSortedRows.map { case (date, groupOfTests) => s"""
+    {
+        "label" : "$date" ,
+        "value" : ${groupOfTests.seq.count(_.pass)}
+    }"""}.mkString(",")
+
+    Script(JsRaw(s"""
+chartData = [
+    {
+        key: "Passes Per Week",
+        values: [
+            $dataValues
+        ]
+    }
+];"""))
+  }
 }
 
 object StudentDetails {
