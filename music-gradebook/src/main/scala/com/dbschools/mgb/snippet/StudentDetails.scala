@@ -100,33 +100,67 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       "#totalDaysTested"    #> stats.totalDaysTested &
       "#inClassDaysTested"  #> stats.inClassDaysTested &
       "#pd"                 #> (if (stats.inClassDaysTested == 0) "" else nfmt.format(stats.totalPassed.toFloat / stats.inClassDaysTested)) &
-      "#streak"             #> stats.longestPassingStreakTimes.size
+      "#streak"             #> stats.longestPassingStreakTimes.size &
+      "#passesPerWeek [id]" #> s"passesPerWeek${musician.id}"
     }) getOrElse PassThru
 
   def summaryTitle = Text((if (svStatsDisplay.is == StatsDisplay.Term) "Term" else "School Year") + " Summary")
 
-  def chartData: Node = {
+  def selectedStudentChartData: Node = {
+    chartData(Some(opMusician.map(_.id).get))
+  }
+
+  def allStudentChartData: Node = {
+    chartData(None)
+  }
+
+  private def chartData(musicianId: Option[Int]): Node = {
     val allYear = svStatsDisplay.is == StatsDisplay.Year
-    val filteredRows = AssessmentRows(Some(opMusician.map(_.id).get), limit = Int.MaxValue).filter { ar =>
-      allYear || containingTerm(ar.date) == currentMester }
+    val filteredRows = AssessmentRows(musicianId, limit = Int.MaxValue).filter { ar =>
+      allYear || containingTerm(ar.date) == currentMester
+    }
+    val byMusician = filteredRows.groupBy(_.musician.id)
     val df = DateTimeFormat.forPattern("MM/dd")
+    val testsByDateByStudent = byMusician.mapValues { v =>
+      v.groupBy(ar => df.print(ar.date.withDayOfWeek(1))).toSeq.sortBy(_._1)
+    }
+    val dataValuesByStudent = testsByDateByStudent.map {
+      case (musicianId, testsByDate) =>
+        val dataValuesByMusician = testsByDate.map { case (date, groupOfTests) => s"""
+{
+    "label" : "$date" ,
+    "value" : ${groupOfTests.seq.count(_.pass)}
+}"""
+        }.mkString(",")
+        musicianId -> dataValuesByMusician
+    }
     val groupedAndSortedRows = filteredRows.groupBy(ar => df.print(ar.date.withDayOfWeek(1))).toSeq.sortBy(_._1)
     val dataValues = groupedAndSortedRows.map { case (date, groupOfTests) => s"""
-    {
-        "label" : "$date" ,
-        "value" : ${groupOfTests.seq.count(_.pass)}
-    }"""}.mkString(",")
+{
+    "label" : "$date" ,
+    "value" : ${groupOfTests.seq.count(_.pass)}
+}"""
+    }.mkString(",")
 
-    Script(JsRaw(s"""
-chartData = [
-    {
-        key: "Passes Per Week",
-        values: [
-            $dataValues
-        ]
-    }
-];"""))
+    val allStudentsData = dataValuesByStudent.map {
+      case (musicianId, data) =>
+        s"""musician$musicianId:
+[
+{
+    key: "Passes Per Week",
+    values: [$data]
+}
+]
+"""
+    }.mkString(",\n")
+    Script(JsRaw(
+      s"""
+chartData = {
+$allStudentsData
+};"""))
   }
+
+  def buildChart: Node = Script(JsRaw("addGraph(" + opMusician.map(_.id).get + ");"))
 }
 
 object StudentDetails {

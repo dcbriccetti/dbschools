@@ -161,7 +161,9 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
 
     def exportButton = ajaxButton("Export", () => { S.redirectTo("export/students.xlsx") })
 
-    def makeDrawCharts = PassChart.create(groupAssignments.map(_.musician.id).toSet, svStatsDisplay.is == StatsDisplay.Term)
+    def makePassCharts: Node = Script(JsRaw(groupAssignments.map(_.musician.id).distinct.map { mid =>
+      s"addGraph($mid);"
+    }.mkString("")))
 
     (if (selectors.selectedTerm   .value.isRight) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.selectedGroupId.value.isRight) ".group"   #> none[String] else PassThru) andThen (
@@ -233,19 +235,15 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         ".failedX *"          #> bz(stat(_.outsideClassFailed)) &
         ".inClassDaysTested *" #> bz(inClassDaysTested) &
         ".avgPassedPerDay *"  #> (if (inClassDaysTested == 0) "" else nfmt.format(passed.toFloat / inClassDaysTested)) &
-        ".passGraph [id]"     #> s"pg${row.musician.id}" &
-        ".passGraph [width]"  #> PassChart.PassGraphWidthSmall &
-        ".passGraph [height]" #> PassChart.PassGraphHeightSmall &
+        ".passesPerWeek [id]" #> s"passesPerWeek${row.musician.id}" &
         ".lastAss  *"   #> ~lastAsmtTime.map(fmt.print) &
         ".passStreak *" #> stat(_.longestPassingStreakTimes.size) &
-        ".passingImprovement *" #> passingImprovement &
-        ".daysSince *"  #> ~lastAsmtTime.map(la => Days.daysBetween(la, now).getDays.toString) &
         ".lastPass *"   #> formatLastPasses(row)
       })
     } &
     "#locationsGraph [width]"  #> LocationsGraphWidth &
     "#locationsGraph [height]" #> LocationsGraphHeight &
-    "#drawCharts"         #> makeDrawCharts &
+    "#drawCharts"         #> makePassCharts &
     "#drawLocationsChart" #> makeLocationsChart("#locationsGraph", groupAssignments, lastPassesByMusician)
     ))))))
   }

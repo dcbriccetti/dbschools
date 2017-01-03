@@ -73,12 +73,13 @@
                         <tr><td>Passes to in-class days tested ratio:</td><td style="text-align: right"><span id="pd"></span></td></tr>
                         <tr><td>Longest streak of passes:</td><td style="text-align: right"><span id="streak"></span></td></tr>
                     </table>
-                    <div style="margin-top: 1em" id="passesPerWeek">
+                    <div style="margin-top: 1em">
                         <div>Number of passes per week</div>
-                        <svg style="height: 200px;"></svg>
+                        <svg id="passesPerWeek" style="height: 200px;"></svg>
                     </div>
-                    <span data-lift="StudentDetails.chartData"></span>
+                    <span data-lift="StudentDetails.selectedStudentChartData"></span>
                     <script src="js/passesPerWeek.js"></script>
+                    <span data-lift="StudentDetails.buildChart"></span>
                 </div>
             </div>
         </div>

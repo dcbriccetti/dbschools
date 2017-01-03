@@ -2,6 +2,8 @@
 <html>
 <body class="lift:content_id=main">
 <div id="main" class="lift:surround?with=default;at=content">
+    <script src="js/d3/d3.min.js"></script>
+    <script src="js/nv.d3.min.js"></script>
     <script src="js/locationsGraph.js"></script>
     <script src="js/passesChart.js"></script>
     <div>
@@ -55,18 +57,16 @@
                 <th title="Grade">Gr</th>
                 <th class="group">Group</th>
                 <th class="instr">Instrument</th>
-                <th title="The total number of tests passed">Pass</th>
-                <th title="The total number of tests failed">Fail</th>
+                <th title="The total number of tests passed">P</th>
+                <th title="The total number of tests failed">F</th>
                 <th title="Percentage of tests passed">%</th>
                 <th title="The number of outside-class tests passed">OP</th>
                 <th title="The number of outside-class tests failed">OF</th>
                 <th title="The number of in-class days tested (those days during which the student was tested during class time)">Days</th>
                 <th title="The number of passes divided by the number of in-class days tested">P/D</th>
                 <th title="Most consecutive passes (streak)">Str</th>
-                <th>Passes over Time</th>
-                <th title="Slope of regression line for recent passes per day" style="text-align: center;" >⇧</th>
+                <th style="text-align: center">Passes per Week</th>
                 <th>Last Test</th>
-                <th>Days</th>
                 <th>Last Passed</th>
             </tr>
             </thead>
@@ -87,10 +87,10 @@
                 <td style="text-align: right;" class="inClassDaysTested"/>
                 <td style="text-align: right;" class="avgPassedPerDay"/>
                 <td style="text-align: right;" class="passStreak"/>
-                <td><canvas class="passGraph"></canvas></td>
-                <td style="text-align: right;" class="passingImprovement"/>
+                <td>
+                    <svg class="passesPerWeek" style="height: 120px; margin-left: -2em;"></svg>
+                </td>
                 <td class="lastAss"/>
-                <td style="text-align: right;" class="daysSince"/>
                 <td class="lastPass"/>
             </tr>
             </tbody>
@@ -102,6 +102,8 @@
                 <span class='stuName'></span>
             </div>
         </div>
+        <span data-lift="StudentDetails.allStudentChartData"></span>
+        <script src="js/passesPerWeek.js"></script>
         <span id="drawCharts"></span>
         <span id="drawLocationsChart"></span>
     </div>
