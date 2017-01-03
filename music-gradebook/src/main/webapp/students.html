@@ -17,8 +17,8 @@
             <span data-lift="Students.sortBy"></span></span>
         <span style="white-space:nowrap;margin-right: 1em;"><label>Pictures:</label>
             <span data-lift="Students.picturesDisplay"></span></span>
-        <span style="white-space:nowrap;margin-right: 1em;"><label>Stats:</label>
-            <span data-lift="Students.statsDisplay"></span></span>
+        <span style="white-space:nowrap;margin-right: 1em;">
+            <span data-lift="Students.statsDisplay"></span><label>Stats:</label> <span data-lift="Students.statsRange"></span></span>
     </div>
 
     <script language="JavaScript">
@@ -57,15 +57,15 @@
                 <th title="Grade">Gr</th>
                 <th class="group">Group</th>
                 <th class="instr">Instrument</th>
-                <th title="The total number of tests passed">P</th>
-                <th title="The total number of tests failed">F</th>
-                <th title="Percentage of tests passed">%</th>
-                <th title="The number of outside-class tests passed">OP</th>
-                <th title="The number of outside-class tests failed">OF</th>
-                <th title="The number of in-class days tested (those days during which the student was tested during class time)">Days</th>
-                <th title="The number of passes divided by the number of in-class days tested">P/D</th>
-                <th title="Most consecutive passes (streak)">Str</th>
-                <th style="text-align: center">Passes per Week</th>
+                <th class="statsCol" title="The total number of tests passed">P</th>
+                <th class="statsCol" title="The total number of tests failed">F</th>
+                <th class="statsCol" title="Percentage of tests passed">%</th>
+                <th class="statsCol" title="The number of outside-class tests passed">OP</th>
+                <th class="statsCol" title="The number of outside-class tests failed">OF</th>
+                <th class="statsCol" title="The number of in-class days tested (those days during which the student was tested during class time)">Days</th>
+                <th class="statsCol" title="The number of passes divided by the number of in-class days tested">P/D</th>
+                <th class="statsCol" title="Most consecutive passes (streak)">Str</th>
+                <th class="statsCol" style="text-align: center">Passes per Week</th>
                 <th>Last Test</th>
                 <th>Last Passed</th>
             </tr>
@@ -79,15 +79,15 @@
                 <td style="text-align: right" class="grade"/>
                 <td class="group"/>
                 <td class="instr"/>
-                <td style="text-align: right;" class="passed"/>
-                <td style="text-align: right;" class="failed"/>
-                <td style="text-align: right;" class="passedPct"/>
-                <td style="text-align: right;" class="passedX"/>
-                <td style="text-align: right;" class="failedX"/>
-                <td style="text-align: right;" class="inClassDaysTested"/>
-                <td style="text-align: right;" class="avgPassedPerDay"/>
-                <td style="text-align: right;" class="passStreak"/>
-                <td>
+                <td style="text-align: right;" class="statsCol passed"/>
+                <td style="text-align: right;" class="statsCol failed"/>
+                <td style="text-align: right;" class="statsCol passedPct"/>
+                <td style="text-align: right;" class="statsCol passedX"/>
+                <td style="text-align: right;" class="statsCol failedX"/>
+                <td style="text-align: right;" class="statsCol inClassDaysTested"/>
+                <td style="text-align: right;" class="statsCol avgPassedPerDay"/>
+                <td style="text-align: right;" class="statsCol passStreak"/>
+                <td class="statsCol ">
                     <svg class="passesPerWeek" style="height: 120px; margin-left: -2em;"></svg>
                 </td>
                 <td class="lastAss"/>

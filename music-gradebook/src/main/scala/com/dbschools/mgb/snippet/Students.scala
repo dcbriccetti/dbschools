@@ -64,6 +64,13 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
   }
 
   def statsDisplay: Seq[Node] = {
+    ajaxCheckbox(svShowStatsOnStudentsPage.is, (show) => {
+      svShowStatsOnStudentsPage(show)
+      replaceContents
+    }, "title" -> "Show stats for the selected time period on this page")
+  }
+
+  def statsRange: Seq[Node] = {
     val choices = Seq(StatsDisplay.Term, StatsDisplay.Year)
     ajaxRadio[StatsDisplay.Value](choices, Full(svStatsDisplay.is), (s) => {
       svStatsDisplay(s)
@@ -170,6 +177,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
     (if (selectors.selectedInstId .value.isRight) ".instr"   #> none[String] else PassThru) andThen (
     (if (svPicturesDisplay.is == PicturesDisplay.Large) "#studentsTable"     #> ClearNodes else PassThru) andThen (
     (if (svPicturesDisplay.is != PicturesDisplay.Large) "#studentsContainer" #> ClearNodes else PassThru) andThen (
+    (if (!svShowStatsOnStudentsPage.is) ".statsCol" #> ClearNodes else PassThru) andThen (
     (if (!Authenticator.canWrite) "#moveToControls" #> ClearNodes else PassThru) andThen (
 
     "#testAll"                #> testAllButton &
@@ -245,7 +253,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
     "#locationsGraph [height]" #> LocationsGraphHeight &
     "#drawCharts"         #> makePassCharts &
     "#drawLocationsChart" #> makeLocationsChart("#locationsGraph", groupAssignments, lastPassesByMusician)
-    ))))))
+    )))))))
   }
 
   private def formatLastPasses(row: GroupAssignment): NodeSeq = {
