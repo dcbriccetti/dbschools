@@ -20,10 +20,12 @@ object Cache {
   /** Term start dates, ordered from most recent to least */
   val terms: Seq[DateTime] = {
     val parser = ISODateTimeFormat.dateTimeParser()
-    Props.get("terms").get.split(',').map(parser.parseDateTime).toSeq.sortBy(_.getMillis).reverse
+    Props.get("terms").openOrThrowException("terms property missing").split(',').map(parser.parseDateTime).toSeq.sortBy(_.getMillis).reverse
   }
 
   def currentMester: DateTime = terms.find(_.getMillis < DateTime.now.getMillis).get
+
+  def yearStart: DateTime = terms.last
 
   var groups:       Seq[Group]              = readGroups
   var groupTerms:   List[GroupTerm]         = readGroupTerms

@@ -3,7 +3,8 @@ package snippet
 
 import java.text.NumberFormat
 import scala.xml.{Node, NodeSeq, Text}
-import org.scala_tools.time.Imports._
+
+import org.apache.log4j.Logger
 import scalaz._
 import Scalaz._
 import net.liftweb._
@@ -17,9 +18,9 @@ import net.liftweb.http.js.JsCmds._
 import net.liftweb.common.Full
 import model._
 import model.TestingManagerMessages.SetCallAfterMins
-import model.Cache.{containingTerm, currentMester}
 
 class StudentDetails extends Collapsible with SelectedMusician with Photos {
+  private val log = Logger.getLogger(getClass)
   private object svCollapsibleShowing extends SessionVar[Array[Boolean]](Array(false, false, false, false))
   private val collapsibleShowing = svCollapsibleShowing.is
 
@@ -92,14 +93,13 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       musician <- opMusician
       stats <- Cache.selectedTestingStatsByMusician(musician.id)
     } yield {
-      "#passes"             #> stats.totalPassed &
+      "#pd"                 #> (if (stats.inClassDaysTested == 0) "" else
+        s"${stats.totalPassed} ÷ ${stats.inClassDaysTested} = " + nfmt.format(stats.totalPassed.toFloat / stats.inClassDaysTested)) &
       "#failures"           #> stats.totalFailed &
       "#passPercent"        #> stats.percentPassed &
       "#xPasses"            #> stats.outsideClassPassed &
       "#xFailures"          #> stats.outsideClassFailed &
       "#totalDaysTested"    #> stats.totalDaysTested &
-      "#inClassDaysTested"  #> stats.inClassDaysTested &
-      "#pd"                 #> (if (stats.inClassDaysTested == 0) "" else nfmt.format(stats.totalPassed.toFloat / stats.inClassDaysTested)) &
       "#streak"             #> stats.longestPassingStreakTimes.size &
       "#passesPerWeek [id]" #> s"passesPerWeek${musician.id}"
     }) getOrElse PassThru
@@ -114,51 +114,8 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
     chartData(None)
   }
 
-  private def chartData(musicianId: Option[Int]): Node = {
-    val allYear = svStatsDisplay.is == StatsDisplay.Year
-    val filteredRows = AssessmentRows(musicianId, limit = Int.MaxValue).filter { ar =>
-      allYear || containingTerm(ar.date) == currentMester
-    }
-    val byMusician = filteredRows.groupBy(_.musician.id)
-    val df = DateTimeFormat.forPattern("MM/dd")
-    val testsByDateByStudent = byMusician.mapValues { v =>
-      v.groupBy(ar => df.print(ar.date.withDayOfWeek(1))).toSeq.sortBy(_._1)
-    }
-    val dataValuesByStudent = testsByDateByStudent.map {
-      case (musicianId, testsByDate) =>
-        val dataValuesByMusician = testsByDate.map { case (date, groupOfTests) => s"""
-{
-    "label" : "$date" ,
-    "value" : ${groupOfTests.seq.count(_.pass)}
-}"""
-        }.mkString(",")
-        musicianId -> dataValuesByMusician
-    }
-    val groupedAndSortedRows = filteredRows.groupBy(ar => df.print(ar.date.withDayOfWeek(1))).toSeq.sortBy(_._1)
-    val dataValues = groupedAndSortedRows.map { case (date, groupOfTests) => s"""
-{
-    "label" : "$date" ,
-    "value" : ${groupOfTests.seq.count(_.pass)}
-}"""
-    }.mkString(",")
-
-    val allStudentsData = dataValuesByStudent.map {
-      case (musicianId, data) =>
-        s"""musician$musicianId:
-[
-{
-    key: "Passes Per Week",
-    values: [$data]
-}
-]
-"""
-    }.mkString(",\n")
-    Script(JsRaw(
-      s"""
-chartData = {
-$allStudentsData
-};"""))
-  }
+  private def chartData(musicianId: Option[Int]): Node =
+    Script(JsRaw(PassesPerWeekChart.json(musicianId)))
 
   def buildChart: Node = Script(JsRaw("addGraph(" + opMusician.map(_.id).get + ");"))
 }

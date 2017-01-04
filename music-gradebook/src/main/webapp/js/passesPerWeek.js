@@ -1,15 +1,22 @@
 function addGraph(musicianId) {
     nv.addGraph(function () {
-        var chart = nv.models.discreteBarChart()
+        var chart = nv.models.multiBarChart()
                 .x(function (d) {
                     return d.label
                 })
                 .y(function (d) {
                     return d.value
                 })
-                .staggerLabels(true)
-                .duration(100)
+                .noData("")
+                .color(["#5cb85c", "#c9302c"])
+                .reduceXTicks(false)
+                .showControls(false)
+                .stacked(true)
+                .showLegend(false)
             ;
+        chart.margin().left = 25;
+        chart.margin().bottom = 20;
+        chart.yAxis.tickFormat(d3.format(',.0d'));
 
         d3.select('#passesPerWeek' + musicianId)
             .datum(chartData['musician' + musicianId])

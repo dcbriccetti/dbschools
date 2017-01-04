@@ -67,7 +67,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
     ajaxCheckbox(svShowStatsOnStudentsPage.is, (show) => {
       svShowStatsOnStudentsPage(show)
       replaceContents
-    }, "title" -> "Show stats for the selected time period on this page")
+    }, "id" -> "statsDisplay", "title" -> "Show stats for the selected time period on this page")
   }
 
   def statsRange: Seq[Node] = {

@@ -5,7 +5,6 @@
     <script src="js/d3/d3.min.js"></script>
     <script src="js/nv.d3.min.js"></script>
     <script src="js/locationsGraph.js"></script>
-    <script src="js/passesChart.js"></script>
     <div>
         School Years: <span><span data-lift="Students.yearSelector"/></span>
         Groups: <span><span data-lift="Students.groupSelector"/></span>
@@ -18,7 +17,7 @@
         <span style="white-space:nowrap;margin-right: 1em;"><label>Pictures:</label>
             <span data-lift="Students.picturesDisplay"></span></span>
         <span style="white-space:nowrap;margin-right: 1em;">
-            <span data-lift="Students.statsDisplay"></span><label>Stats:</label> <span data-lift="Students.statsRange"></span></span>
+            <span id="statsDisplay" data-lift="Students.statsDisplay"></span> <label for="statsDisplay">Stats:</label> <span data-lift="Students.statsRange"></span></span>
     </div>
 
     <script language="JavaScript">
@@ -65,7 +64,7 @@
                 <th class="statsCol" title="The number of in-class days tested (those days during which the student was tested during class time)">Days</th>
                 <th class="statsCol" title="The number of passes divided by the number of in-class days tested">P/D</th>
                 <th class="statsCol" title="Most consecutive passes (streak)">Str</th>
-                <th class="statsCol" style="text-align: center">Passes per Week</th>
+                <th class="statsCol" style="text-align: center">Tests per Week</th>
                 <th>Last Test</th>
                 <th>Last Passed</th>
             </tr>
@@ -88,7 +87,7 @@
                 <td style="text-align: right;" class="statsCol avgPassedPerDay"/>
                 <td style="text-align: right;" class="statsCol passStreak"/>
                 <td class="statsCol ">
-                    <svg class="passesPerWeek" style="height: 120px; margin-left: -2em;"></svg>
+                    <svg class="passesPerWeek" style="height: 120px;"></svg>
                 </td>
                 <td class="lastAss"/>
                 <td class="lastPass"/>
