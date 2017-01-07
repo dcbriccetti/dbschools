@@ -2,6 +2,7 @@ package com.dbschools.mgb
 package snippet
 
 import java.sql.Timestamp
+
 import scala.xml.{NodeSeq, Text}
 import scalaz._
 import Scalaz._
@@ -16,8 +17,8 @@ import http.js.jquery.JqJsCmds
 import http.js.JE.JsRaw
 import net.liftweb.common.{Empty, Full}
 import JqJsCmds.{FadeOut, PrependHtml}
-import schema.{AppSchema, Assessment, AssessmentTag, Musician, User}
-import model.{Actors, AssessmentRow, AssessmentState, Cache, LastPassFinder, MetroSounds, SelectedMusician}
+import schema._
+import model._
 import model.TestingManagerMessages.IncrementMusicianAssessmentCount
 import comet.ActivityCometDispatcher
 import comet.ActivityCometActorMessages._
@@ -132,10 +133,9 @@ class NewAssessment extends SelectedMusician {
         )
         AppSchema.assessments.insert(asmt)
         AppSchema.assessmentTags.insert(selectedCommentIds.map(id => AssessmentTag(asmt.id, id)))
-        
-        Cache.updateLastTestTime(asmt.musician_id, asmtTime)
-        Cache.updateTestingStats(asmt.musician_id)
 
+        model.Assessments.notifyListeners(TestSavedEvent(musician.id, asmtTime))
+        
         val row = createAssessmentRow(asmt, asmtTime, musician, user)
         ActivityCometDispatcher ! ActivityStatusUpdate(row)
         Actors.testingManager ! IncrementMusicianAssessmentCount(user, musician)

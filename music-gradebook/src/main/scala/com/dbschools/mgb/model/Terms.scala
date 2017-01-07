@@ -11,7 +11,7 @@ import org.squeryl.Query
  * Functions for dealing with terms. A term is the year during which the term starts. For example,
  * in the 2012–13 term, the value is 2012.
  */
-object Terms {
+object Terms { // todo rename this, maybe to SchoolYear, since “term” means something else
   val yearEndMonth = 7
 
   def currentTerm: Int = {

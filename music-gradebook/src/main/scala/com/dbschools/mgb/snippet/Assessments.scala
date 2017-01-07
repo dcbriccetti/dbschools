@@ -10,7 +10,7 @@ import util._
 import Helpers._
 import net.liftweb.http.{RequestVar, SHtml}
 import net.liftweb.http.js.JsCmds._
-import model.{TagCounts, SelectedMusician, AssessmentRow, AssessmentRows, UserLoggable}
+import model.{TagCounts, SelectedMusician, ActiveTestingWeeks, Cache, AssessmentRow, AssessmentRows, UserLoggable}
 import schema.{Musician, Subinstrument}
 import LiftExtensions._
 
@@ -70,6 +70,7 @@ object Assessments {
 
       rows.map(ar =>
         ".sel         *"  #> selectionCheckbox(ar) &
+        ".weekNum     *"  #> ActiveTestingWeeks.weekNum(Cache.mesters.yearStart, ar.date) &
         ".date        *"  #> AbbrevDate(ar.date) &
         ".extra       *"  #> (if (ar.outsideClass) "✔︎" else "") &
         ".tester      *"  #> ar.tester &

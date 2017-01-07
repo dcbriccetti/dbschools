@@ -21,7 +21,7 @@ import model.TestingManagerMessages.SetCallAfterMins
 
 class StudentDetails extends Collapsible with SelectedMusician with Photos {
   private val log = Logger.getLogger(getClass)
-  private object svCollapsibleShowing extends SessionVar[Array[Boolean]](Array(false, false, false, false))
+  private object svCollapsibleShowing extends SessionVar[Array[Boolean]](Array(true, false, false, false))
   private val collapsibleShowing = svCollapsibleShowing.is
 
   def render: (NodeSeq) => NodeSeq = {
@@ -115,7 +115,7 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
   }
 
   private def chartData(musicianId: Option[Int]): Node =
-    Script(JsRaw(PassesPerWeekChart.json(musicianId)))
+    Script(JsRaw(PassesPerWeekChart.generateDataAsJson(musicianId)))
 
   def buildChart: Node = Script(JsRaw("addGraph(" + opMusician.map(_.id).get + ");"))
 }

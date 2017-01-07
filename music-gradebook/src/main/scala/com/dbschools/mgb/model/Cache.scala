@@ -5,11 +5,9 @@ import org.apache.log4j.Logger
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.PrimitiveTypeMode.{inTransaction => inT}
 import org.joda.time.DateTime
-import org.joda.time.format.ISODateTimeFormat
 
 import scalaz._
 import Scalaz._
-import net.liftweb.util.Props
 import Terms.{currentTerm, termStart, toTs}
 import schema._
 import snippet.svStatsDisplay
@@ -17,16 +15,7 @@ import snippet.svStatsDisplay
 object Cache {
   val log: Logger = Logger.getLogger(getClass)
 
-  /** Term start dates, ordered from most recent to least */
-  val terms: Seq[DateTime] = {
-    val parser = ISODateTimeFormat.dateTimeParser()
-    Props.get("terms").openOrThrowException("terms property missing").split(',').map(parser.parseDateTime).toSeq.sortBy(_.getMillis).reverse
-  }
-
-  def currentMester: DateTime = terms.find(_.getMillis < DateTime.now.getMillis).get
-
-  def yearStart: DateTime = terms.last
-
+  val mesters                               = new Mesters(None)
   var groups:       Seq[Group]              = readGroups
   var groupTerms:   List[GroupTerm]         = readGroupTerms
   var instruments:  Seq[Instrument]         = readInstruments
@@ -37,6 +26,8 @@ object Cache {
   private var testingStatsByMusician: Map[Int, Map[Option[DateTime], TestingStats]] = readTestingStats()
   var canWriteUsers: Set[Int]               = readCanWrite()
   var adminUsers:   Set[Int]                = readAdmins()
+  val activeTestingWeeks                    = new ActiveTestingWeeks
+  activeTestingWeeks.loadCurrentSchoolYearFromDatabase(mesters.yearStart)
 
   /**
     * Gets testing stats for the specified musician.
@@ -49,15 +40,16 @@ object Cache {
 
   def selectedTestingStatsByMusician(musicianId: Int): Option[TestingStats] =
     testingStatsByMusician(musicianId,
-      if (svStatsDisplay.is == StatsDisplay.Term) Some(Cache.currentMester) else none[DateTime])
+      if (svStatsDisplay.is == StatsDisplay.Term) Some(mesters.current) else none[DateTime])
 
-  private var _lastTestTimeByMusician = inT(for {
+  private var _lastTestTimeByMusician: Map[Int, DateTime] = inT(for {
     groupWithMeasures <- from(AppSchema.assessments)(a => groupBy(a.musician_id) compute max(a.assessment_time))
-    testTime <- groupWithMeasures.measures
-  } yield groupWithMeasures.key -> new DateTime(testTime.getTime)).toMap
+    testTime          <- groupWithMeasures.measures
+    musicianId        =  groupWithMeasures.key
+  } yield musicianId -> new DateTime(testTime.getTime)).toMap
 
   def lastTestTimeByMusician: Map[Int, DateTime] = _lastTestTimeByMusician
-  def updateLastTestTime(musicianId: Int, time: DateTime): Unit = {
+  private def updateLastTestTime(musicianId: Int, time: DateTime): Unit = {
     _lastTestTimeByMusician += musicianId -> time
   }
 
@@ -87,14 +79,12 @@ object Cache {
     testsByMusician.map {
       case (musicianId, testInfos) =>
         val testInfosByTerm: Map[Option[DateTime], Seq[MusicianTestInfo]] =
-          testInfos.toSeq.groupBy(mti => Some(containingTerm(mti.time)))
+          testInfos.toSeq.groupBy(mti => Some(mesters.containing(mti.time)))
         val statsForWholeTerm = none[DateTime] -> TestingStats(testsByMusician(musicianId))
         val testingStatsByTerm = testInfosByTerm.mapValues(TestingStats.apply) + statsForWholeTerm
         musicianId -> testingStatsByTerm
     }
   }
-
-  def containingTerm(time: DateTime): DateTime = terms.find(_.getMillis < time.getMillis).get
 
   private def readCanWrite() = usersWithRole(Roles.Write.id)
 
@@ -104,7 +94,19 @@ object Cache {
     AppSchema.userRoles.withFilter(_.roleId == role).map(_.userId).toSet
   }
 
-  def init(): Unit = {}
+  def init(): Unit = {
+    model.Assessments.registerListener {
+      case TestSavedEvent(musicianId, dateTime) =>
+        log.info(s"Processing TestSavedEvent for $musicianId at $dateTime")
+        Cache.updateLastTestTime(musicianId, dateTime)
+        Cache.updateTestingStats(musicianId)
+        activeTestingWeeks.addFrom(Seq(dateTime), Cache.mesters.yearStart)
+
+      case TestsDeletedEvent(musicianIds) =>
+        log.info(s"Processing TestsDeletedEvent for $musicianIds")
+        musicianIds foreach Cache.updateTestingStats
+    }
+  }
 
   def invalidateGroups(): Unit = { groups = readGroups }
 
@@ -124,7 +126,7 @@ object Cache {
 
   def invalidateTempos(): Unit = { tempos = readTempos }
 
-  def updateTestingStats(musicianId: Int): Unit = testingStatsByMusician ++= readTestingStats(Some(musicianId))
+  private def updateTestingStats(musicianId: Int): Unit = testingStatsByMusician ++= readTestingStats(Some(musicianId))
 
   def nextPiece(piece: Piece): Option[Piece] = pieces.find(_.testOrder.get.compareTo(piece.testOrder.get) > 0)
 
@@ -144,6 +146,6 @@ object Cache {
         group   <- Cache.groups
         period  <- groupIdToPeriod.get(group.id)
       } yield GroupPeriod(group, period)
-    unsorted.toSeq.sortBy(gp => (gp.period, gp.group.shortOrLongName))
+    unsorted.sortBy(gp => (gp.period, gp.group.shortOrLongName))
   }
 }

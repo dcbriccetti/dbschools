@@ -48,12 +48,27 @@ object AssessmentRows {
   private def opStr(s: String) = if (s.trim.isEmpty) None else Some(s)
 }
 
+sealed trait TestingEvent
+case class TestSavedEvent(musicianId: Int, dateTime: DateTime) extends TestingEvent
+case class TestsDeletedEvent(affectedMusicians: Seq[Int]) extends TestingEvent
+
+
 object Assessments {
+  var testingEventListeners: Seq[(TestingEvent) => Unit] = Seq()
+
+  def registerListener(listener: (TestingEvent) => Unit): Unit = testingEventListeners.synchronized {
+    testingEventListeners :+= listener
+  }
+
+  def notifyListeners(event: TestingEvent): Unit = testingEventListeners.synchronized {
+    testingEventListeners.foreach(_(event))
+  }
+
   def delete(ids: Iterable[Int]): Unit = {
     import AppSchema.{assessments, assessmentTags}
     val invalidatedMusicians = assessments.where(_.id in ids).map(_.musician_id).toSeq.distinct
     assessmentTags.deleteWhere(_.assessmentId in ids)
     assessments.deleteWhere(_.id in ids)
-    invalidatedMusicians foreach Cache.updateTestingStats
+    Assessments.notifyListeners(TestsDeletedEvent(invalidatedMusicians))
   }
 }
