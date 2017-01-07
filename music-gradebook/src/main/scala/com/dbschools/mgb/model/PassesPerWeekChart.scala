@@ -19,8 +19,8 @@ object PassesPerWeekChart {
     val testRows = AssessmentRows(opMusicianId, limit = Int.MaxValue).filter { test =>
       entireSchoolYear || mesters.containing(test.date) == mesters.current }
 
-    val testingWeekNums = entireSchoolYear ? Cache.activeTestingWeeks.forSchoolYear(Terms.currentTerm) |
-      Cache.activeTestingWeeks.forSchoolTerm(Terms.currentTerm, mesters.yearStart, mesters.current)
+    val testingWeekNums = entireSchoolYear ? Cache.activeTestingWeeks.forSchoolYear(SchoolYears.current) |
+      Cache.activeTestingWeeks.forSchoolTerm(SchoolYears.current, mesters.yearStart, mesters.current)
 
     val testRowsByMusician = testRows.groupBy(_.musician.id)
 

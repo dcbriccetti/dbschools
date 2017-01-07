@@ -13,7 +13,7 @@ import net.liftweb.common.Full
 import net.liftweb.http.js.JsCmds.Confirm
 import net.liftweb.util.Helpers._
 import schema.{Assessment, Musician, MusicianGroup, AppSchema}
-import model.{Cache, GroupAssignment, SelectedMusician, Terms, UserLoggable}
+import model.{Cache, GroupAssignment, SelectedMusician, SchoolYears, UserLoggable}
 
 case class MusicianDetails(musician: Musician, groups: Iterable[GroupAssignment], assessments: Iterable[Assessment])
 
@@ -22,7 +22,7 @@ object rvMusicianDetails extends RequestVar[Option[MusicianDetails]](None)
 class GroupAssignments extends SelectedMusician with UserLoggable {
   private val log = Logger.getLogger(getClass)
   private var selectedMusicianGroups = Set[Int]()
-  private def groupSelectorValues(term: Int = Terms.currentTerm) =
+  private def groupSelectorValues(term: Int = SchoolYears.current) =
     Cache.filteredGroups(Some(term)).map(gp => (gp.group.id.toString, gp.group.shortOrLongName))
   private var newAssignmentGroupId = groupSelectorValues().head._1.toInt
   private val opMusicianDetails = opMusician.map(musician =>
@@ -58,7 +58,7 @@ class GroupAssignments extends SelectedMusician with UserLoggable {
         instrumentId <- opSoleAssignedInstrumentId orElse Cache.instruments.find(_.name.get == "Unassigned").map(_.id)
         musician     <- opMusician
       } {
-        val term = Terms.currentTerm
+        val term = SchoolYears.current
         if (AppSchema.musicianGroups.where(mg => mg.musician_id === musician.id and
           mg.school_year === term and mg.group_id === newAssignmentGroupId).headOption.nonEmpty) {
           log.warn("Ignoring request to create a duplicate group assignment")
@@ -80,9 +80,9 @@ class GroupAssignments extends SelectedMusician with UserLoggable {
 
     def groupsTable(groups: Iterable[model.GroupAssignment]) =
       groups.map(ga => {
-        val editable = ga.musicianGroup.school_year >= Terms.currentTerm
+        val editable = ga.musicianGroup.school_year >= SchoolYears.current
         ".sel *"        #> (if (editable) assignmentCheckbox(ga) else NodeSeq.Empty) &
-        ".year *"       #> Terms.formatted(ga.musicianGroup.school_year) &
+        ".year *"       #> SchoolYears.formatted(ga.musicianGroup.school_year) &
         ".group *"      #>  (if (editable) groupSelector(ga)
                              else Text(Cache.groups.find(_.id == ga.musicianGroup.group_id).map(_.name) getOrElse "")) &
         ".instrument *" #> (if (editable) instrumentSelector(ga) else

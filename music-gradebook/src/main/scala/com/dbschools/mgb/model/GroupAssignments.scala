@@ -49,7 +49,7 @@ object GroupAssignments extends UserLoggable {
   def assignments: Seq[GroupAssignment] = {
     val group = svSelectors.selectedGroupId
     val opTesting = if (group.isAll) Some(true) else None
-    GroupAssignments(None, svSelectors.selectedTerm.rto, group.rto,
+    GroupAssignments(None, svSelectors.selectedSchoolYear.rto, group.rto,
       svSelectors.selectedInstId.rto, opTesting).toSeq.sortBy(_.musicianGroup.school_year)
   }
 

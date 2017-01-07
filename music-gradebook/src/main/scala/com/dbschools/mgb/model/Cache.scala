@@ -8,7 +8,7 @@ import org.joda.time.DateTime
 
 import scalaz._
 import Scalaz._
-import Terms.{currentTerm, termStart, toTs}
+import SchoolYears.{current, startDate, toTs}
 import schema._
 import snippet.svStatsDisplay
 
@@ -69,7 +69,7 @@ object Cache {
   private def readTestingStats(opMusicianId: Option[Int] = None): Map[Int, Map[Option[DateTime], TestingStats]] = inT {
     val testsByMusician: Map[Int, Iterable[MusicianTestInfo]] =
       from(AppSchema.assessments)(a =>
-      where(a.musician_id === opMusicianId.? and a.assessment_time > toTs(termStart(currentTerm)))
+      where(a.musician_id === opMusicianId.? and a.assessment_time > toTs(startDate(current)))
       select {
         val dateTime = new DateTime(a.assessment_time.getTime)
         MusicianTestInfo(a.musician_id, dateTime, a.pass, Periods.isDuringClassPeriod(dateTime))

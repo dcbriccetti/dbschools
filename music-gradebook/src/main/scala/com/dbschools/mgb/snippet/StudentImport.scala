@@ -8,7 +8,7 @@ import org.apache.log4j.Logger
 import net.liftweb.util.Helpers._
 import net.liftweb.http.SHtml
 import schema.{Musician, MusicianGroup, AppSchema}
-import model.{Cache, Terms}
+import model.{Cache, SchoolYears}
 
 /**
  * Imports tab-separated data in this form:
@@ -17,7 +17,7 @@ import model.{Cache, Terms}
  */
 class StudentImport {
   private val log = Logger.getLogger(getClass)
-  private val importTerm = Terms.currentTerm
+  private val importTerm = SchoolYears.current
 
   def render = {
     var data = ""
@@ -28,7 +28,7 @@ class StudentImport {
       def m(term: Int) = AppSchema.musicianGroups.where(_.school_year === term).
         filter(mg => testingGroupIds.contains(mg.group_id)).groupBy(_.musician_id)
       val musicianGroupsByMusicianIdImportTerm = m(importTerm)
-      val musicianGroupsByMusicianIdCurrentTerm = m(Terms.currentTerm)
+      val musicianGroupsByMusicianIdCurrentTerm = m(SchoolYears.current)
       val insts = AppSchema.instruments.map(i => i.id -> i).toMap
       val UnassignedInstrumentId = insts.values.find(_.name.get == "Unassigned").get // OK to fail
       val InsertToGroup = 15
@@ -44,7 +44,7 @@ class StudentImport {
 
         val (musician, isNew) = musiciansByPermId.get(id).map((_, false)) | {
           val newM = Musician.createRecord.permStudentId(id).last_name(last).first_name(first).
-            graduation_year(Terms.gradeAsGraduationYear(grade))
+            graduation_year(SchoolYears.gradeAsGraduationYear(grade))
           AppSchema.musicians.insert(newM)
           (newM, true)
         }

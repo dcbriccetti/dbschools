@@ -15,8 +15,8 @@ import net.liftweb.http.js.JsCmds.Replace
 import net.liftweb.common.Loggable
 import schema.AppSchema
 import AppSchema._
-import model.{Cache, Terms}
-import model.Terms.toTs
+import model.{Cache, SchoolYears}
+import model.SchoolYears.toTs
 
 class Statistics extends Loggable {
 
@@ -32,11 +32,11 @@ class Statistics extends Loggable {
 
   def yearSelector = selectors.yearSelector
 
-  private def fromTo = selectors.selectedTerm.rto.map(Terms.termFromTo) | Terms.allTermsFromTo
+  private def fromTo = selectors.selectedSchoolYear.rto.map(SchoolYears.fromToDates) | SchoolYears.allFromToDates
 
   def assessmentsByGroup = {
     val (dtFrom, dtTo) = fromTo
-    val gps = Cache.filteredGroups(selectors.selectedTerm.value.right.toOption)
+    val gps = Cache.filteredGroups(selectors.selectedSchoolYear.value.right.toOption)
     val namesToPer = gps.map(gp => gp.group.name -> gp.period).toMap
     val groupIds = gps.map(_.group.id)
     val q = join(groups, musicianGroups, musicians, assessments)((g, mg, m, a) =>
@@ -64,8 +64,8 @@ class Statistics extends Loggable {
   }
 
   def assessmentsByGrade  = createTable("Grade",  queryByGrade, (gradYear: String) =>
-    (Terms.graduationYearAsGrade(gradYear.toInt) -
-    (Terms.currentTerm - (selectors.selectedTerm.rto | Terms.currentTerm))).toString)
+    (SchoolYears.graduationYearAsGrade(gradYear.toInt) -
+    (SchoolYears.current - (selectors.selectedSchoolYear.rto | SchoolYears.current))).toString)
 
   def assessmentsByTester = createTable("Tester", queryByTester)
 

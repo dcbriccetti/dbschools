@@ -65,11 +65,11 @@ class TestingManager extends Actor {
       if (musicianIds.nonEmpty) {
         val musicianIdsWithInstruments = transaction {
           val instQ = from(AppSchema.musicianGroups)(mg =>
-            where(mg.musician_id in musicianIds and mg.school_year === Terms.currentTerm)
+            where(mg.musician_id in musicianIds and mg.school_year === SchoolYears.current)
             select mg.instrument_id
           ).distinct
           from(AppSchema.musicianGroups)(mg =>
-            where(mg.instrument_id in instQ and mg.school_year === Terms.currentTerm)
+            where(mg.instrument_id in instQ and mg.school_year === SchoolYears.current)
             select mg.musician_id
           ).distinct.toVector
         }

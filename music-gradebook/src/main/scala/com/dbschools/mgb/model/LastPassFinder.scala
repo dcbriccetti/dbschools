@@ -5,7 +5,7 @@ import Scalaz._
 import org.squeryl.PrimitiveTypeMode._
 import org.scala_tools.time.Imports._
 import com.dbschools.mgb.schema._
-import Terms.toTs
+import SchoolYears.toTs
 
 class LastPassFinder {
   val pieces = Cache.pieces
@@ -24,7 +24,7 @@ class LastPassFinder {
         a.pass === true and
         a.assessment_time < upTo.map(toTs).? and
         a.musician_id === musicianId.? and
-        mg.school_year === Terms.currentTerm)
+        mg.school_year === SchoolYears.current)
       groupBy(a.musician_id, a.instrument_id, a.subinstrument_id)
       compute max(p.testOrder.get)
       orderBy max(p.testOrder.get).desc

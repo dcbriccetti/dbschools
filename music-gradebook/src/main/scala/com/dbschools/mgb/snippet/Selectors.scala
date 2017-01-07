@@ -7,24 +7,22 @@ import net.liftweb.common.{Loggable, Full}
 import net.liftweb.http._
 import js.JsCmd
 import js.JsCmds.{Noop, ReplaceOptions}
-import SHtml.ElemAttr
-import SHtml.ElemAttr._
-import model.{Cache, Terms}
+import model.{Cache, SchoolYears}
 import schema.MusicianGroup
 
 class Selectors(callback: => Option[() => JsCmd] = None, onlyTestingGroups: Boolean = false) extends Loggable {
   import Selectors._
   import Selection.AllItems
-  var selectedTerm    = Selection(Terms.currentTerm)
-  var selectedGroupId = AllItems
-  var selectedInstId  = AllItems
+  var selectedSchoolYear  = Selection(SchoolYears.current)
+  var selectedGroupId     = AllItems
+  var selectedInstId      = AllItems
 
   var opCallback = callback
 
-  def yearSelector = selector("yearSelector", allItem :: Terms.allTermsFormatted, selectedTerm, updateTerm, opCallback)
+  def yearSelector = selector("yearSelector", allItem :: SchoolYears.allFormatted, selectedSchoolYear, updateTerm, opCallback)
 
   private def updateTerm(opTerm: Selection) = {
-    selectedTerm = opTerm
+    selectedSchoolYear = opTerm
     // Show only the groups with assessments in the term
     selectedGroupId = AllItems
     ReplaceOptions(groupSelectorId, groupSelectValues, Full(All)): JsCmd
@@ -35,14 +33,14 @@ class Selectors(callback: => Option[() => JsCmd] = None, onlyTestingGroups: Bool
   def groupSelector =
     selector(groupSelectorId, groupSelectValues, selectedGroupId, selectedGroupId = _, opCallback)
 
-  private def groupSelectValues = allItem :: Selectors.groupsWithoutAll(selectedTerm)
+  private def groupSelectValues = allItem :: Selectors.groupsWithoutAll(selectedSchoolYear)
 
   def instrumentSelector = {
     val instruments = Cache.instruments.sortBy(_.sequence.get).map(i => i.id.toString -> i.name.get)
     selector("instrumentSelector", allItem +: instruments, selectedInstId, selectedInstId = _, opCallback)
   }
 
-  def musicianGroups = MusicianGroup.selectedMusicians(selectedTerm.rto, selectedGroupId.rto, selectedInstId.rto)
+  def musicianGroups = MusicianGroup.selectedMusicians(selectedSchoolYear.rto, selectedGroupId.rto, selectedInstId.rto)
 }
 
 object Selectors {

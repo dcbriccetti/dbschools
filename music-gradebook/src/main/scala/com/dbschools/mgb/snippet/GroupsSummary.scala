@@ -10,7 +10,7 @@ import net.liftweb.http.SHtml
 import net.liftweb.http.js.JsCmds.Replace
 import bootstrap.liftweb.ApplicationPaths
 import schema.{Instrument, AppSchema}
-import com.dbschools.mgb.model.{LastPassFinder, Cache, Terms}
+import com.dbschools.mgb.model.{LastPassFinder, Cache, SchoolYears}
 import snippet.LiftExtensions._
 import Selection._
 
@@ -28,7 +28,7 @@ class GroupsSummary extends LocationsGraph {
 
   def render = {
     case class Count(groupId: Int, instrumentId: Int, count: Long)
-    val year = selectors.selectedTerm.rto | Terms.currentTerm
+    val year = selectors.selectedSchoolYear.rto | SchoolYears.current
     val q = from(AppSchema.musicianGroups)(mg =>
       where(mg.school_year === year)
       groupBy(mg.group_id, mg.instrument_id)
@@ -36,7 +36,7 @@ class GroupsSummary extends LocationsGraph {
     )
     val counts = q.map(g => Count(g.key._1, g.key._2, g.measures))
     val countsByGroup = counts.groupBy(_.groupId)
-    val groupPeriods = Cache.filteredGroups(selectors.selectedTerm.rto)
+    val groupPeriods = Cache.filteredGroups(selectors.selectedSchoolYear.rto)
     val usedInstruments = {
       val usedInstIds = counts.map(_.instrumentId).toSet
       Cache.instruments.filter(usedInstIds contains _.id).sortBy(_.sequence.get)
@@ -120,7 +120,7 @@ class GroupsSummary extends LocationsGraph {
       ".locationsGraph [height]" #> LocationsGraphHeight
     }) &
     "#drawLocationsCharts" #> testingPeriods.map(gp => {
-      val groupAssignments = model.GroupAssignments(None, svSelectors.selectedTerm.rto, Some(gp.group.id),
+      val groupAssignments = model.GroupAssignments(None, svSelectors.selectedSchoolYear.rto, Some(gp.group.id),
         None, Some(true)).toSeq
       makeLocationsChart("#" + lgId(gp.group.id), groupAssignments, lastPassesByMusician)
     }).fold(NodeSeq.Empty)(_ ++ _)

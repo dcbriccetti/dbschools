@@ -4,7 +4,7 @@ import math.random
 import org.squeryl.PrimitiveTypeMode._
 import schema.{MusicianGroup, Musician, AppSchema}
 import net.liftweb.common.Loggable
-import com.dbschools.mgb.model.Terms
+import com.dbschools.mgb.model.SchoolYears
 import com.dbschools.mgb.dbconn.Db
 
 object TestDataMaker extends Loggable {
@@ -238,7 +238,7 @@ cindy""")
     var id = 10000 // Until we set up sequences
     lastNames.foreach(lastName => {
       val firstName = firstNames((random * firstNames.length).toInt)
-      val grad_year = Terms.currentTerm
+      val grad_year = SchoolYears.current
       val m = AppSchema.musicians.insert(Musician.createRecord.permStudentId(id).first_name(firstName).
         last_name(lastName).graduation_year(grad_year))
       id += 1

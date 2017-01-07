@@ -6,7 +6,7 @@ import org.squeryl.annotations._
 import net.liftweb.record.{MetaRecord, Record}
 import net.liftweb.record.field.{OptionalStringField, StringField, OptionalTextareaField, IntField}
 import net.liftweb.squerylrecord.KeyedRecord
-import com.dbschools.mgb.model.Terms
+import com.dbschools.mgb.model.SchoolYears
 
 case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
   override def meta = Musician
@@ -50,7 +50,7 @@ case class Musician private() extends Record[Musician] with KeyedRecord[Int]{
   }
 
   @Column("graduation_year")
-  val graduation_year = new IntField(this, Terms.currentTerm) {
+  val graduation_year = new IntField(this, SchoolYears.current) {
     override def displayName = "Graduation Year"
   }
 

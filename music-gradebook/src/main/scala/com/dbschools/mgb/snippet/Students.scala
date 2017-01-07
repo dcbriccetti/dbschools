@@ -3,12 +3,10 @@ package snippet
 
 import java.io.File
 import java.text.NumberFormat
-
 import xml.{Elem, Node, NodeSeq, Text}
 import scalaz._
 import Scalaz._
 import org.scala_tools.time.Imports._
-import org.joda.time.Days
 import org.squeryl.PrimitiveTypeMode._
 import net.liftweb._
 import common.{Full, Loggable}
@@ -158,7 +156,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
     def moveToGroupSelector = {
       import Selectors._
       val disables = Seq(disableIf(selectedMusicians.isEmpty)).flatten
-      val groupsWithoutAll = Selectors.groupsWithoutAll(selectors.selectedTerm)
+      val groupsWithoutAll = Selectors.groupsWithoutAll(selectors.selectedSchoolYear)
       moveToGroup = groupsWithoutAll match {
         case first :: rest  => Selection(first._1.toInt)
         case _              => Selection.NoItems
@@ -172,13 +170,14 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
       s"addGraph($mid);"
     }.mkString("")))
 
-    (if (selectors.selectedTerm   .value.isRight) ".schYear" #> none[String] else PassThru) andThen (
-    (if (selectors.selectedGroupId.value.isRight) ".group"   #> none[String] else PassThru) andThen (
-    (if (selectors.selectedInstId .value.isRight) ".instr"   #> none[String] else PassThru) andThen (
+    (if (selectors.selectedSchoolYear.value.isRight) ".schYear" #> none[String] else PassThru) andThen (
+    (if (selectors.selectedGroupId   .value.isRight) ".group"   #> none[String] else PassThru) andThen (
+    (if (selectors.selectedInstId    .value.isRight) ".instr"   #> none[String] else PassThru) andThen (
     (if (svPicturesDisplay.is == PicturesDisplay.Large) "#studentsTable"     #> ClearNodes else PassThru) andThen (
     (if (svPicturesDisplay.is != PicturesDisplay.Large) "#studentsContainer" #> ClearNodes else PassThru) andThen (
     (if (!svShowStatsOnStudentsPage.is) ".statsCol" #> ClearNodes else PassThru) andThen (
     (if (!Authenticator.canWrite) "#moveToControls" #> ClearNodes else PassThru) andThen (
+      // todo don’t show passfails for past years, or show them correctly
 
     "#testAll"                #> testAllButton &
     "#autoSelect"             #> autoSelectButton &
@@ -213,7 +212,6 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
       val nfmt0 = NumberFormat.getInstance
       nfmt0.setMaximumFractionDigits(0)
 
-
       val now = DateTime.now
       groupAssignments.map(row => {
         val lastAsmtTime = lastTestTimeByMusician.get(row.musician.id)
@@ -230,10 +228,10 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
             title = "Recent passes per day: " + ti.recentDailyPassCounts.mkString(", ")
           } yield <span title={title}>{nfmt.format(ti.slope)}</span>
         ".sel      *" #> selectionCheckbox(row.musician) &
-        ".schYear  *" #> Terms.formatted(row.musicianGroup.school_year) &
+        ".schYear  *" #> SchoolYears.formatted(row.musicianGroup.school_year) &
         ".stuName  *" #> studentLink(row.musician) &
         ".photo    *" #> (if (svPicturesDisplay.is != PicturesDisplay.None) img(row.musician.permStudentId.get) else NodeSeq.Empty) &
-        ".grade    *" #> Terms.graduationYearAsGrade(row.musician.graduation_year.get) &
+        ".grade    *" #> SchoolYears.graduationYearAsGrade(row.musician.graduation_year.get) &
         ".group    *" #> row.group.name &
         ".instr    *" #> row.instrument.name.get &
         ".passed *"           #> bz(passed) &
@@ -270,7 +268,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
       ".stuName  *" #> studentLink(m) &
       ".id       *" #> m.id &
       ".stuId    *" #> m.permStudentId.get &
-      ".grade    *" #> Terms.graduationYearAsGrade(m.graduation_year.get)
+      ".grade    *" #> SchoolYears.graduationYearAsGrade(m.graduation_year.get)
     )
   }
 

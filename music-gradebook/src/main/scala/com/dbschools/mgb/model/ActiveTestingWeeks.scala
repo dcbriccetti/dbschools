@@ -4,7 +4,7 @@ package model
 import org.apache.log4j.Logger
 import org.joda.time.{DateTime, Weeks}
 import org.squeryl.PrimitiveTypeMode._
-import Terms.toTs
+import SchoolYears.toTs
 import schema.AppSchema
 
 /** Given test dates, provides the week numbers of weeks during which testing took place. */
@@ -30,8 +30,8 @@ class ActiveTestingWeeks() {
     */
   def addFrom(dates: Iterable[DateTime], schoolYearStart: DateTime): Unit = synchronized {
     dates.foreach { date =>
-      val setForSchoolYear = activeWeeksByYear(Terms.currentTerm) + ActiveTestingWeeks.weekNum(schoolYearStart, date)
-      activeWeeksByYear += Terms.currentTerm -> setForSchoolYear
+      val setForSchoolYear = activeWeeksByYear(SchoolYears.current) + ActiveTestingWeeks.weekNum(schoolYearStart, date)
+      activeWeeksByYear += SchoolYears.current -> setForSchoolYear
     }
   }
 

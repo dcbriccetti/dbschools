@@ -64,7 +64,7 @@ object Exporter {
       Row().withCellValues(
         row.group.name,
         row.musician.nameLastFirstNick,
-        Terms.graduationYearAsGrade(row.musician.graduation_year.get),
+        SchoolYears.graduationYearAsGrade(row.musician.graduation_year.get),
         row.instrument.name.get,
         passed,
         stat(_.totalFailed),

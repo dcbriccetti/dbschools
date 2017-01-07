@@ -13,7 +13,7 @@ import http._
 import net.liftweb.util.{ClearNodes, Helpers}
 import Helpers._
 import schema.{LearnState, AppSchema}
-import model.{Terms, GroupAssignment}
+import model.{SchoolYears, GroupAssignment}
 
 class LearnStudents extends Photos {
   private val userId = Authenticator.opLoggedInUser.get.id
@@ -71,7 +71,7 @@ class LearnStudents extends Photos {
 
   def schedule(delaySeconds: Int) = {
     if (delaySeconds == 0) state.requeueCurrent()
-    state.saveDue(Terms.toTs(DateTime.now.plusSeconds(delaySeconds)))
+    state.saveDue(SchoolYears.toTs(DateTime.now.plusSeconds(delaySeconds)))
     state.next()
     state.opCurrent.map(groupAssignment => {
       state.front = true
@@ -96,7 +96,7 @@ class LearnStudents extends Photos {
 
   private def info(ga: GroupAssignment) = {
     val m = ga.musician
-    s"${m.nameNickLast}, Grade ${Terms.graduationYearAsGrade(m.graduation_year.get)}, ${ga.instrument.name.get}"
+    s"${m.nameNickLast}, Grade ${SchoolYears.graduationYearAsGrade(m.graduation_year.get)}, ${ga.instrument.name.get}"
   }
 
   def render = {

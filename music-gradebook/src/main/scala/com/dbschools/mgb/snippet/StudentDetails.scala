@@ -65,7 +65,7 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       "#photo"              #> img(m.permStudentId.get) &
       "#name *"             #> m.nameFirstNickLast &
       "#edit *"             #> (if (Authenticator.canWrite) link(ApplicationPaths.editStudent.href, () => {}, Text("Edit")) else NodeSeq.Empty) &
-      ".grade"              #> Terms.graduationYearAsGrade(m.graduation_year.get) &
+      ".grade"              #> SchoolYears.graduationYearAsGrade(m.graduation_year.get) &
       ".stuId"              #> m.permStudentId.toString() &
       "#lastPiece *"        #> StudentDetails.lastPiece(lastPassFinder, m.id) &
       "#numberPassed *"     #> ~Cache.selectedTestingStatsByMusician(m.id).map(_.totalPassed) &
