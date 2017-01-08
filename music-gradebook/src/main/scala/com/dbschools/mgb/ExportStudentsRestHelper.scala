@@ -14,7 +14,7 @@ import com.norbitltd.spoiwo.model.enums.CellFill
 import bootstrap.liftweb.ApplicationPaths.logIn
 import com.dbschools.mgb.schema.Subinstrument
 import model._
-import model.Cache.{lastTestTimeByMusician, selectedTestingStatsByMusician, mesters}
+import model.Cache.{lastTestTimeByMusician, selectedTestingStatsByMusician, terms}
 import snippet.{Authenticator, svGroupAssignments, svStatsDisplay}
 
 /** Processes requests to download a spreadsheet of students */
@@ -84,7 +84,7 @@ object Exporter {
     val musicianIds = svGroupAssignments.is.map(_.musician.id)
     val allYear = svStatsDisplay.is == StatsDisplay.Year
     val filteredRows = AssessmentRows(None, limit = Int.MaxValue).filter { ar =>
-      (musicianIds contains ar.musician.id) && (allYear || mesters.containing(ar.date) == mesters.current) }
+      (musicianIds contains ar.musician.id) && (allYear || terms.containing(ar.date) == terms.current) }
     // todo Select only the needed rows from the database, rather than filtering after selecting
     val sortedAssessments = filteredRows.toList.sortBy(ar =>
       (ar.musician.nameLastFirstNick, -ar.date.getMillis))

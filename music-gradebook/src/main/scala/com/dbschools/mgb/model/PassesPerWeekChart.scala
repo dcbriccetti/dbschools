@@ -5,7 +5,7 @@ import scalaz._
 import Scalaz._
 import org.apache.log4j.Logger
 import snippet.svStatsDisplay
-import model.Cache.mesters
+import model.Cache.terms
 
 object PassesPerWeekChart {
   private val log = Logger.getLogger(getClass)
@@ -16,10 +16,10 @@ object PassesPerWeekChart {
     val entireSchoolYear = svStatsDisplay.is == StatsDisplay.Year
 
     val testRows = AssessmentRows(opMusicianId, limit = Int.MaxValue).filter { test =>
-      entireSchoolYear || mesters.containing(test.date) == mesters.current }
+      entireSchoolYear || terms.containing(test.date) == terms.current }
 
     val testingWeekNums = entireSchoolYear ? Cache.activeTestingWeeks.forSchoolYear(SchoolYears.current) |
-      Cache.activeTestingWeeks.forSchoolTerm(SchoolYears.current, mesters.yearStart, mesters.current)
+      Cache.activeTestingWeeks.forSchoolTerm(SchoolYears.current, terms.yearStart, terms.current)
 
     val testRowsByMusician = testRows.groupBy(_.musician.id)
 
@@ -45,7 +45,7 @@ object PassesPerWeekChart {
     PassFailsForWeek(weekNum, PF(assessmentRowsForWeek.count(_.pass), assessmentRowsForWeek.count(!_.pass)))
   }
 
-  private def weekNumForTest(test: AssessmentRow) = ActiveTestingWeeks.weekNum(mesters.yearStart, test.date)
+  private def weekNumForTest(test: AssessmentRow) = ActiveTestingWeeks.weekNum(terms.yearStart, test.date)
 
   private def studentsDataFromWeekCounts(weekCountsByMusician: Map[Int, Seq[PassFailsForWeek]]) =
     weekCountsByMusician.map {

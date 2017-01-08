@@ -15,7 +15,7 @@ import snippet.svStatsDisplay
 object Cache {
   val log: Logger = Logger.getLogger(getClass)
 
-  val mesters                               = new Mesters(None)
+  val terms                                 = new Terms(None)
   var groups:       Seq[Group]              = readGroups
   var groupTerms:   List[GroupTerm]         = readGroupTerms
   var instruments:  Seq[Instrument]         = readInstruments
@@ -27,7 +27,7 @@ object Cache {
   var canWriteUsers: Set[Int]               = readCanWrite()
   var adminUsers:   Set[Int]                = readAdmins()
   val activeTestingWeeks                    = new ActiveTestingWeeks
-  activeTestingWeeks.loadCurrentSchoolYearFromDatabase(mesters.yearStart)
+  activeTestingWeeks.loadCurrentSchoolYearFromDatabase(terms.yearStart)
 
   /**
     * Gets testing stats for the specified musician.
@@ -40,7 +40,7 @@ object Cache {
 
   def selectedTestingStatsByMusician(musicianId: Int): Option[TestingStats] =
     testingStatsByMusician(musicianId,
-      if (svStatsDisplay.is == StatsDisplay.Term) Some(mesters.current) else none[DateTime])
+      if (svStatsDisplay.is == StatsDisplay.Term) Some(terms.current) else none[DateTime])
 
   private var _lastTestTimeByMusician: Map[Int, DateTime] = inT(for {
     groupWithMeasures <- from(AppSchema.assessments)(a => groupBy(a.musician_id) compute max(a.assessment_time))
@@ -79,7 +79,7 @@ object Cache {
     testsByMusician.map {
       case (musicianId, testInfos) =>
         val testInfosByTerm: Map[Option[DateTime], Seq[MusicianTestInfo]] =
-          testInfos.toSeq.groupBy(mti => Some(mesters.containing(mti.time)))
+          testInfos.toSeq.groupBy(mti => Some(terms.containing(mti.time)))
         val statsForWholeTerm = none[DateTime] -> TestingStats(testsByMusician(musicianId))
         val testingStatsByTerm = testInfosByTerm.mapValues(TestingStats.apply) + statsForWholeTerm
         musicianId -> testingStatsByTerm
@@ -100,7 +100,7 @@ object Cache {
         log.info(s"Processing TestSavedEvent for $musicianId at $dateTime")
         Cache.updateLastTestTime(musicianId, dateTime)
         Cache.updateTestingStats(musicianId)
-        activeTestingWeeks.addFrom(Seq(dateTime), Cache.mesters.yearStart)
+        activeTestingWeeks.addFrom(Seq(dateTime), Cache.terms.yearStart)
 
       case TestsDeletedEvent(musicianIds) =>
         log.info(s"Processing TestsDeletedEvent for $musicianIds")

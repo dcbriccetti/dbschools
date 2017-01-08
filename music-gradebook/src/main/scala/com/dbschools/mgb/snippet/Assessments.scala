@@ -70,7 +70,7 @@ object Assessments {
 
       rows.map(ar =>
         ".sel         *"  #> selectionCheckbox(ar) &
-        ".weekNum     *"  #> ActiveTestingWeeks.weekNum(Cache.mesters.yearStart, ar.date) &
+        ".weekNum     *"  #> ActiveTestingWeeks.weekNum(Cache.terms.yearStart, ar.date) &
         ".date        *"  #> AbbrevDate(ar.date) &
         ".extra       *"  #> (if (ar.outsideClass) "✔︎" else "") &
         ".tester      *"  #> ar.tester &
