@@ -51,11 +51,27 @@ object Periods {
     Period(7, 14, 8, 14, 53)
   )
 
+  private val monFriAlt1 = Vector(
+    Period(1,  8, 15,  8, 58),
+    Period(2,  9,  2,  9, 43),
+    Period(3,  9, 47, 10, 28),
+    Period(4, 10, 42, 11, 23),
+    Period(5, 11, 27, 12,  8),
+    Period(6, 13, 27, 14,  8),
+    Period(7, 14, 12, 14, 53)
+  )
+
   private val bp1 = Bp(8, 15, 9, 22)
   private val bp2 = Bp(9, 26, 10, 31)
   private val bp3 = Bp(10, 45, 11, 50)
   private val bp4 = Bp(12, 39, 13, 44)
   private val bp5 = Bp(13, 48, 14, 53)
+
+  private val bp1Alt1 = Bp( 8, 15,  9, 17)
+  private val bp2Alt1 = Bp( 9, 21, 10, 21)
+  private val bp3Alt1 = Bp(10, 33, 11, 33)
+  private val bp4Alt1 = Bp(12, 49, 13, 49)
+  private val bp5Alt1 = Bp(13, 53, 14, 53)
 
   private val tue = Vector(
     Period(1, bp1),
@@ -65,11 +81,26 @@ object Periods {
     Period(7, bp5)
   )
 
+  private val tueAlt1 = Vector(
+    Period(1, bp1Alt1),
+    Period(3, bp2Alt1),
+    Period(5, bp3Alt1),
+    Period(6, bp4Alt1),
+    Period(7, bp5Alt1)
+  )
+
   private val wed = Vector(
     Period(2, 9, 24, 10, 31),
     Period(4, bp3),
     Period(5, bp4),
     Period(6, bp5)
+  )
+
+  private val wedAlt1 = Vector(
+    Period(2,  9, 24, 10, 25),
+    Period(4, 10, 37, 11, 36),
+    Period(5, 12, 51, 13, 50),
+    Period(6, 13, 54, 14, 53)
   )
 
   private val thu = Vector(
@@ -80,15 +111,27 @@ object Periods {
     Period(7, bp5)
   )
   
-  private val week = Vector(monFri, tue, wed, thu, monFri)
+  private val thuAlt1 = Vector(
+    Period(1, bp1Alt1),
+    Period(2, bp2Alt1),
+    Period(3, bp3Alt1),
+    Period(4, bp4Alt1),
+    Period(7, bp5Alt1)
+  )
+
+  private val weekStandard = Vector(monFri, tue, wed, thu, monFri)
+  private val weekAlt1 = Vector(monFriAlt1, tueAlt1, wedAlt1, thuAlt1, monFriAlt1)
 
   def periodWithin(dateTime: DateTime = DateTime.now): TimeClass = {
     val dayOfWeek = dateTime.getDayOfWeek
     if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-      val periods = week(dayOfWeek - 1)
+      val periods = getWeek(dateTime)(dayOfWeek - 1)
       periods.find(_.within(dateTime)) getOrElse NotInPeriod
     } else NotInPeriod
   }
 
   def isDuringClassPeriod(dateTime: DateTime = DateTime.now): Boolean = periodWithin(dateTime).isInstanceOf[Period]
+
+  private def getWeek(d: DateTime) =
+    if (d.getYear == 2017 && d.getMonthOfYear == 1) weekAlt1 else weekStandard
 }
