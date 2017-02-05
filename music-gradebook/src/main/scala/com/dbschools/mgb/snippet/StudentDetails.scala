@@ -87,6 +87,8 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
   private val nfmt = NumberFormat.getInstance
   nfmt.setMaximumFractionDigits(2)
   nfmt.setMinimumFractionDigits(2)
+  private val nfmt0 = NumberFormat.getInstance
+  nfmt0.setMaximumFractionDigits(0)
 
   def summary: (NodeSeq) => NodeSeq =
     (for {
@@ -94,24 +96,27 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       stats <- Cache.selectedTestingStatsByMusician(musician.id)
     } yield {
       "#pd"                 #> (if (stats.inClassDaysTested == 0) "" else
-        s"${stats.totalPassed} ÷ ${stats.inClassDaysTested} = " + nfmt.format(stats.totalPassed.toFloat / stats.inClassDaysTested)) &
+        s"${stats.totalPassed} ÷ ${stats.inClassDaysTested} = " + nfmt.format(stats.passesPerInClassTestDays)) &
       "#failures"           #> stats.totalFailed &
       "#passPercent"        #> stats.percentPassed &
       "#xPasses"            #> stats.outsideClassPassed &
       "#xFailures"          #> stats.outsideClassFailed &
       "#totalDaysTested"    #> stats.totalDaysTested &
       "#streak"             #> stats.longestPassingStreakTimes.size &
-      "#passesPerWeek [id]" #> s"passesPerWeek${musician.id}"
+      "#passesPerWeek [id]" #> s"passesPerWeek${musician.id}" &
+      "#testScorePct"       #> (nfmt0.format(stats.testScorePercent) + "%") &
+      "#passesNeeded"       #> stats.passesNeeded &
+      "#moreDetailsPanel [style]" #> ("display: " + (if (svShowMoreStudentDetails.is) "block" else "none")) &
+      "#moreDetails"        #> ajaxCheckbox(svShowMoreStudentDetails.is, (show) => {
+                                  svShowMoreStudentDetails(show)
+                                  JsRaw("""$("#moreDetailsPanel").""" +
+                                    (if (show) "show()" else "hide()")) }, "id" -> "moreDetails")
     }) getOrElse PassThru
 
   def summaryTitle = Text((if (svStatsDisplay.is == StatsDisplay.Term) "Term" else "School Year") + " Summary")
 
   def selectedStudentChartData: Node = {
     chartData(Some(opMusician.map(_.id).get))
-  }
-
-  def allStudentChartData: Node = {
-    chartData(None)
   }
 
   private def chartData(musicianId: Option[Int]): Node =

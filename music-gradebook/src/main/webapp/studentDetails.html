@@ -63,20 +63,30 @@
                 <div class="panel-body">
                     <table>
                         <tr><td>Passes / In-class days tested:</td><td style="text-align: right"><span id="pd"></span></td></tr>
-                        <tr><td>Failures:</td><td style="text-align: right"><span id="failures"></span></td></tr>
-                        <tr><td>Pass %:</td><td style="text-align: right"><span id="passPercent"></span></td></tr>
-                        <tr><td>Outside-of-class passes:</td><td style="text-align: right"><span id="xPasses"></span></td></tr>
-                        <tr><td>Outside-of-class failures:</td><td style="text-align: right"><span id="xFailures"></span></td></tr>
-                        <tr><td>Total days tested:</td><td style="text-align: right"><span id="totalDaysTested"></span></td></tr>
-                        <tr><td>Longest streak of passes:</td><td style="text-align: right"><span id="streak"></span></td></tr>
+                        <tr><td>Test score:</td><td style="text-align: right"><span id="testScorePct"></span></td></tr>
+                        <tr><td>Passes needed:</td><td style="text-align: right"><span id="passesNeeded"></span></td></tr>
                     </table>
-                    <div style="margin-top: 1em">
-                        <div>Number of tests per week:</div>
-                        <svg id="passesPerWeek" style="height: 200px; width: 100%;"></svg>
+                    <div>
+                        <br/>
+                        <span id="moreDetails"></span> <label for="moreDetails">Show more details</label>
                     </div>
-                    <span data-lift="StudentDetails.selectedStudentChartData"></span>
-                    <script src="js/passesPerWeek.js"></script>
-                    <span data-lift="StudentDetails.buildChart"></span>
+                    <div id="moreDetailsPanel">
+                        <table>
+                            <tr><td>Failures:</td><td style="text-align: right"><span id="failures"></span></td></tr>
+                            <tr><td>Pass %:</td><td style="text-align: right"><span id="passPercent"></span></td></tr>
+                            <tr><td>Outside-of-class passes:</td><td style="text-align: right"><span id="xPasses"></span></td></tr>
+                            <tr><td>Outside-of-class failures:</td><td style="text-align: right"><span id="xFailures"></span></td></tr>
+                            <tr><td>Total days tested:</td><td style="text-align: right"><span id="totalDaysTested"></span></td></tr>
+                            <tr><td>Longest streak of passes:</td><td style="text-align: right"><span id="streak"></span></td></tr>
+                        </table>
+                        <div style="margin-top: 1em">
+                            <div>Number of tests per week:</div>
+                            <svg id="passesPerWeek" style="height: 200px; width: 100%;"></svg>
+                        </div>
+                        <span data-lift="StudentDetails.selectedStudentChartData"></span>
+                        <script src="js/passesPerWeek.js"></script>
+                        <span data-lift="StudentDetails.buildChart"></span>
+                    </div>
                 </div>
             </div>
         </div>

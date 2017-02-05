@@ -14,3 +14,5 @@ object svGroupAssignments extends SessionVar[Seq[GroupAssignment]](Nil)
 object svStatsDisplay extends SessionVar[StatsDisplay.Value](StatsDisplay.Term)
 
 object svShowStatsOnStudentsPage extends SessionVar[Boolean](true)
+
+object svShowMoreStudentDetails extends SessionVar[Boolean](false)

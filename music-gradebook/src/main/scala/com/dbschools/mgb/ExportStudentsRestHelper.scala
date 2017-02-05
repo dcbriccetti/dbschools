@@ -51,12 +51,13 @@ object Exporter {
     val headerStyle =
       CellStyle(fillPattern = CellFill.Solid, fillForegroundColor = Color.LightBlue, font = Font(bold = true))
     val hr = Row(style = headerStyle).withCellValues(
-      "Group", "Name", "Gr", "Instrument", "Pass", "Fail", "%", "OP", "OF", "Days", "P/D", "Str", "Last Test", "Last Passed")
+      "Group", "Name", "Gr", "Instrument", "Pass", "Fail", "%", "OP", "OF", "Days", "P/D", "TS", "PN", "Str", "Last Test", "Last Passed")
 
     val statsRows = List(hr) ++
         svGroupAssignments.is.sortBy(ga => (ga.group.name, ga.musician.nameLastFirstNick)).map { row =>
       val opStats = selectedTestingStatsByMusician(row.musician.id)
       def stat(fn: TestingStats => Int) = ~opStats.map(fn)
+      def statd(fn: TestingStats => Double) = ~opStats.map(fn)
       val passed  = stat(_.totalPassed)
       val inClassDaysTested = stat(_.inClassDaysTested)
       val passes = lastPassesByMusician.getOrElse(row.musician.id, Seq[LastPass]())
@@ -73,6 +74,8 @@ object Exporter {
         stat(_.outsideClassFailed),
         inClassDaysTested,
         if (inClassDaysTested == 0) "0.0" else nfmt.format(passed.toFloat / inClassDaysTested),
+        statd(_.testScorePercent),
+        stat(_.passesNeeded),
         stat(_.longestPassingStreakTimes.size),
         ~lastTestTimeByMusician.get(row.musician.id).map(fmt.print),
         passes.map(lp => lp.formatted(passes.size > 1 || lp.instrumentId != row.instrument.id)).mkString(", ")

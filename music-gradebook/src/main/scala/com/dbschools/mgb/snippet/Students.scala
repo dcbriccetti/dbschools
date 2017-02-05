@@ -166,10 +166,6 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
 
     def exportButton = ajaxButton("Export", () => { S.redirectTo("export/students.xlsx") })
 
-    def makePassCharts: Node = Script(JsRaw(groupAssignments.map(_.musician.id).distinct.map { mid =>
-      s"addGraph($mid);"
-    }.mkString("")))
-
     (if (selectors.selectedSchoolYear.value.isRight) ".schYear" #> none[String] else PassThru) andThen (
     (if (selectors.selectedGroupId   .value.isRight) ".group"   #> none[String] else PassThru) andThen (
     (if (selectors.selectedInstId    .value.isRight) ".instr"   #> none[String] else PassThru) andThen (
@@ -217,6 +213,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         val lastAsmtTime = lastTestTimeByMusician.get(row.musician.id)
         val opStats = Cache.selectedTestingStatsByMusician(row.musician.id)
         def stat(fn: TestingStats => Int) = ~opStats.map(fn)
+        def statd(fn: TestingStats => Double) = ~opStats.map(fn)
         val passed  = stat(_.totalPassed)
         val inClassDaysTested = stat(_.inClassDaysTested)
         def bz /* blank if zero */[A](value: A) =
@@ -243,13 +240,14 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         ".avgPassedPerDay *"  #> (if (inClassDaysTested == 0) "" else nfmt.format(passed.toFloat / inClassDaysTested)) &
         ".passesPerWeek [id]" #> s"passesPerWeek${row.musician.id}" &
         ".lastAss  *"   #> ~lastAsmtTime.map(fmt.print) &
-        ".passStreak *" #> stat(_.longestPassingStreakTimes.size) &
-        ".lastPass *"   #> formatLastPasses(row)
+        ".testScorePct *"     #> (nfmt0.format(statd(_.testScorePercent)) + "%") &
+        ".passesNeeded *"     #> bz(stat(_.passesNeeded)) &
+        ".passStreak *"       #> stat(_.longestPassingStreakTimes.size) &
+        ".lastPass *"         #> formatLastPasses(row)
       })
     } &
     "#locationsGraph [width]"  #> LocationsGraphWidth &
     "#locationsGraph [height]" #> LocationsGraphHeight &
-    "#drawCharts"         #> makePassCharts &
     "#drawLocationsChart" #> makeLocationsChart("#locationsGraph", groupAssignments, lastPassesByMusician)
     )))))))
   }

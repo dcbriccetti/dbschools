@@ -63,8 +63,9 @@
                 <th class="statsCol" title="The number of outside-class tests failed">OF</th>
                 <th class="statsCol" title="The number of in-class days tested (those days during which the student was tested during class time)">Days</th>
                 <th class="statsCol" title="The number of passes divided by the number of in-class days tested">P/D</th>
+                <th class="statsCol" title="Test score %">TS</th>
+                <th class="statsCol" title="Passes needed">PN</th>
                 <th class="statsCol" title="Most consecutive passes (streak)">Str</th>
-                <th class="statsCol" style="text-align: center">Tests per Week</th>
                 <th>Last Test</th>
                 <th>Last Passed</th>
             </tr>
@@ -85,10 +86,9 @@
                 <td style="text-align: right;" class="statsCol failedX"/>
                 <td style="text-align: right;" class="statsCol inClassDaysTested"/>
                 <td style="text-align: right;" class="statsCol avgPassedPerDay"/>
+                <td style="text-align: right;" class="statsCol testScorePct"/>
+                <td style="text-align: right;" class="statsCol passesNeeded"/>
                 <td style="text-align: right;" class="statsCol passStreak"/>
-                <td class="statsCol ">
-                    <svg class="passesPerWeek" style="height: 120px;"></svg>
-                </td>
                 <td class="lastAss"/>
                 <td class="lastPass"/>
             </tr>
@@ -101,8 +101,6 @@
                 <span class='stuName'></span>
             </div>
         </div>
-        <span data-lift="StudentDetails.allStudentChartData"></span>
-        <script src="js/passesPerWeek.js"></script>
         <span id="drawCharts"></span>
         <span id="drawLocationsChart"></span>
     </div>
