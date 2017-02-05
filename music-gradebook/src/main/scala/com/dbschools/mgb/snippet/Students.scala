@@ -238,7 +238,6 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         ".failedX *"          #> bz(stat(_.outsideClassFailed)) &
         ".inClassDaysTested *" #> bz(inClassDaysTested) &
         ".avgPassedPerDay *"  #> (if (inClassDaysTested == 0) "" else nfmt.format(passed.toFloat / inClassDaysTested)) &
-        ".passesPerWeek [id]" #> s"passesPerWeek${row.musician.id}" &
         ".lastAss  *"   #> ~lastAsmtTime.map(fmt.print) &
         ".testScorePct *"     #> (nfmt0.format(statd(_.testScorePercent)) + "%") &
         ".passesNeeded *"     #> bz(stat(_.passesNeeded)) &

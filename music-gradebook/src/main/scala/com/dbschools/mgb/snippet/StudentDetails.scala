@@ -103,7 +103,6 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
       "#xFailures"          #> stats.outsideClassFailed &
       "#totalDaysTested"    #> stats.totalDaysTested &
       "#streak"             #> stats.longestPassingStreakTimes.size &
-      "#passesPerWeek [id]" #> s"passesPerWeek${musician.id}" &
       "#testScorePct"       #> (nfmt0.format(stats.testScorePercent) + "%") &
       "#passesNeeded"       #> stats.passesNeeded &
       "#moreDetailsPanel [style]" #> ("display: " + (if (svShowMoreStudentDetails.is) "block" else "none")) &
@@ -114,15 +113,6 @@ class StudentDetails extends Collapsible with SelectedMusician with Photos {
     }) getOrElse PassThru
 
   def summaryTitle = Text((if (svStatsDisplay.is == StatsDisplay.Term) "Term" else "School Year") + " Summary")
-
-  def selectedStudentChartData: Node = {
-    chartData(Some(opMusician.map(_.id).get))
-  }
-
-  private def chartData(musicianId: Option[Int]): Node =
-    Script(JsRaw(PassesPerWeekChart.generateDataAsJson(musicianId)))
-
-  def buildChart: Node = Script(JsRaw("addGraph(" + opMusician.map(_.id).get + ");"))
 }
 
 object StudentDetails {
