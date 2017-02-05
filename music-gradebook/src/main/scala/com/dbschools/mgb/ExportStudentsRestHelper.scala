@@ -73,7 +73,7 @@ object Exporter {
         stat(_.outsideClassPassed),
         stat(_.outsideClassFailed),
         inClassDaysTested,
-        if (inClassDaysTested == 0) "0.0" else nfmt.format(passed.toFloat / inClassDaysTested),
+        if (inClassDaysTested == 0) 0d else passed.toDouble / inClassDaysTested,
         statd(_.testScorePercent),
         stat(_.passesNeeded),
         stat(_.longestPassingStreakTimes.size),
