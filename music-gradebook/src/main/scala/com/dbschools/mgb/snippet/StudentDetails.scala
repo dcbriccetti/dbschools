@@ -21,7 +21,7 @@ import model.TestingManagerMessages.SetCallAfterMins
 
 class StudentDetails extends Collapsible with SelectedMusician with Photos {
   private val log = Logger.getLogger(getClass)
-  private object svCollapsibleShowing extends SessionVar[Array[Boolean]](Array(true, false, false, false))
+  private object svCollapsibleShowing extends SessionVar[Array[Boolean]](Array(false, false, false, false))
   private val collapsibleShowing = svCollapsibleShowing.is
 
   def render: (NodeSeq) => NodeSeq = {

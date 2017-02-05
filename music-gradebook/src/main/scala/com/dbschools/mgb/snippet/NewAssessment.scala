@@ -10,9 +10,9 @@ import org.scala_tools.time.Imports._
 import net.liftweb.util.Helpers._
 import net.liftweb.util.CssSel
 import net.liftweb.http
-import http.SHtml
+import http.{SHtml, Templates}
 import http.js.JsCmd
-import http.js.JsCmds.{Noop, ReplaceOptions, Script, SetHtml, SetValById}
+import http.js.JsCmds.{Noop, Replace, ReplaceOptions, Script, SetHtml, SetValById}
 import http.js.jquery.JqJsCmds
 import http.js.JE.JsRaw
 import net.liftweb.common.{Empty, Full}
@@ -83,19 +83,20 @@ class NewAssessment extends SelectedMusician {
 
     val pieceNames = Cache.pieces.map(p => p.id -> p.name.get).toMap
 
-    def updatePageForNextAssessment(row: AssessmentRow, curAsmt: Assessment) =
-      PrependHtml("assessmentsBody", Assessments.createRow(row, keepStudent = false)) &
-      SetHtml("lastPiece", Text(StudentDetails.lastPiece(lastPassFinder, curAsmt.musician_id))) &
-      (s.opSelPieceId.map(id => JsJqVal("#piece", id)) getOrElse Noop) &
-      sendTempo &
-      SetValById("commentText", "") &
-      SetHtml("checkbox1", checkboxes(0)) &
-      SetHtml("checkbox2", checkboxes(1)) &
-      {
+    def updatePageForNextAssessment(row: AssessmentRow, curAsmt: Assessment) = {
+      Templates(List("_studentDetailsSummary")).map(SetHtml("studentDetailsSummaryWrapper", _)).openOrThrowException("Must be present") &
+        PrependHtml("assessmentsBody", Assessments.createRow(row, keepStudent = false)) &
+        SetHtml("lastPiece", Text(StudentDetails.lastPiece(lastPassFinder, curAsmt.musician_id))) &
+        (s.opSelPieceId.map(id => JsJqVal("#piece", id)) getOrElse Noop) &
+        sendTempo &
+        SetValById("commentText", "") &
+        SetHtml("checkbox1", checkboxes(0)) &
+        SetHtml("checkbox2", checkboxes(1)) & {
         val id = "passFailConfirmation"
         val msg = if (curAsmt.pass) "Passed " else "Failed "
         SetHtml(id, Text(msg + pieceNames(curAsmt.pieceId))) & JqJsCmds.Show(id) & FadeOut(id)
       }
+    }
 
     def createAssessmentRow(asmt: Assessment, asmtTime: DateTime, musician: Musician, user: User): AssessmentRow = {
       val inst = s.opSelInstId.flatMap(id => Cache.instruments.find(_.id == id)).map(_.name.get)
