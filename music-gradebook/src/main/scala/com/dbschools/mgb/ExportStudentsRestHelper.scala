@@ -1,7 +1,6 @@
 package com.dbschools.mgb
 
 import java.io._
-import java.text.NumberFormat
 
 import scalaz._
 import Scalaz._
@@ -44,9 +43,6 @@ object Exporter {
   /** Writes a spreadsheet file of exported students to the specified output stream */
   def exportStudents(os: OutputStream): Unit = {
     val fmt = DateTimeFormat.forStyle("S-")
-    val nfmt = NumberFormat.getInstance
-    nfmt.setMaximumFractionDigits(2)
-    nfmt.setMinimumFractionDigits(2)
     val lastPassesByMusician = new LastPassFinder().lastPassed().groupBy(_.musicianId)
     val headerStyle =
       CellStyle(fillPattern = CellFill.Solid, fillForegroundColor = Color.LightBlue, font = Font(bold = true))
