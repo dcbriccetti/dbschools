@@ -11,7 +11,7 @@ import com.norbitltd.spoiwo.model._
 import com.norbitltd.spoiwo.natures.xlsx.Model2XlsxConversions._
 import com.norbitltd.spoiwo.model.enums.CellFill
 import bootstrap.liftweb.ApplicationPaths.logIn
-import com.dbschools.mgb.schema.Subinstrument
+import schema.Subinstrument
 import model._
 import model.Cache.{lastTestTimeByMusician, selectedTestingStatsByMusician, terms}
 import snippet.{Authenticator, svGroupAssignments, svStatsDisplay}
@@ -47,7 +47,7 @@ object Exporter {
     val headerStyle =
       CellStyle(fillPattern = CellFill.Solid, fillForegroundColor = Color.LightBlue, font = Font(bold = true))
     val hr = Row(style = headerStyle).withCellValues(
-      "Group", "Name", "Gr", "Instrument", "Pass", "Fail", "%", "OP", "OF", "Days", "P/D", "TS", "PN", "Str", "Last Test", "Last Passed")
+      "Group", "Name", "Gr", "Instrument", "Pass", "Fail", "OP", "OF", "Days", "P/D", "Score", "PN", "Str", "Last Test", "Last Passed")
 
     val statsRows = List(hr) ++
         svGroupAssignments.is.sortBy(ga => (ga.group.name, ga.musician.nameLastFirstNick)).map { row =>
@@ -65,7 +65,6 @@ object Exporter {
         row.instrument.name.get,
         passed,
         stat(_.totalFailed),
-        stat(_.percentPassed),
         stat(_.outsideClassPassed),
         stat(_.outsideClassFailed),
         inClassDaysTested,
@@ -107,4 +106,3 @@ object Exporter {
     workbook.write(os)
   }
 }
-

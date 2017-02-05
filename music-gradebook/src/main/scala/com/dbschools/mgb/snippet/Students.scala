@@ -15,8 +15,8 @@ import Helpers._
 import http.{LiftRules, S, SHtml}
 import http.provider.servlet.HTTPServletContext
 import SHtml.{ElemAttr, ajaxButton, ajaxCheckbox, ajaxRadio, link, number, onSubmitUnit, text}
+import net.liftweb.http.js.JsCmd
 import net.liftweb.http.js.JsCmds._
-import net.liftweb.http.js.JsCmds.Replace
 import net.liftweb.http.js.JE.JsRaw
 import LiftExtensions._
 import bootstrap.liftweb.ApplicationPaths
@@ -41,10 +41,10 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
 
   private val lastPassesByMusician = new LastPassFinder().lastPassed().groupBy(_.musicianId)
 
-  def createNew = "#create" #> SHtml.link(ApplicationPaths.editStudent.href,
+  def createNew: CssBindFunc = "#create" #> SHtml.link(ApplicationPaths.editStudent.href,
     () => svSelectedMusician(None), Text("New Student"))
 
-  def sortBy = {
+  def sortBy: Seq[Node] = {
     val orders = Seq(SortStudentsBy.Name, SortStudentsBy.LastAssessment,
       SortStudentsBy.LastPassed, SortStudentsBy.NumPassed, SortStudentsBy.PctPassed, SortStudentsBy.Streak)
     ajaxRadio[SortStudentsBy.Value](orders, Full(svSortingStudentsBy.is), (s) => {
@@ -53,7 +53,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
     }).flatMap(item => <label style="margin-right: .5em;">{item.xhtml} {item.key.toString} </label>)
   }
 
-  def picturesDisplay = {
+  def picturesDisplay: Seq[Node] = {
     val choices = Seq(PicturesDisplay.None, PicturesDisplay.Small, PicturesDisplay.Large)
     ajaxRadio[PicturesDisplay.Value](choices, Full(svPicturesDisplay.is), (s) => {
       svPicturesDisplay(s)
@@ -76,13 +76,13 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
     }).flatMap(item => <label style="margin-right: .5em;">{item.xhtml} {item.key.toString} </label>)
   }
 
-  var newId = 0
-  var grade = 6
-  var name = ""
-  var selectedMusicians = Vector[Musician]()
-  var moveToGroup = Selection.NoItems
+  private var newId = 0
+  private var grade = 6
+  private var name = ""
+  private var selectedMusicians = Vector[Musician]()
+  private var moveToGroup = Selection.NoItems
 
-  def newStudent = {
+  def newStudent: CssBindFunc = {
 
     def saveStudent = {
       logger.warn(s"Creating student $newId $grade $name")
@@ -121,7 +121,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         groupAssignments.map(_.musician), selectedMusicians)
       groupAssignments.drop(indexOfLastChecked + 1).take(5).map(row => {
         selectedMusicians :+= row.musician
-        JsCheckIf("#" + cbId(row.musician.id), true)
+        JsCheckIf("#" + cbId(row.musician.id), condition = true)
       }).fold(Noop)(_ & _) & enableButtons
     })
 
@@ -233,7 +233,6 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         ".instr    *" #> row.instrument.name.get &
         ".passed *"           #> bz(passed) &
         ".failed *"           #> bz(stat(_.totalFailed)) &
-        ".passedPct *"        #> s"${stat(_.percentPassed)}%" &
         ".passedX *"          #> bz(stat(_.outsideClassPassed)) &
         ".failedX *"          #> bz(stat(_.outsideClassFailed)) &
         ".inClassDaysTested *" #> bz(inClassDaysTested) &
@@ -243,6 +242,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
         ".passesNeeded *"     #> bz(stat(_.passesNeeded)) &
         ".passStreak *"       #> stat(_.longestPassingStreakTimes.size) &
         ".lastPass *"         #> formatLastPasses(row)
+        // Keep ExportStudentsRestHelper in sync with these columns
       })
     } &
     "#locationsGraph [width]"  #> LocationsGraphWidth &
@@ -257,7 +257,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
     lastPasses.fold(NodeSeq.Empty)(_ ++ <br/> ++ _).drop(1)
   }
 
-  def inNoGroups = {
+  def inNoGroups: CssBindFunc = {
     val musicians = join(AppSchema.musicians, AppSchema.musicianGroups.leftOuter)((m, mg) =>
       where(mg.map(_.id).isNull) select m on (m.musician_id.get === mg.map(_.musician_id)))
 
@@ -290,11 +290,10 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
       svSelectedMusician(Some(m))
     }, Text(m.nameNickLast), "target" -> "student")
   }
-
 }
 
 object Students {
-  def adjustButtons = {
+  def adjustButtons: JsCmd = {
     val ne = model.testingState.enqueuedMusicians.nonEmpty
     val testSel = "#test"
     JsEnableIf("#clearSchedule", ne) & JsEnableIf(testSel, ne) & JsClassIf(testSel, "btn-primary", ne)
@@ -302,18 +301,18 @@ object Students {
 }
 
 trait Photos {
-  val opPdir = Props.get("photosDir").toOption
+  val opPdir: Option[String] = Props.get("photosDir").toOption
 
   case class Paths(rel: String, abs: String)
 
-  def paths(permId: Long) =
+  def paths(permId: Long): Option[Paths] =
     for {
       relPath <- opPdir
       ctx      = LiftRules.context.asInstanceOf[HTTPServletContext].ctx
       absPath  = ctx.getRealPath("/" + relPath)
     } yield Paths(relPath, absPath)
 
-  def pictureFilename(permId: Long) = {
+  def pictureFilename(permId: Long): Option[String] = {
     def fn(dir: String) = s"$dir/$permId.jpg"
 
     for {
@@ -323,6 +322,6 @@ trait Photos {
     } yield fnr
   }
 
-  def img(permId: Long) = pictureFilename(permId).map(fnr =>
+  def img(permId: Long): NodeSeq = pictureFilename(permId).map(fnr =>
     <img src={fnr} title={s"<img style='width: 172px;' src='$fnr'/>"}/>) getOrElse NodeSeq.Empty
 }
