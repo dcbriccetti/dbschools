@@ -13,7 +13,7 @@ import com.norbitltd.spoiwo.model.enums.CellFill
 import bootstrap.liftweb.ApplicationPaths.logIn
 import schema.Subinstrument
 import model._
-import model.Cache.{lastTestTimeByMusician, selectedTestingStatsByMusician, terms}
+import model.Cache.{lastInClassTestTime, selectedTestingStatsByMusician, terms}
 import snippet.{Authenticator, svGroupAssignments, svStatsDisplay}
 
 /** Processes requests to download a spreadsheet of students */
@@ -47,7 +47,7 @@ object Exporter {
     val headerStyle =
       CellStyle(fillPattern = CellFill.Solid, fillForegroundColor = Color.LightBlue, font = Font(bold = true))
     val hr = Row(style = headerStyle).withCellValues(
-      "Group", "Name", "Gr", "Instrument", "Pass", "Fail", "OP", "OF", "Days", "P/D", "Score", "PN", "Str", "Last Test", "Last Passed")
+      "Group", "Name", "Gr", "Instrument", "Pass", "Fail", "OP", "OF", "Days", "P/D", "Score", "PN", "Str", "IC Test", "Last Passed")
 
     val statsRows = List(hr) ++
         svGroupAssignments.is.sortBy(ga => (ga.group.name, ga.musician.nameLastFirstNick)).map { row =>
@@ -72,7 +72,7 @@ object Exporter {
         statd(_.testScorePercent),
         stat(_.passesNeeded),
         stat(_.longestPassingStreakTimes.size),
-        ~lastTestTimeByMusician.get(row.musician.id).map(fmt.print),
+        lastInClassTestTime(row.musician.id).map(fmt.print),
         passes.map(lp => lp.formatted(passes.size > 1 || lp.instrumentId != row.instrument.id)).mkString(", ")
       )
     }

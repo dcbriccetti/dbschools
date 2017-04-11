@@ -23,7 +23,7 @@ import bootstrap.liftweb.ApplicationPaths
 import schema.{AppSchema, Musician}
 import model._
 import model.TestingManagerMessages._
-import Cache.lastTestTimeByMusician
+import Cache.lastInClassTestTime
 
 class Students extends SelectedMusician with Photos with ChartFeatures with LocationsGraph with Loggable {
   private val selectors = svSelectors.is
@@ -210,7 +210,7 @@ class Students extends SelectedMusician with Photos with ChartFeatures with Loca
 
       val now = DateTime.now
       groupAssignments.map(row => {
-        val lastAsmtTime = lastTestTimeByMusician.get(row.musician.id)
+        val lastAsmtTime = lastInClassTestTime(row.musician.id)
         val opStats = Cache.selectedTestingStatsByMusician(row.musician.id)
         def stat(fn: TestingStats => Int) = ~opStats.map(fn)
         def statd(fn: TestingStats => Double) = ~opStats.map(fn)

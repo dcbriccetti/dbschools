@@ -42,15 +42,12 @@ object Cache {
     testingStatsByMusician(musicianId,
       if (svStatsDisplay.is == StatsDisplay.Term) Some(terms.current) else none[DateTime])
 
-  private var _lastTestTimeByMusician: Map[Int, DateTime] = inT(for {
-    groupWithMeasures <- from(AppSchema.assessments)(a => groupBy(a.musician_id) compute max(a.assessment_time))
-    testTime          <- groupWithMeasures.measures
-    musicianId        =  groupWithMeasures.key
-  } yield musicianId -> new DateTime(testTime.getTime)).toMap
-
-  def lastTestTimeByMusician: Map[Int, DateTime] = _lastTestTimeByMusician
-  private def updateLastTestTime(musicianId: Int, time: DateTime): Unit = {
-    _lastTestTimeByMusician += musicianId -> time
+  def lastInClassTestTime(musicianId: Int): Option[DateTime] = {
+    for {
+      statsForMusicianByMester  <- testingStatsByMusician.get(musicianId)
+      testingStats              <- statsForMusicianByMester.get(None)
+      lastInClassTest           <- testingStats.opLastInClassTest
+    } yield lastInClassTest
   }
 
   private def readGroups      = inT {AppSchema.groups.toSeq.sortBy(_.name)}
@@ -98,7 +95,6 @@ object Cache {
     model.Assessments.registerListener {
       case TestSavedEvent(musicianId, dateTime) =>
         log.info(s"Processing TestSavedEvent for $musicianId at $dateTime")
-        Cache.updateLastTestTime(musicianId, dateTime)
         Cache.updateTestingStats(musicianId)
         activeTestingWeeks.addFrom(Seq(dateTime), Cache.terms.yearStart)
 
