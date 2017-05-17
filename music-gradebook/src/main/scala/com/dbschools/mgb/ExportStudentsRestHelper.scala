@@ -72,7 +72,7 @@ object Exporter {
         statd(_.testScorePercent),
         stat(_.passesNeeded),
         stat(_.longestPassingStreakTimes.size),
-        lastInClassTestTime(row.musician.id).map(fmt.print),
+        lastInClassTestTime(row.musician.id).map(fmt.print) | "",
         passes.map(lp => lp.formatted(passes.size > 1 || lp.instrumentId != row.instrument.id)).mkString(", ")
       )
     }
