@@ -6,7 +6,6 @@ import Scalaz._
 import org.scala_tools.time.Imports._
 import org.squeryl.PrimitiveTypeMode._
 import schema.{AppSchema, AssessmentTag, Musician}
-import SchoolYears.{current, startDate, toTs}
 
 case class AssessmentRow(assId: Int, date: DateTime, musician: Musician, tester: String, piece: String,
   instrument: String, subinstrument: Option[String], pass: Boolean, notes: Option[String]) {
@@ -20,7 +19,7 @@ object AssessmentRows {
   def apply(opMusicianId: Option[Int], limit: Int): Iterable[AssessmentRow] = {
     val rows =
       join(assessments, musicians, pieces, instruments, users, subinstruments.leftOuter)((a, m, p, i, u, s) =>
-        where(a.musician_id === opMusicianId.? and a.assessment_time > toTs(startDate(current)))
+        where(a.musician_id === opMusicianId.?)
         select AssessmentRow(a.id,
           new DateTime(a.assessment_time.getTime), m, u.last_name, p.name.get, i.name.get,
           s.map(_.name.get), a.pass,

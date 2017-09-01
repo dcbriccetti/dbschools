@@ -68,9 +68,14 @@ object Assessments {
           if (selectedAsses.isEmpty) JsHideId("deleteAss") else JsShowId("deleteAss")
         })
 
+      def formatWeekNum(ar: AssessmentRow): String = {
+        val wn = ActiveTestingWeeks.weekNum(Cache.terms.yearStart, ar.date)
+        (wn > 0) ? wn.toString | ""
+      }
+
       rows.map(ar =>
         ".sel         *"  #> selectionCheckbox(ar) &
-        ".weekNum     *"  #> ActiveTestingWeeks.weekNum(Cache.terms.yearStart, ar.date) &
+        ".weekNum     *"  #> formatWeekNum(ar) &
         ".date        *"  #> AbbrevDate(ar.date) &
         ".extra       *"  #> (if (ar.outsideClass) "✔︎" else "") &
         ".tester      *"  #> ar.tester &

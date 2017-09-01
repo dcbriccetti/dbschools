@@ -23,8 +23,7 @@ class LastPassFinder {
       where(
         a.pass === true and
         a.assessment_time < upTo.map(toTs).? and
-        a.musician_id === musicianId.? and
-        mg.school_year === SchoolYears.current)
+        a.musician_id === musicianId.?)
       groupBy(a.musician_id, a.instrument_id, a.subinstrument_id)
       compute max(p.testOrder.get)
       orderBy max(p.testOrder.get).desc

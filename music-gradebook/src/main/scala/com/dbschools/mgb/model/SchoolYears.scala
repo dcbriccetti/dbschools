@@ -42,7 +42,7 @@ object SchoolYears {
 
   def toTs(dt: DateTime) = new Timestamp(dt.millis)
 
-  def startDate(year: Int) = new DateTime(year, 8, 26, 0, 0, 0, 0) // todo don't hard code
+  def startDate(year: Int) = new DateTime(year, 8, 21, 0, 0, 0, 0) // todo don't hard code
 
   def endDate(year: Int): DateTime = startDate(year) + 1.year
 
