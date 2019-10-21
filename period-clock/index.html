@@ -14,10 +14,10 @@
 <body>
 
 <div class="container-fluid">
-    <h3>Period Clock—Stanley Middle School</h3>
+    <h3>Period Clock—<span id="schoolName"></span></h3>
 
     <div id="period">
-        <h3>Period <span id="periodNumber"></span>, <span id="periodRange"></span></h3>
+        <h3>Period: <span id="periodName"></span>, <span id="periodRange"></span></h3>
         <h5>
             <span id="progressMins"></span>
             <progress id="timeRemaining"></progress> <span id="periodLength"></span> Mins
@@ -34,6 +34,15 @@
         <form method="get">
             <label for="periodNames">Period Names, separated by “|”</label>
             <input id="periodNames" name="periodNames" type="text"/>
+            <input type="submit"/>
+        </form>
+    </div>
+
+    <div id='defineSchoolDiv' class="row">
+        <p>You can create a schedule by pasting in a definition.</p>
+        <form method="get">
+            <label for="scheduleDef">Schedule</label><br/>
+            <textarea id="scheduleDef" name="scheduleDef" rows="3" cols="50"></textarea><br/>
             <input type="submit"/>
         </form>
     </div>

@@ -30,4 +30,9 @@
 }
 #namesFormDiv {
     display: None;
+    margin-left: 0.5em;
+}
+#defineSchoolDiv {
+    display: None;
+    margin-left: 0.5em;
 }

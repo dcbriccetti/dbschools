@@ -1,19 +1,22 @@
 package com.dbschools.perclock.model
 
 object TeacherSettings {
-  val DefaultPeriodNames = "1    |2     |3     |4    |5    |6     |7"
-  val DefaultFillColors  = "red   orange yellow green blue  indigo violet"
-  val DefaultTextColors  = "white black  black  white white white  black"
+  def defaultFillColors(numPeriods: Int): Seq[String] = {
+    val gradation = 340.0 / numPeriods
+    (for {
+      i <- 0 until numPeriods
+    } yield s"hsl(${i * gradation}, 90%, 70%)")
+  }
 
-  val DefaultSettings = (DefaultPeriodNames, DefaultFillColors, DefaultTextColors)
-  val MusicSettings = (
-    "Bronze |Silver|Cadet |Symph.|Chorus |Strings|Orch.",
-    "#CD7F32 silver indigo gold   yellow  blue    green",
-    "black   black  white  black  black   white   white"
+  private def spl(s: String) = s.split(" *\\| *")
+
+  val MusicSettings: (Seq[String], Seq[String]) = (
+    spl("Bronze |Silver|Cadet |Symph.|Chorus |Strings|Orch."),
+    "#CD7F32 silver lightblue gold   yellow  lightcyan green".split(" +")
     )
-  val PredefinedSettings = Map(
+  val PredefinedSettings: Map[String, (Seq[String], Seq[String])] = Map(
     "bathayde" -> MusicSettings,
     "lmcnulty" -> MusicSettings,
-    "cwindfuh" -> ("German 1B|German 1A|Wheel 6|Wheel 6|French 1A|French 1A|7", DefaultFillColors, DefaultTextColors)
+    "cwindfuh" -> (spl("German 1B|German 1A|Wheel 6|Wheel 6|French 1A|French 1A|7"), defaultFillColors(11))
   )
 }
